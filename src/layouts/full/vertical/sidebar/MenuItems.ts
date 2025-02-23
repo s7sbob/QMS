@@ -65,6 +65,7 @@ import {
   IconAppWindow,
   IconNotebook,
   IconFileCheck,
+  IconCertificate,
 } from '@tabler/icons-react';
 
 const Menuitems: MenuitemsType[] = [
@@ -75,18 +76,20 @@ const Menuitems: MenuitemsType[] = [
 
   {
     id: uniqueId(),
+    title: 'QMS',
+    icon: IconCertificate,
+    href: '/',
+  },
+
+  {
+    id: uniqueId(),
     title: 'Modern',
     icon: IconAperture,
     href: '/dashboards/modern',
     chip: 'New',
     chipColor: 'secondary',
   },
-  {
-    id: uniqueId(),
-    title: 'eCommerce',
-    icon: IconShoppingCart,
-    href: '/dashboards/ecommerce',
-  },
+
   {
     id: uniqueId(),
     title: 'Frontend pages',

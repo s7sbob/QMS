@@ -3,6 +3,7 @@
 import React, { lazy } from 'react';
 import { Navigate } from 'react-router-dom';
 import Loadable from '../layouts/full/shared/loadable/Loadable';
+import Dashboard from '../views/dashboard/Dashboard';
 
 /* ***Layouts**** */
 const FullLayout = Loadable(lazy(() => import('../layouts/full/FullLayout')));
@@ -11,7 +12,8 @@ const BlankLayout = Loadable(lazy(() => import('../layouts/blank/BlankLayout')))
 /* ****Pages***** */
 const ModernDash = Loadable(lazy(() => import('../views/dashboard/Modern')));
 const EcommerceDash = Loadable(lazy(() => import('../views/dashboard/Ecommerce')));
-
+const DocumentationControl = Loadable(lazy(() => import('../views/documentation/DocumentationControl')));
+const SOPDetail = Loadable(lazy(() => import('../views/documentation/SOPDetail')));
 /* ****Apps***** */
 // const Blog = Loadable(lazy(() => import('../views/apps/blog/Blog')));
 // const BlogDetail = Loadable(lazy(() => import('../views/apps/blog/BlogPost')));
@@ -157,10 +159,12 @@ const Router = [
     path: '/',
     element: <FullLayout />,
     children: [
-      { path: '/', element: <Navigate to="/dashboards/modern" /> },
+      { path: '/', element: <Dashboard /> },
       { path: '/dashboards/modern', exact: true, element: <ModernDash /> },
+      { path: '/documentation-control', element: <DocumentationControl /> },
       { path: '/dashboards/ecommerce', exact: true, element: <EcommerceDash /> },
       { path: '/apps/contacts', element: <Contacts /> },
+      { path: '/documentation-control/:id', element: <SOPDetail /> },
       // { path: '/apps/blog/posts', element: <Blog /> },
       // { path: '/frontend-pages/blog/detail/:id', element: <BlogDetail /> },
       { path: '/apps/chats', element: <Chats /> },
