@@ -14,6 +14,10 @@ const ModernDash = Loadable(lazy(() => import('../views/dashboard/Modern')));
 const EcommerceDash = Loadable(lazy(() => import('../views/dashboard/Ecommerce')));
 const DocumentationControl = Loadable(lazy(() => import('../views/documentation/DocumentationControl')));
 const SOPDetail = Loadable(lazy(() => import('../views/documentation/SOPDetail')));
+const New_Creation_SOP = Loadable(lazy(() => import('../views/documentation/pages/NewCreation')));
+const Document_Revision_Checklist = Loadable(lazy(() => import('../views/documentation/pages/DocumentRevisionChecklist')));
+const CancellationForm = Loadable(lazy(() => import('../views/documentation/pages/CancellationForm')));
+const Distribution_form = Loadable(lazy(() => import('../views/documentation/pages/DistributionForm')));
 /* ****Apps***** */
 // const Blog = Loadable(lazy(() => import('../views/apps/blog/Blog')));
 // const BlogDetail = Loadable(lazy(() => import('../views/apps/blog/BlogPost')));
@@ -165,6 +169,12 @@ const Router = [
       { path: '/dashboards/ecommerce', exact: true, element: <EcommerceDash /> },
       { path: '/apps/contacts', element: <Contacts /> },
       { path: '/documentation-control/:id', element: <SOPDetail /> },
+      { path: '/documentation-control/New_Creation_SOP', element: <New_Creation_SOP /> },
+      { path: '/documentation-control/Document_Revision_Checklist', element: <Document_Revision_Checklist /> },
+      { path: '/documentation-control/CancellationForm', element: <CancellationForm /> },
+      { path: '/documentation-control/distribution_form', element: <Distribution_form /> },
+
+      
       // { path: '/apps/blog/posts', element: <Blog /> },
       // { path: '/frontend-pages/blog/detail/:id', element: <BlogDetail /> },
       { path: '/apps/chats', element: <Chats /> },

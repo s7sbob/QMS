@@ -1,31 +1,41 @@
-import { IconButton, Box, AppBar, useMediaQuery, Toolbar, styled, Stack } from '@mui/material';
-
-import { useSelector, useDispatch } from 'src/store/Store';
+// src/layouts/full/vertical/header/Header.tsx
+import React from 'react';
 import {
-  toggleSidebar,
-  toggleMobileSidebar,
-  setDarkMode,
-} from 'src/store/customizer/CustomizerSlice';
+  IconButton,
+  Box,
+  AppBar,
+  useMediaQuery,
+  Toolbar,
+  styled,
+  Stack,
+  Theme,
+} from '@mui/material';
+import { useLocation } from 'react-router-dom';
+import { useSelector, useDispatch } from 'src/store/Store';
+import { toggleMobileSidebar, setDarkMode } from 'src/store/customizer/CustomizerSlice';
 import { IconMenu2, IconMoon, IconSun } from '@tabler/icons-react';
 import Notifications from './Notification';
-import Profile from './Profile';
 import Cart from './Cart';
+import Profile from './Profile';
 import Search from './Search';
 import Language from './Language';
-import { AppState } from 'src/store/Store';
 import Navigation from './Navigation';
-import MobileRightSidebar from './MobileRightSidebar';
+import AppDD from './Navigation'; // القائمة الأصلية للـ "Apps"
+import ActionDD from './ActionDD'; // القائمة الخاصة بالـ "Action"
+import Logo from 'src/layouts/full/shared/logo/Logo';
+import { AppState } from 'src/store/Store';
 
 const Header = () => {
-  const lgUp = useMediaQuery((theme: any) => theme.breakpoints.up('lg'));
-  const lgDown = useMediaQuery((theme: any) => theme.breakpoints.down('lg'));
-
-  // drawer
+  const lgDown = useMediaQuery((theme: Theme) => theme.breakpoints.down('lg'));
+  const lgUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('lg'));
   const customizer = useSelector((state: AppState) => state.customizer);
   const dispatch = useDispatch();
+  const location = useLocation();
+
+  // تحديد ما إذا كان المستخدم داخل قسم الوثائق
+  const isDocumentation = location.pathname.startsWith('/documentation-control');
 
   const AppBarStyled = styled(AppBar)(({ theme }) => ({
-    boxShadow: 'none',
     background: theme.palette.background.paper,
     justifyContent: 'center',
     backdropFilter: 'blur(4px)',
@@ -34,44 +44,33 @@ const Header = () => {
     },
   }));
   const ToolbarStyled = styled(Toolbar)(({ theme }) => ({
+    margin: '0 auto',
     width: '100%',
-    color: theme.palette.text.secondary,
+    color: `${theme.palette.text.secondary} !important`,
   }));
 
   return (
-    <AppBarStyled position="sticky" color="default">
-      <ToolbarStyled>
-        {/* ------------------------------------------- */}
-        {/* Toggle Button Sidebar */}
-        {/* ------------------------------------------- */}
-        <IconButton
-          color="inherit"
-          aria-label="menu"
-          onClick={lgUp ? () => dispatch(toggleSidebar()) : () => dispatch(toggleMobileSidebar())}
-        >
-          <IconMenu2 size="20" />
-        </IconButton>
-
-        {/* ------------------------------------------- */}
-        {/* Search Dropdown */}
-        {/* ------------------------------------------- */}
+    <AppBarStyled position="sticky" color="default" elevation={8}>
+      <ToolbarStyled
+        sx={{
+          maxWidth: customizer.isLayout === 'boxed' ? 'lg' : '100%!important',
+        }}
+      >
+        <Box sx={{ width: lgDown ? '45px' : 'auto', overflow: 'hidden' }}>
+          <Logo />
+        </Box>
+        {lgDown && (
+          <IconButton color="inherit" aria-label="menu" onClick={() => dispatch(toggleMobileSidebar())}>
+            <IconMenu2 />
+          </IconButton>
+        )}
         <Search />
-        {lgUp ? (
-          <>
-            <Navigation />
-          </>
-        ) : null}
-
+        {/* إذا كان المستخدم داخل قسم الوثائق، نعرض ActionDD بدلاً من AppDD */}
+        {lgUp && isDocumentation ? <ActionDD /> : lgUp && <AppDD />}
         <Box flexGrow={1} />
         <Stack spacing={1} direction="row" alignItems="center">
           <Language />
-          {/* ------------------------------------------- */}
-          {/* Ecommerce Dropdown */}
-          {/* ------------------------------------------- */}
           <Cart />
-          {/* ------------------------------------------- */}
-          {/* End Ecommerce Dropdown */}
-          {/* ------------------------------------------- */}
           <IconButton size="large" color="inherit">
             {customizer.activeMode === 'light' ? (
               <IconMoon size="21" stroke="1.5" onClick={() => dispatch(setDarkMode('dark'))} />
@@ -80,10 +79,6 @@ const Header = () => {
             )}
           </IconButton>
           <Notifications />
-          {/* ------------------------------------------- */}
-          {/* Toggle Right Sidebar for mobile */}
-          {/* ------------------------------------------- */}
-          {lgDown ? <MobileRightSidebar /> : null}
           <Profile />
         </Stack>
       </ToolbarStyled>
