@@ -1,13 +1,12 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // src/layouts/full/vertical/header/ActionDD.tsx
 import React, { useState } from 'react';
-import { Box, Menu, Button,  Grid,  useTheme } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Box, Menu, Button, Grid } from '@mui/material';
 import { IconChevronDown } from '@tabler/icons-react';
 import ActionLinks from './ActionLinks';
 
 const ActionDD: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const theme = useTheme();
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);

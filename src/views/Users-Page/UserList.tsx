@@ -1,8 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // src/components/apps/users/UserList.tsx
 import React from 'react';
 import { List, ListItem, ListItemAvatar, Avatar, ListItemText, Divider } from '@mui/material';
 import { User } from 'src/data/sampleUsers';
-import { Link } from 'react-router-dom';
 
 type Props = {
   users: User[];

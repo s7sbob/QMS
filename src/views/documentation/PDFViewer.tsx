@@ -76,7 +76,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl }) => {
           </Typography>
           <List>
             {numPages &&
-              Array.from(new Array(numPages), (el, index) => (
+              Array.from(new Array(numPages), (_el, index) => (
                 <ListItem key={`page-${index + 1}`} disablePadding>
                   <ListItemButton onClick={() => handlePageSelect(index + 1)}>
                     <ListItemText primary={`Page ${index + 1}`} />

@@ -5,7 +5,12 @@ import { Link } from 'react-router-dom';
 
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{8,}$/;
 
-const AuthRegister: React.FC = () => {
+interface AuthRegisterProps {
+  subtext?: React.ReactNode;
+  subtitle?: React.ReactNode;
+}
+
+const AuthRegister: React.FC<AuthRegisterProps> = () => {
   const [formData, setFormData] = useState({
     fName: '',
     lName: '',
@@ -37,7 +42,7 @@ const AuthRegister: React.FC = () => {
 
     if (Object.keys(newErrors).length === 0) {
       // هنا يتم إرسال البيانات إلى الـ API الخاص بالتسجيل
-      console.log("Registering user:", formData);
+      console.log('Registering user:', formData);
     }
   };
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import React, { lazy } from 'react';
@@ -12,12 +13,20 @@ const BlankLayout = Loadable(lazy(() => import('../layouts/blank/BlankLayout')))
 /* ****Pages***** */
 const ModernDash = Loadable(lazy(() => import('../views/dashboard/Modern')));
 const EcommerceDash = Loadable(lazy(() => import('../views/dashboard/Ecommerce')));
-const DocumentationControl = Loadable(lazy(() => import('../views/documentation/DocumentationControl')));
+const DocumentationControl = Loadable(
+  lazy(() => import('../views/documentation/DocumentationControl')),
+);
 const SOPDetail = Loadable(lazy(() => import('../views/documentation/SOPDetail')));
 const New_Creation_SOP = Loadable(lazy(() => import('../views/documentation/pages/NewCreation')));
-const Document_Revision_Checklist = Loadable(lazy(() => import('../views/documentation/pages/DocumentRevisionChecklist')));
-const CancellationForm = Loadable(lazy(() => import('../views/documentation/pages/CancellationForm')));
-const Distribution_form = Loadable(lazy(() => import('../views/documentation/pages/DistributionForm')));
+const Document_Revision_Checklist = Loadable(
+  lazy(() => import('../views/documentation/pages/DocumentRevisionChecklist')),
+);
+const CancellationForm = Loadable(
+  lazy(() => import('../views/documentation/pages/CancellationForm')),
+);
+const Distribution_form = Loadable(
+  lazy(() => import('../views/documentation/pages/DistributionForm')),
+);
 /* ****Apps***** */
 // const Blog = Loadable(lazy(() => import('../views/apps/blog/Blog')));
 // const BlogDetail = Loadable(lazy(() => import('../views/apps/blog/BlogPost')));
@@ -135,7 +144,6 @@ const WidgetCharts = Loadable(lazy(() => import('../views/widgets/charts/WidgetC
 // authentication
 const Login = Loadable(lazy(() => import('../views/authentication/auth1/Login')));
 const Login2 = Loadable(lazy(() => import('../views/authentication/auth2/Login2')));
-const Register = Loadable(lazy(() => import('../views/authentication/auth1/Register')));
 const Register2 = Loadable(lazy(() => import('../views/authentication/auth2/Register2')));
 const ForgotPassword = Loadable(lazy(() => import('../views/authentication/auth1/ForgotPassword')));
 const ForgotPassword2 = Loadable(
@@ -170,11 +178,13 @@ const Router = [
       { path: '/Users-Page', element: <Users_Page /> },
       { path: '/documentation-control/:id', element: <SOPDetail /> },
       { path: '/documentation-control/New_Creation_SOP', element: <New_Creation_SOP /> },
-      { path: '/documentation-control/Document_Revision_Checklist', element: <Document_Revision_Checklist /> },
+      {
+        path: '/documentation-control/Document_Revision_Checklist',
+        element: <Document_Revision_Checklist />,
+      },
       { path: '/documentation-control/CancellationForm', element: <CancellationForm /> },
       { path: '/documentation-control/distribution_form', element: <Distribution_form /> },
 
-      
       // { path: '/apps/blog/posts', element: <Blog /> },
       // { path: '/frontend-pages/blog/detail/:id', element: <BlogDetail /> },
       { path: '/apps/chats', element: <Chats /> },

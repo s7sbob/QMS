@@ -1,14 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // src/pages/SOPDetail.tsx
 import React, { useState } from 'react';
-import { Box, Button, Stack, useTheme, IconButton } from '@mui/material';
+import { Box, Button, Stack, IconButton } from '@mui/material';
 import { IconMenu2, IconFileChart } from '@tabler/icons-react';
 import PageContainer from 'src/components/container/PageContainer';
-import { useParams } from 'react-router-dom';
 
 const SOPDetail: React.FC = () => {
-  const theme = useTheme();
-  const { id } = useParams<{ id: string }>();
-
   // PDF الافتراضي المعروض
   const [selectedPdf, setSelectedPdf] = useState<string>('/documents/document-control.pdf');
 
@@ -24,7 +21,6 @@ const SOPDetail: React.FC = () => {
   return (
     <PageContainer title="SOP Details" description="Standard Operating Procedure Details">
       <Box sx={{ display: 'flex', height: 'calc(100vh - 100px)' }}>
-        
         {/* المحتوى الرئيسي */}
         <Box sx={{ flexGrow: 1, p: 3 }}>
           <Stack direction="row" spacing={2} mb={3}>
@@ -34,16 +30,10 @@ const SOPDetail: React.FC = () => {
             </IconButton>
 
             {/* زر لتبديل ملف الـ PDF */}
-            <Button
-              variant="contained"
-              startIcon={<IconFileChart />}
-              onClick={handleTogglePdf}
-            >
-              {
-                selectedPdf === '/Flow_Charts/Documentation_Flow_Chart.pdf'
-                  ? 'Back to Documentation'
-                  : 'Documentation Flow Chart'
-              }
+            <Button variant="contained" startIcon={<IconFileChart />} onClick={handleTogglePdf}>
+              {selectedPdf === '/Flow_Charts/Documentation_Flow_Chart.pdf'
+                ? 'Back to Documentation'
+                : 'Documentation Flow Chart'}
             </Button>
           </Stack>
 

@@ -1,8 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // src/components/apps/users/UserAdd.tsx
 import React, { useState } from 'react';
 import { Button, Box } from '@mui/material';
 import { IconPlus } from '@tabler/icons-react';
-import { Link } from 'react-router-dom';
 import UserAddDialog, { NewUserData } from './UserAddDialog';
 
 const UserAdd: React.FC = () => {
@@ -13,7 +13,7 @@ const UserAdd: React.FC = () => {
 
   const handleSave = (data: NewUserData) => {
     // هنا يمكنك ربط البيانات الجديدة مع Redux أو استدعاء API لإضافة المستخدم
-    console.log("New User Data:", data);
+    console.log('New User Data:', data);
   };
 
   return (
