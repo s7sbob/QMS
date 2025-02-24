@@ -1,5 +1,4 @@
 // src/layouts/full/vertical/header/Header.tsx
-import React from 'react';
 import {
   IconButton,
   Box,
@@ -15,11 +14,9 @@ import { useSelector, useDispatch } from 'src/store/Store';
 import { toggleMobileSidebar, setDarkMode } from 'src/store/customizer/CustomizerSlice';
 import { IconMenu2, IconMoon, IconSun } from '@tabler/icons-react';
 import Notifications from './Notification';
-import Cart from './Cart';
 import Profile from './Profile';
 import Search from './Search';
 import Language from './Language';
-import AppDD from './Navigation'; // القائمة الأصلية للـ "Apps"
 import ActionDD from './ActionDD'; // القائمة الخاصة بالـ "Action"
 import { AppState } from 'src/store/Store';
 
@@ -61,11 +58,10 @@ const Header = () => {
         )}
         <Search />
         {/* إذا كان المستخدم داخل قسم الوثائق، نعرض ActionDD بدلاً من AppDD */}
-        {lgUp && isDocumentation ? <ActionDD /> : lgUp && <AppDD />}
+        {lgUp && isDocumentation ? <ActionDD /> : ''}
         <Box flexGrow={1} />
         <Stack spacing={1} direction="row" alignItems="center">
           <Language />
-          <Cart />
           <IconButton size="large" color="inherit">
             {customizer.activeMode === 'light' ? (
               <IconMoon size="21" stroke="1.5" onClick={() => dispatch(setDarkMode('dark'))} />

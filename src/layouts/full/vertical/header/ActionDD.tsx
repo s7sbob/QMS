@@ -61,7 +61,7 @@ const ActionDD: React.FC = () => {
         </Menu>
       </Box>
       {/* الأزرار الجانبية كما في AppDD */}
-      <Button
+      {/* <Button
         color="inherit"
         sx={{ color: (theme) => theme.palette.text.secondary }}
         variant="text"
@@ -87,7 +87,7 @@ const ActionDD: React.FC = () => {
         component={Link}
       >
         Email
-      </Button>
+      </Button> */}
     </>
   );
 };
