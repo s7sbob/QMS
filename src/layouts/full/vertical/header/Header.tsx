@@ -19,10 +19,8 @@ import Cart from './Cart';
 import Profile from './Profile';
 import Search from './Search';
 import Language from './Language';
-import Navigation from './Navigation';
 import AppDD from './Navigation'; // القائمة الأصلية للـ "Apps"
 import ActionDD from './ActionDD'; // القائمة الخاصة بالـ "Action"
-import Logo from 'src/layouts/full/shared/logo/Logo';
 import { AppState } from 'src/store/Store';
 
 const Header = () => {
@@ -56,9 +54,6 @@ const Header = () => {
           maxWidth: customizer.isLayout === 'boxed' ? 'lg' : '100%!important',
         }}
       >
-        <Box sx={{ width: lgDown ? '45px' : 'auto', overflow: 'hidden' }}>
-          <Logo />
-        </Box>
         {lgDown && (
           <IconButton color="inherit" aria-label="menu" onClick={() => dispatch(toggleMobileSidebar())}>
             <IconMenu2 />

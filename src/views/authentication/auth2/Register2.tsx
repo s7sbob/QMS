@@ -1,15 +1,13 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
+// src/layouts/full/vertical/auth/Register2.tsx
 import React from 'react';
 import { Grid, Box, Card, Typography, Stack } from '@mui/material';
 import { Link } from 'react-router-dom';
 import PageContainer from 'src/components/container/PageContainer';
 import Logo from 'src/layouts/full/shared/logo/Logo';
-
 import AuthRegister from '../authForms/AuthRegister';
 
-const Register2 = () => (
-  <PageContainer title="Register" description="this is Register page">
+const Register2: React.FC = () => (
+  <PageContainer title="Register" description="This is the Register page">
     <Box
       sx={{
         position: 'relative',
@@ -40,31 +38,7 @@ const Register2 = () => (
             <Box display="flex" alignItems="center" justifyContent="center">
               <Logo />
             </Box>
-            <AuthRegister
-              subtext={
-                <Typography variant="subtitle1" textAlign="center" color="textSecondary" mb={1}>
-                  Your Social Campaigns
-                </Typography>
-              }
-              subtitle={
-                <Stack direction="row" spacing={1} mt={3}>
-                  <Typography color="textSecondary" variant="h6" fontWeight="400">
-                    Already have an Account?
-                  </Typography>
-                  <Typography 
-                    component={Link}
-                    to="/auth/login2"
-                    fontWeight="500"
-                    sx={{
-                      textDecoration: 'none',
-                      color: 'primary.main',
-                    }}
-                  >
-                    Sign In
-                  </Typography>
-                </Stack>
-              }
-            />
+            <AuthRegister />
           </Card>
         </Grid>
       </Grid>

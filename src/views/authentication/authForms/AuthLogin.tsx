@@ -1,96 +1,78 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import React from 'react';
-import {
-  Box,
-  Typography,
-  FormGroup,
-  FormControlLabel,
-  Button,
-  Stack,
-  Divider,
-} from '@mui/material';
+// src/layouts/full/vertical/auth/AuthLogin.tsx
+import React, { useState } from 'react';
+import { Box, Typography, Button, Stack, TextField, FormGroup, FormControlLabel, Checkbox } from '@mui/material';
 import { Link } from 'react-router-dom';
 
-import { loginType } from 'src/types/auth/auth';
-import CustomCheckbox from '../../../components/forms/theme-elements/CustomCheckbox';
-import CustomTextField from '../../../components/forms/theme-elements/CustomTextField';
-import CustomFormLabel from '../../../components/forms/theme-elements/CustomFormLabel';
+const AuthLogin: React.FC = () => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
-import AuthSocialButtons from './AuthSocialButtons';
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // هنا يمكنك ربط بيانات الدخول بـ API للتحقق
+    console.log("Login data:", { username, password });
+  };
 
-
-
-const AuthLogin = ({ title, subtitle, subtext }: loginType) => (
-  <>
-    {title ? (
-      <Typography fontWeight="700" variant="h3" mb={1}>
-        {title}
-      </Typography>
-    ) : null}
-
-    {subtext}
-
-    <AuthSocialButtons title="Sign in with" />
-    <Box mt={3}>
-      <Divider>
-        <Typography
-          component="span"
-          color="textSecondary"
-          variant="h6"
-          fontWeight="400"
-          position="relative"
-          px={2}
+  return (
+    <Box component="form" onSubmit={handleSubmit} noValidate>
+      <Stack spacing={2}>
+        <TextField 
+          required 
+          label="Username" 
+          variant="outlined" 
+          fullWidth 
+          value={username} 
+          onChange={(e) => setUsername(e.target.value)} 
+        />
+        <TextField 
+          required 
+          label="Password" 
+          type="password" 
+          variant="outlined" 
+          fullWidth 
+          value={password} 
+          onChange={(e) => setPassword(e.target.value)} 
+        />
+        <Stack direction="row" justifyContent="space-between" alignItems="center">
+          <FormGroup>
+            <FormControlLabel control={<Checkbox defaultChecked />} label="Remember this Device" />
+          </FormGroup>
+          <Typography 
+            component={Link} 
+            to="/auth/forgot-password" 
+            sx={{ textDecoration: 'none', color: 'primary.main' }}
+          >
+            Forgot Password?
+          </Typography>
+        </Stack>
+      </Stack>
+      <Box mt={3}>
+        <Button 
+          type="submit" 
+          color="primary" 
+          variant="contained" 
+          size="large" 
+          fullWidth
         >
-          or sign in with
+          Sign In
+        </Button>
+      </Box>
+      <Stack direction="row" spacing={1} mt={3} justifyContent="center">
+        <Typography variant="subtitle1" color="textSecondary">
+          New to Modernize?
         </Typography>
-      </Divider>
-    </Box>
-
-    <Stack>
-      <Box>
-        <CustomFormLabel htmlFor="username">Username</CustomFormLabel>
-        <CustomTextField id="username" variant="outlined" fullWidth />
-      </Box>
-      <Box>
-        <CustomFormLabel htmlFor="password">Password</CustomFormLabel>
-        <CustomTextField id="password" type="password" variant="outlined" fullWidth />
-      </Box>
-      <Stack justifyContent="space-between" direction="row" alignItems="center" my={2}>
-        <FormGroup>
-          <FormControlLabel
-            control={<CustomCheckbox defaultChecked />}
-            label="Remeber this Device"
-          />
-        </FormGroup>
-        <Typography
+        <Typography 
           component={Link}
-          to="/auth/forgot-password"
+          to="/auth/register"
+          variant="subtitle1"
           fontWeight="500"
-          sx={{
-            textDecoration: 'none',
-            color: 'primary.main',
-          }}
+          sx={{ textDecoration: 'none', color: 'primary.main' }}
         >
-          Forgot Password ?
+          Create an account
         </Typography>
       </Stack>
-    </Stack>
-    <Box>
-      <Button
-        color="primary"
-        variant="contained"
-        size="large"
-        fullWidth
-        component={Link}
-        to="/"
-        type="submit"
-      >
-        Sign In
-      </Button>
     </Box>
-    {subtitle}
-  </>
-);
+  );
+};
 
 export default AuthLogin;

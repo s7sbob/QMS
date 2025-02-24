@@ -21,7 +21,7 @@ const Distribution_form = Loadable(lazy(() => import('../views/documentation/pag
 /* ****Apps***** */
 // const Blog = Loadable(lazy(() => import('../views/apps/blog/Blog')));
 // const BlogDetail = Loadable(lazy(() => import('../views/apps/blog/BlogPost')));
-const Contacts = Loadable(lazy(() => import('../views/apps/contacts/Contacts')));
+const Users_Page = Loadable(lazy(() => import('../views/Users-Page/Users')));
 const Chats = Loadable(lazy(() => import('../views/apps/chat/Chat')));
 const Notes = Loadable(lazy(() => import('../views/apps/notes/Notes')));
 const Tickets = Loadable(lazy(() => import('../views/apps/tickets/Tickets')));
@@ -167,7 +167,7 @@ const Router = [
       { path: '/dashboards/modern', exact: true, element: <ModernDash /> },
       { path: '/documentation-control', element: <DocumentationControl /> },
       { path: '/dashboards/ecommerce', exact: true, element: <EcommerceDash /> },
-      { path: '/apps/contacts', element: <Contacts /> },
+      { path: '/Users-Page', element: <Users_Page /> },
       { path: '/documentation-control/:id', element: <SOPDetail /> },
       { path: '/documentation-control/New_Creation_SOP', element: <New_Creation_SOP /> },
       { path: '/documentation-control/Document_Revision_Checklist', element: <Document_Revision_Checklist /> },
@@ -267,7 +267,7 @@ const Router = [
       { path: '/auth/404', element: <Error /> },
       { path: '/auth/login', element: <Login /> },
       { path: '/auth/login2', element: <Login2 /> },
-      { path: '/auth/register', element: <Register /> },
+      { path: '/auth/register', element: <Register2 /> },
       { path: '/auth/register2', element: <Register2 /> },
       { path: '/auth/forgot-password', element: <ForgotPassword /> },
       { path: '/auth/forgot-password2', element: <ForgotPassword2 /> },

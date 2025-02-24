@@ -122,9 +122,9 @@ const apps: DemoTypes[] = [
     title: 'Chat App',
   },
   {
-    link: 'apps/contacts',
+    link: '/Users-Page',
     img: app3,
-    title: 'Contact App',
+    title: 'Users',
   },
   {
     link: 'apps/email',

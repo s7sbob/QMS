@@ -2,40 +2,45 @@
 import React from 'react';
 import { Avatar, Box, Typography, Grid, Stack } from '@mui/material';
 import { Link } from 'react-router-dom';
+import { 
+  IconFilePlus, 
+  IconFilterEdit, 
+  IconCircle, 
+  IconBoxMultiple, 
+  IconFileDiff 
+} from '@tabler/icons-react';
 
 const actionLinks = [
   {
     href: '/documentation-control/New_Creation_SOP',
     title: 'New Creation',
     subtext: 'Create a new SOP',
-    avatar: '', // يمكنك وضع رابط لصورة أو تركه فارغًا لعرض نص افتراضي
+    avatar: <IconFilePlus size={24} />,
   },
   {
     href: '/documentation-control/Document_Revision_Checklist',
     title: 'Document Revision Checklist',
     subtext: 'Review revisions',
-    avatar: '',
+    avatar: <IconFilterEdit size={24} />,
   },
   {
     href: '/documentation-control/CancellationForm',
     title: 'Cancellation Form',
     subtext: 'Submit cancellation request',
-    avatar: '',
+    avatar: <IconCircle size={24} />,
   },
   {
     href: '/documentation-control/distribution_form',
     title: 'Distribution Form',
     subtext: 'Distribute documents',
-    avatar: '',
+    avatar: <IconBoxMultiple size={24} />,
   },
-  { 
+  {
     href: '/Pages/List_of_Tasks/Change_Control_and_Cancellation_Form/Change_Request_form',
     title: 'Change Control Form',
     subtext: 'Submit change request',
-    avatar: '',
- },
-
-  // يمكنك إضافة المزيد من المهام حسب الحاجة
+    avatar: <IconFileDiff size={24} />,
+  },
 ];
 
 const ActionLinks: React.FC = () => {
@@ -53,15 +58,9 @@ const ActionLinks: React.FC = () => {
                 alignItems="center"
                 justifyContent="center"
               >
-                {link.avatar ? (
-                  <Avatar
-                    src={link.avatar}
-                    alt={link.title}
-                    sx={{ width: 24, height: 24, borderRadius: 0 }}
-                  />
-                ) : (
-                  <Avatar sx={{ width: 24, height: 24, borderRadius: 0 }}>A</Avatar>
-                )}
+                <Avatar sx={{ width: 24, height: 24, borderRadius: 0 }}>
+                  {link.avatar}
+                </Avatar>
               </Box>
               <Box>
                 <Typography

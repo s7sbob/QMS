@@ -67,6 +67,7 @@ import {
   IconFileCheck,
   IconCertificate,
 } from '@tabler/icons-react';
+import { userInfo } from 'os';
 
 const Menuitems: MenuitemsType[] = [
   {
@@ -146,11 +147,10 @@ const Menuitems: MenuitemsType[] = [
   },
   {
     id: uniqueId(),
-    title: 'Contacts',
-    icon: IconPackage,
-    chip: '2',
+    title: 'Users',
+    icon: IconUserCircle,
     chipColor: 'secondary',
-    href: '/apps/contacts',
+    href: '/Users-Page',
   },
 
   {
