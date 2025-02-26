@@ -29,7 +29,7 @@ const AuthLogin: React.FC = () => {
       Cookies.set('token', response.token, { expires: 7 }); // تخزين لمدة 7 أيام كمثال
 
       // توجيه للداشبورد أو أي صفحة أخرى
-      navigate('/dashboard');
+      navigate('/');
     } catch (error: any) {
       console.error('Login error:', error);
       alert('اسم المستخدم أو كلمة المرور غير صحيحة!');

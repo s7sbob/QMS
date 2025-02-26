@@ -1,4 +1,5 @@
 // src/components/apps/users/UserAdd.tsx
+
 import React, { useState } from 'react';
 import { Button, Box } from '@mui/material';
 import { IconPlus } from '@tabler/icons-react';
@@ -17,9 +18,7 @@ const UserAdd: React.FC<UserAddProps> = ({ onUserAdded }) => {
 
   const handleSave = async (data: UserInput) => {
     try {
-      // استدعاء الخدمة لإضافة/تعديل مستخدم
       await addEditUserApi(data);
-      // بعد النجاح
       handleClose();
       onUserAdded(); // إعادة تحميل القائمة في الأب
     } catch (error) {

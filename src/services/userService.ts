@@ -23,9 +23,9 @@ export interface IUser {
   UserName: string;
   Password: string;
   userImg_Url?: string | null;
-  is_Active?: number;
+  is_Active?: number;        // <--- مضاف
+  dateOfBirth?: string;      // إن كان متاحًا في الجدول
   User_contact?: IUserContact[];
-  dateOfBirth?: string; // أضفناها لتفادي الأخطاء
 }
 
 /**
@@ -39,8 +39,9 @@ export interface UserInput {
   Email: string;
   UserName: string;
   Password: string;
-  userImg_Url?: string; // لو أردت رفع صورة أو URL
-  dateOfBirth?: string; // لو ترغب بإرساله
+  userImg_Url?: string; 
+  dateOfBirth?: string;
+  is_Active?: number;   // <--- مضاف
   contacts?: Array<{
     PhoneNumber: string;
     address: string;
@@ -57,20 +58,15 @@ export const getAllUsers = async (): Promise<IUser[]> => {
 };
 
 /**
- * جلب مستخدم عن طريق الـ ID
- * GET /api/users/id/{id}
+ * جلب مستخدم عن طريق id أو Email
+ * GET /api/users/getUser?id=xxx أو ?Email=xxx
  */
-export const getUserById = async (id: string): Promise<IUser> => {
-  const { data } = await axiosServices.get(`/api/users/id/${id}`);
-  return data;
-};
+export const getUser = async (params: { id?: string; Email?: string }): Promise<IUser> => {
+  const query = new URLSearchParams();
+  if (params.id) query.append('id', params.id);
+  if (params.Email) query.append('Email', params.Email);
 
-/**
- * جلب مستخدم عن طريق الـ Username
- * GET /api/users/userName/{userName}
- */
-export const getUserByUserName = async (userName: string): Promise<IUser> => {
-  const { data } = await axiosServices.get(`/api/users/userName/${userName}`);
+  const { data } = await axiosServices.get(`/api/users/getUser?${query.toString()}`);
   return data;
 };
 
@@ -81,4 +77,13 @@ export const getUserByUserName = async (userName: string): Promise<IUser> => {
 export const addEditUserApi = async (userData: UserInput) => {
   const { data } = await axiosServices.post('/api/users/addEditUser', userData);
   return data; // يحتوي على { message, user }
+};
+
+/**
+ * حذف (Soft Delete) مستخدم
+ * DELETE /api/users/delete/{id}
+ */
+export const deleteUser = async (id: string) => {
+  const { data } = await axiosServices.delete(`/api/users/delete/${id}`);
+  return data; // قد يحتوي على user محذوف أو message
 };

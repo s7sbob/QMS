@@ -1,4 +1,5 @@
 // src/components/apps/users/UserAddDialog.tsx
+
 import React, { useState } from 'react';
 import {
   Dialog,
@@ -8,6 +9,8 @@ import {
   Button,
   TextField,
   Grid,
+  FormControlLabel,
+  Checkbox,
 } from '@mui/material';
 import { UserInput } from 'src/services/userService';
 
@@ -26,19 +29,27 @@ const UserAddDialog: React.FC<UserAddDialogProps> = ({ open, onClose, onSave }) 
     Password: '',
     dateOfBirth: '',
     userImg_Url: '',
+    is_Active: 1, // افتراضيًا نفترض أنه 1 (فعال)
     contacts: [],
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    const { name, value, type, checked } = e.target;
+    // لوكان الحقل Checkbox
+    if (name === 'is_Active' && type === 'checkbox') {
+      setFormData((prev) => ({
+        ...prev,
+        is_Active: checked ? 1 : 0,
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   const handleSave = () => {
-    // استدعاء الدالة الممررة من الأب
     onSave(formData);
     // إعادة ضبط الفورم (اختياري)
     setFormData({
@@ -49,6 +60,7 @@ const UserAddDialog: React.FC<UserAddDialogProps> = ({ open, onClose, onSave }) 
       Password: '',
       dateOfBirth: '',
       userImg_Url: '',
+      is_Active: 1,
       contacts: [],
     });
     onClose();
@@ -131,6 +143,19 @@ const UserAddDialog: React.FC<UserAddDialogProps> = ({ open, onClose, onSave }) 
               value={formData.userImg_Url}
               onChange={handleChange}
               variant="outlined"
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  name="is_Active"
+                  checked={formData.is_Active === 1}
+                  onChange={handleChange}
+                  color="primary"
+                />
+              }
+              label="Is Active?"
             />
           </Grid>
         </Grid>
