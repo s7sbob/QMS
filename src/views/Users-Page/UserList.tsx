@@ -1,24 +1,27 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 // src/components/apps/users/UserList.tsx
+
 import React from 'react';
 import { List, ListItem, ListItemAvatar, Avatar, ListItemText, Divider } from '@mui/material';
-import { User } from 'src/data/sampleUsers';
+import { IUser } from 'src/services/userService';
 
 type Props = {
-  users: User[];
-  showrightSidebar: () => void;
+  users: IUser[];
+  onSelectUser: (user: IUser) => void; // استبدل showrightSidebar
 };
 
-const UserList: React.FC<Props> = ({ users, showrightSidebar }) => {
+const UserList: React.FC<Props> = ({ users, onSelectUser }) => {
   return (
     <List>
       {users.map((user) => (
-        <React.Fragment key={user.id}>
-          <ListItem button onClick={showrightSidebar}>
+        <React.Fragment key={user.Id}>
+          <ListItem button onClick={() => onSelectUser(user)}>
             <ListItemAvatar>
-              <Avatar src={user.userImgUrl} alt={`${user.fName} ${user.lName}`} />
+              <Avatar src={user.userImg_Url || ''} alt={`${user.FName} ${user.LName}`} />
             </ListItemAvatar>
-            <ListItemText primary={`${user.fName} ${user.lName}`} secondary={user.email} />
+            <ListItemText
+              primary={`${user.FName} ${user.LName}`}
+              secondary={user.Email}
+            />
           </ListItem>
           <Divider />
         </React.Fragment>

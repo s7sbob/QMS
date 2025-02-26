@@ -12,7 +12,7 @@ const UserSearch: React.FC<Props> = ({ onClick }) => {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    // يمكن إرسال قيمة البحث للـ Redux أو التعامل معها محليًا
+    // يمكنك إرسال قيمة البحث إلى API أو Redux حسب الحاجة
   };
 
   return (
@@ -35,7 +35,7 @@ const UserSearch: React.FC<Props> = ({ onClick }) => {
         InputProps={{
           endAdornment: (
             <InputAdornment position="end">
-              <IconSearch size={'16'} />
+              <IconSearch size="16" />
             </InputAdornment>
           ),
         }}

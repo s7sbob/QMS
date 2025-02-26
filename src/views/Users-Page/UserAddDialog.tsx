@@ -9,32 +9,24 @@ import {
   TextField,
   Grid,
 } from '@mui/material';
-
-export interface NewUserData {
-  fName: string;
-  lName: string;
-  dateOfBirth: string;
-  userName: string;
-  password: string;
-  email: string;
-  userImgUrl?: string;
-}
+import { UserInput } from 'src/services/userService';
 
 interface UserAddDialogProps {
   open: boolean;
   onClose: () => void;
-  onSave: (data: NewUserData) => void;
+  onSave: (data: UserInput) => void;
 }
 
 const UserAddDialog: React.FC<UserAddDialogProps> = ({ open, onClose, onSave }) => {
-  const [formData, setFormData] = useState<NewUserData>({
-    fName: '',
-    lName: '',
+  const [formData, setFormData] = useState<UserInput>({
+    FName: '',
+    LName: '',
+    Email: '',
+    UserName: '',
+    Password: '',
     dateOfBirth: '',
-    userName: '',
-    password: '',
-    email: '',
-    userImgUrl: '',
+    userImg_Url: '',
+    contacts: [],
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,17 +38,18 @@ const UserAddDialog: React.FC<UserAddDialogProps> = ({ open, onClose, onSave }) 
   };
 
   const handleSave = () => {
-    // هنا يمكن إضافة التحقق من صحة البيانات قبل الحفظ
+    // استدعاء الدالة الممررة من الأب
     onSave(formData);
-    // إعادة تعيين النموذج بعد الحفظ (اختياري)
+    // إعادة ضبط الفورم (اختياري)
     setFormData({
-      fName: '',
-      lName: '',
+      FName: '',
+      LName: '',
+      Email: '',
+      UserName: '',
+      Password: '',
       dateOfBirth: '',
-      userName: '',
-      password: '',
-      email: '',
-      userImgUrl: '',
+      userImg_Url: '',
+      contacts: [],
     });
     onClose();
   };
@@ -70,8 +63,8 @@ const UserAddDialog: React.FC<UserAddDialogProps> = ({ open, onClose, onSave }) 
             <TextField
               fullWidth
               label="First Name"
-              name="fName"
-              value={formData.fName}
+              name="FName"
+              value={formData.FName}
               onChange={handleChange}
               variant="outlined"
             />
@@ -80,8 +73,8 @@ const UserAddDialog: React.FC<UserAddDialogProps> = ({ open, onClose, onSave }) 
             <TextField
               fullWidth
               label="Last Name"
-              name="lName"
-              value={formData.lName}
+              name="LName"
+              value={formData.LName}
               onChange={handleChange}
               variant="outlined"
             />
@@ -102,8 +95,8 @@ const UserAddDialog: React.FC<UserAddDialogProps> = ({ open, onClose, onSave }) 
             <TextField
               fullWidth
               label="Username"
-              name="userName"
-              value={formData.userName}
+              name="UserName"
+              value={formData.UserName}
               onChange={handleChange}
               variant="outlined"
             />
@@ -112,9 +105,9 @@ const UserAddDialog: React.FC<UserAddDialogProps> = ({ open, onClose, onSave }) 
             <TextField
               fullWidth
               label="Password"
-              name="password"
+              name="Password"
               type="password"
-              value={formData.password}
+              value={formData.Password}
               onChange={handleChange}
               variant="outlined"
             />
@@ -123,9 +116,9 @@ const UserAddDialog: React.FC<UserAddDialogProps> = ({ open, onClose, onSave }) 
             <TextField
               fullWidth
               label="Email"
-              name="email"
+              name="Email"
               type="email"
-              value={formData.email}
+              value={formData.Email}
               onChange={handleChange}
               variant="outlined"
             />
@@ -134,8 +127,8 @@ const UserAddDialog: React.FC<UserAddDialogProps> = ({ open, onClose, onSave }) 
             <TextField
               fullWidth
               label="Image URL"
-              name="userImgUrl"
-              value={formData.userImgUrl}
+              name="userImg_Url"
+              value={formData.userImg_Url}
               onChange={handleChange}
               variant="outlined"
             />

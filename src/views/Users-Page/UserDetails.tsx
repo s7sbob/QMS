@@ -1,46 +1,52 @@
 // src/components/apps/users/UserDetails.tsx
-import React, { useState } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Avatar, 
-  Grid, 
-  Divider, 
-  IconButton, 
-  Stack, 
-  TextField 
+
+import React, { useEffect, useState } from 'react';
+import {
+  Box,
+  Typography,
+  Avatar,
+  Grid,
+  Divider,
+  IconButton,
+  Stack,
+  TextField,
 } from '@mui/material';
 import { IconPencil, IconDeviceFloppy, IconTrash } from '@tabler/icons-react';
 import Tooltip from '@mui/material/Tooltip';
-import sampleUsers, { User } from 'src/data/sampleUsers';
+import { IUser } from 'src/services/userService';
 
-const UserDetails: React.FC = () => {
-  // لمحاكاة اختيار المستخدم؛ في التطبيق الحقيقي يتم جلب المستخدم المحدد من Redux أو API
-  const [user, setUser] = useState<User | null>(sampleUsers[0]);
+type UserDetailsProps = {
+  user: IUser | null; // قد يكون null لو لم يتم اختيار مستخدم
+};
+
+const UserDetails: React.FC<UserDetailsProps> = ({ user }) => {
   const [editMode, setEditMode] = useState(false);
-  // عند بدء التحرير، نقوم بتهيئة editedUser ببيانات المستخدم الحالي (نستخدم ! لافتراض عدم وجود null)
-  const [editedUser, setEditedUser] = useState<User>(user!);
+  const [editedUser, setEditedUser] = useState<IUser | null>(null);
+
+  useEffect(() => {
+    // عند تغيير user في الـ props, نعيد ضبط editedUser
+    setEditedUser(user);
+    setEditMode(false);
+  }, [user]);
 
   const handleEditToggle = () => {
-    if (editMode) {
-      // عند حفظ التعديلات، نقوم بتحديث بيانات المستخدم (يمكن ربطها بـ API لاحقًا)
-      setUser(editedUser);
-      console.log("User updated:", editedUser);
+    if (editMode && editedUser) {
+      // هنا تحفظ التعديلات عبر API مثلاً
+      console.log('User updated:', editedUser);
+      // يمكنك استدعاء دالة updateUser(editedUser) من userService
     }
     setEditMode(!editMode);
   };
 
   const handleDelete = () => {
-    // هنا يتم تنفيذ عملية الحذف (ربطها بـ API أو Redux لاحقًا)
-    console.log("User deleted:", user?.id);
-    setUser(null);
+    if (!user) return;
+    console.log('User deleted:', user.Id);
+    // استدعاء دالة حذف من API لو متوفر
   };
 
-  // تأكد من أن editedUser ليس null قبل التحديث
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!editedUser) return;
     const { name, value } = e.target;
-    // إذا كانت الحقول التي نتعامل معها من النوع string فقط، فيمكن تحديثها مباشرة
     setEditedUser({
       ...editedUser,
       [name]: value,
@@ -57,16 +63,15 @@ const UserDetails: React.FC = () => {
 
   return (
     <>
-      {/* Header with Edit and Delete Buttons */}
       <Box p={3} py={2} display="flex" alignItems="center">
         <Typography variant="h5">User Details</Typography>
         <Stack direction="row" gap={0} ml="auto">
           <Tooltip title={editMode ? 'Save' : 'Edit'}>
             <IconButton onClick={handleEditToggle}>
-              { !editMode ? (
-                <IconPencil size="18" stroke={1.3} />
-              ) : (
+              {editMode ? (
                 <IconDeviceFloppy size="18" stroke={1.3} />
+              ) : (
+                <IconPencil size="18" stroke={1.3} />
               )}
             </IconButton>
           </Tooltip>
@@ -78,79 +83,80 @@ const UserDetails: React.FC = () => {
         </Stack>
       </Box>
       <Divider />
-      {/* User Information */}
       <Box p={3}>
         <Box display="flex" alignItems="center">
-          <Avatar src={user.userImgUrl} alt={`${user.fName} ${user.lName}`} sx={{ width: 72, height: 72 }} />
+          <Avatar
+            src={user.userImg_Url || ''}
+            alt={`${user.FName} ${user.LName}`}
+            sx={{ width: 72, height: 72 }}
+          />
           <Box ml={2}>
-            {editMode ? (
+            {editMode && editedUser ? (
               <Stack direction="row" spacing={2}>
                 <TextField
-                  name="fName"
+                  name="FName"
                   label="First Name"
                   variant="standard"
-                  value={editedUser.fName}
+                  value={editedUser.FName}
                   onChange={handleChange}
                 />
                 <TextField
-                  name="lName"
+                  name="LName"
                   label="Last Name"
                   variant="standard"
-                  value={editedUser.lName}
+                  value={editedUser.LName}
                   onChange={handleChange}
                 />
               </Stack>
             ) : (
               <>
                 <Typography variant="h6">
-                  {user.fName} {user.lName}
+                  {user.FName} {user.LName}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  {user.email}
+                  {user.Email}
                 </Typography>
               </>
             )}
           </Box>
         </Box>
+
         <Divider sx={{ my: 2 }} />
+
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
             <Typography variant="subtitle2" color="text.secondary">
               Username:
             </Typography>
-            {editMode ? (
+            {editMode && editedUser ? (
               <TextField
-                name="userName"
+                name="UserName"
                 variant="standard"
-                value={editedUser.userName}
+                value={editedUser.UserName}
                 onChange={handleChange}
               />
             ) : (
-              <Typography variant="body1">{user.userName}</Typography>
+              <Typography variant="body1">{user.UserName}</Typography>
             )}
           </Grid>
           <Grid item xs={12} sm={6}>
             <Typography variant="subtitle2" color="text.secondary">
               Date of Birth:
             </Typography>
-            {editMode ? (
+            {editMode && editedUser ? (
               <TextField
                 name="dateOfBirth"
                 type="date"
                 variant="standard"
-                value={editedUser.dateOfBirth}
+                value={editedUser.dateOfBirth || ''}
                 onChange={handleChange}
                 InputLabelProps={{ shrink: true }}
               />
             ) : (
-              <Typography variant="body1">{user.dateOfBirth}</Typography>
+              <Typography variant="body1">
+                {user.dateOfBirth ? user.dateOfBirth : 'N/A'}
+              </Typography>
             )}
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <Typography variant="subtitle2" color="text.secondary">
-              Created Date:
-            </Typography>
-            <Typography variant="body1">{user.crtDate}</Typography>
           </Grid>
         </Grid>
       </Box>
