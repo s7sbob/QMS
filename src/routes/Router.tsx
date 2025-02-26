@@ -58,7 +58,7 @@ const Router = [
     children: [
       { path: '/', element: <Dashboard /> },
       { path: '/Users-Page', element: <Users_Page /> },
-      { path: '/documentation-control/:id', element: <SOPDetail /> },
+      { path: '/documentation-control', element: <SOPDetail /> },
       { path: '/documentation-control/New_Creation_SOP', element: <New_Creation_SOP /> },
       {
         path: '/documentation-control/Document_Revision_Checklist',
