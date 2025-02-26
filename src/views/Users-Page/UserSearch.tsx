@@ -5,14 +5,15 @@ import { IconMenu2, IconSearch } from '@tabler/icons-react';
 
 type Props = {
   onClick: (event: React.MouseEvent<HTMLElement>) => void;
+  onSearchChange: (value: string) => void; // <-- جديد
 };
 
-const UserSearch: React.FC<Props> = ({ onClick }) => {
+const UserSearch: React.FC<Props> = ({ onClick, onSearchChange }) => {
   const [searchTerm, setSearchTerm] = React.useState('');
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    // يمكنك إرسال قيمة البحث إلى API أو Redux حسب الحاجة
+    onSearchChange(e.target.value); // هنا نخبر الأب
   };
 
   return (

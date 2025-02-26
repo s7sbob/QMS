@@ -2,25 +2,53 @@
 import React from 'react';
 import { Box, Typography, FormGroup, FormControlLabel, Checkbox, Divider } from '@mui/material';
 
-const UserFilter: React.FC = () => {
+type UserFilterProps = {
+  filterActive: boolean;
+  setFilterActive: (val: boolean) => void;
+  filterInactive: boolean;
+  setFilterInactive: (val: boolean) => void;
+};
+
+const UserFilter: React.FC<UserFilterProps> = ({
+  filterActive,
+  setFilterActive,
+  filterInactive,
+  setFilterInactive,
+}) => {
+  const handleActiveChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFilterActive(e.target.checked);
+  };
+
+  const handleInactiveChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFilterInactive(e.target.checked);
+  };
+
   return (
     <Box p={3}>
       <Typography variant="h6" mb={2}>
         Filter Users
       </Typography>
       <FormGroup>
-        <FormControlLabel control={<Checkbox defaultChecked />} label="Active" />
-        <FormControlLabel control={<Checkbox />} label="Inactive" />
+        <FormControlLabel
+          control={
+            <Checkbox checked={filterActive} onChange={handleActiveChange} />
+          }
+          label="Active"
+        />
+        <FormControlLabel
+          control={
+            <Checkbox checked={filterInactive} onChange={handleInactiveChange} />
+          }
+          label="Inactive"
+        />
       </FormGroup>
       <Divider sx={{ my: 3 }} />
-      <Typography variant="h6" mb={2}>
+
+      {/* يمكنك إضافة فلاتر أخرى, مثل Department */}
+      {/* <Typography variant="h6" mb={2}>
         Department
       </Typography>
-      <FormGroup>
-        <FormControlLabel control={<Checkbox defaultChecked />} label="Engineering" />
-        <FormControlLabel control={<Checkbox />} label="Support" />
-        <FormControlLabel control={<Checkbox />} label="Sales" />
-      </FormGroup>
+      <FormGroup> ... </FormGroup> */}
     </Box>
   );
 };

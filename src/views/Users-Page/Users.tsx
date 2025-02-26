@@ -6,7 +6,7 @@ import PageContainer from 'src/components/container/PageContainer';
 import Breadcrumb from 'src/layouts/full/shared/breadcrumb/Breadcrumb';
 import AppCard from 'src/components/shared/AppCard';
 
-// مكونات الفلاتر والبحث والإضافة واللائحة والتفاصيل
+// المكونات
 import UserFilter from './UserFilter';
 import UserSearch from './UserSearch';
 import UserAdd from './UserAdd';
@@ -29,10 +29,20 @@ const Users: React.FC = () => {
   // المستخدم المحدد لعرض تفاصيله
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
 
+  // **** حالات البحث والفلترة ****
+  const [searchTerm, setSearchTerm] = useState('');      // نص البحث
+  const [filterActive, setFilterActive] = useState(true);   // عرض الفعّالين؟
+  const [filterInactive, setFilterInactive] = useState(true); // عرض غير الفعّالين؟
+
+  // للتحكم بالتصميم الاستجابي
   const lgUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('lg'));
   const mdUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('md'));
 
-  // جلب المستخدمين من السيرفر
+  // جلب المستخدمين مرة واحدة عند تحميل الصفحة
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
   const loadUsers = async () => {
     try {
       const fetchedUsers = await getAllUsers();
@@ -41,11 +51,6 @@ const Users: React.FC = () => {
       console.error('Error fetching users:', error);
     }
   };
-
-  // أول ما تفتح الصفحة أو تتغير ظروفها, يجلب البيانات مرة واحدة
-  useEffect(() => {
-    loadUsers();
-  }, []);
 
   // عند الضغط على مستخدم في القائمة
   const handleSelectUser = (user: IUser) => {
@@ -59,6 +64,26 @@ const Users: React.FC = () => {
     setSelectedUser(null);
   };
 
+  // *********** منطق البحث ***********
+  // فلترة أولية بالبحث (بالاسم أو الإيميل)
+  const usersSearched = users.filter((user) => {
+    const fullName = (user.FName + ' ' + user.LName).toLowerCase();
+    const email = (user.Email || '').toLowerCase();
+    const term = searchTerm.toLowerCase();
+
+    // إذا الكلمة موجودة في الاسم أو الإيميل
+    return fullName.includes(term) || email.includes(term);
+  });
+
+  // *********** منطق الفلترة (Active/Inactive) ***********
+  const filteredUsers = usersSearched.filter((user) => {
+    // لو user.is_Active = 1 لكنه غير مفعّل في الفلتر => إخفاؤه
+    if (user.is_Active === 1 && !filterActive) return false;
+    // لو user.is_Active = 0 لكنه غير مفعّل في الفلتر => إخفاؤه
+    if (user.is_Active === 0 && !filterInactive) return false;
+    return true;
+  });
+
   return (
     <PageContainer title="Users App" description="User Management">
       <Breadcrumb title="Users App" subtitle="List Your Users" />
@@ -69,15 +94,29 @@ const Users: React.FC = () => {
           onClose={() => setLeftSidebarOpen(false)}
           sx={{
             width: drawerWidth,
-            [`& .MuiDrawer-paper`]: { width: drawerWidth, position: 'relative', zIndex: 2 },
+            [`& .MuiDrawer-paper`]: {
+              width: drawerWidth,
+              position: 'relative',
+              zIndex: 2,
+            },
             flexShrink: 0,
           }}
           variant={lgUp ? 'permanent' : 'temporary'}
         >
-          <UserFilter />
+          {/*
+            نمرر قيم الفلترة وحالة التحكم فيها:
+            - filterActive / setFilterActive
+            - filterInactive / setFilterInactive
+          */}
+          <UserFilter
+            filterActive={filterActive}
+            setFilterActive={setFilterActive}
+            filterInactive={filterInactive}
+            setFilterInactive={setFilterInactive}
+          />
         </Drawer>
 
-        {/* الوسط: (بحث + إضافة مستخدم + لائحة المستخدمين) */}
+        {/* الجزء الأوسط: (بحث + إضافة مستخدم + لائحة المستخدمين) */}
         <Box
           sx={{
             minWidth: secdrawerWidth,
@@ -85,10 +124,18 @@ const Users: React.FC = () => {
             flexShrink: 0,
           }}
         >
-          <UserSearch onClick={() => setLeftSidebarOpen(true)} />
-          {/* نمرر دالة loadUsers لإعادة التحميل بعد إضافة مستخدم جديد */}
+          {/* مكون البحث:
+              نمرر دالة لتحديث searchTerm وأيضًا onClick لفتح الشريحة اليسرى
+           */}
+          <UserSearch
+            onClick={() => setLeftSidebarOpen(true)}
+            onSearchChange={(val) => setSearchTerm(val)}
+          />
+
           <UserAdd onUserAdded={loadUsers} />
-          <UserList users={users} onSelectUser={handleSelectUser} />
+
+          {/* نمرر القائمة المُرشّحة فقط إلى UserList */}
+          <UserList users={filteredUsers} onSelectUser={handleSelectUser} />
         </Box>
 
         {/* الشريحة اليمنى (تفاصيل المستخدم) */}
@@ -104,9 +151,8 @@ const Users: React.FC = () => {
             [`& .MuiDrawer-paper`]: { width: '100%', position: 'relative' },
           }}
         >
-          {mdUp ? (
-            ''
-          ) : (
+          {/* زر للإغلاق على الشاشات الصغيرة */}
+          {!mdUp && (
             <Box sx={{ p: 3 }}>
               <Button
                 variant="outlined"
@@ -119,6 +165,7 @@ const Users: React.FC = () => {
               </Button>
             </Box>
           )}
+          {/* تفاصيل المستخدم المختار */}
           <UserDetails user={selectedUser} />
         </Drawer>
       </AppCard>

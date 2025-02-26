@@ -15,6 +15,7 @@ const BlankLayout = Loadable(lazy(() => import('../layouts/blank/BlankLayout')))
 import AuthGuard from 'src/guards/AuthGuard'; // <--  تأكد من المسار الصحيح
 
 /* ****Pages***** */
+const Documentation_Control = Loadable(lazy(() => import('../views/documentation/DocumentationControl')));
 const SOPDetail = Loadable(lazy(() => import('../views/documentation/SOPDetail')));
 const New_Creation_SOP = Loadable(lazy(() => import('../views/documentation/pages/NewCreation')));
 const Document_Revision_Checklist = Loadable(
@@ -58,7 +59,9 @@ const Router = [
     children: [
       { path: '/', element: <Dashboard /> },
       { path: '/Users-Page', element: <Users_Page /> },
-      { path: '/documentation-control', element: <SOPDetail /> },
+      { path: '/documentation-control', element: < Documentation_Control/> },
+
+      { path: '/documentation-control/:id', element: <SOPDetail /> },
       { path: '/documentation-control/New_Creation_SOP', element: <New_Creation_SOP /> },
       {
         path: '/documentation-control/Document_Revision_Checklist',
