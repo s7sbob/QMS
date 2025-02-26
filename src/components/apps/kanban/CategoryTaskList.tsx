@@ -7,7 +7,7 @@ import AddNewTaskModal from './TaskModal/AddNewTaskModal';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { KanbanDataContext } from 'src/context/kanbancontext/index';
-import axios from 'src/utils/axios';
+import axios from 'src/utils/axiosServices';
 import { Box, IconButton, Stack, Tooltip, Typography } from '@mui/material';
 
 function CategoryTaskList({ id }: any) {

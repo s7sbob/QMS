@@ -4,7 +4,7 @@ import { IconPencil, IconDotsVertical, IconTrash, IconCalendar } from '@tabler/i
 import EditTaskModal from './TaskModal/EditTaskModal';
 import { KanbanDataContext } from 'src/context/kanbancontext/index';
 import { Draggable } from 'react-beautiful-dnd';
-import axios from 'src/utils/axios';
+import axios from 'src/utils/axiosServices';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import {

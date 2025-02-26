@@ -2,20 +2,44 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Box, Menu, Avatar, Typography, Divider, Button, IconButton, Stack } from '@mui/material';
-
 import { IconMail } from '@tabler/icons-react';
-
 import ProfileImg from 'src/assets/images/profile/user-1.jpg';
 
+// استيراد مكتبة الكوكيز
+import Cookies from 'js-cookie';
+
+// لو عندك دالة logoutApi لاستدعاء /api/auth/logout من السيرفر، استوردها هنا
+// import { logoutApi } from 'src/services/authService';
+
 const Profile = () => {
-  const [anchorEl2, setAnchorEl2] = useState(null);
+  const [anchorEl2, setAnchorEl2] = useState<null | HTMLElement>(null);
+  const navigate = useNavigate();
+
   const handleClick2 = (event: any) => {
     setAnchorEl2(event.currentTarget);
   };
+
   const handleClose2 = () => {
     setAnchorEl2(null);
+  };
+
+  // دالة تسجيل الخروج
+  const handleLogout = async () => {
+    try {
+      // لو أردت استدعاء Endpoint الخروج من السيرفر، قم بإلغاء التعليق واستدعِ logoutApi:
+      // await logoutApi();
+
+      // إزالة التوكن من الكوكي
+      Cookies.remove('token');
+
+      // إعادة توجيه المستخدم لصفحة تسجيل الدخول
+      navigate('/auth/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // يمكنك عرض رسالة خطأ أو أي إجراء آخر
+    }
   };
 
   return (
@@ -27,7 +51,7 @@ const Profile = () => {
         aria-controls="msgs-menu"
         aria-haspopup="true"
         sx={{
-          ...(typeof anchorEl2 === 'object' && {
+          ...(anchorEl2 && {
             color: 'primary.main',
           }),
         }}
@@ -35,13 +59,14 @@ const Profile = () => {
       >
         <Avatar
           src={ProfileImg}
-          alt={ProfileImg}
+          alt="ProfileImg"
           sx={{
             width: 35,
             height: 35,
           }}
         />
       </IconButton>
+
       {/* ------------------------------------------- */}
       {/* Message Dropdown */}
       {/* ------------------------------------------- */}
@@ -62,7 +87,7 @@ const Profile = () => {
       >
         <Typography variant="h5">User Profile</Typography>
         <Stack direction="row" py={3} spacing={2} alignItems="center">
-          <Avatar src={ProfileImg} alt={ProfileImg} sx={{ width: 95, height: 95 }} />
+          <Avatar src={ProfileImg} alt="ProfileImg" sx={{ width: 95, height: 95 }} />
           <Box>
             <Typography variant="subtitle2" color="textPrimary" fontWeight={600}>
               Mathew Anderson
@@ -83,74 +108,11 @@ const Profile = () => {
           </Box>
         </Stack>
         <Divider />
-        {/* {dropdownData.profile.map((profile) => (
-          <Box key={profile.title}>
-            <Box sx={{ py: 2, px: 0 }} className="hover-text-primary">
-              <Link to={profile.href}>
-                <Stack direction="row" spacing={2}>
-                  <Box
-                    width="45px"
-                    height="45px"
-                    bgcolor="primary.light"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                  >
-                    <Avatar
-                      src={profile.icon}
-                      alt={profile.icon}
-                      sx={{
-                        width: 24,
-                        height: 24,
-                        borderRadius: 0,
-                      }}
-                    />
-                  </Box>
-                  <Box>
-                    <Typography
-                      variant="subtitle2"
-                      fontWeight={600}
-                      color="textPrimary"
-                      className="text-hover"
-                      noWrap
-                      sx={{
-                        width: '240px',
-                      }}
-                    >
-                      {profile.title}
-                    </Typography>
-                    <Typography
-                      color="textSecondary"
-                      variant="subtitle2"
-                      sx={{
-                        width: '240px',
-                      }}
-                      noWrap
-                    >
-                      {profile.subtitle}
-                    </Typography>
-                  </Box>
-                </Stack>
-              </Link>
-            </Box>
-          </Box>
-        ))} */}
+
+        {/* يمكنك إضافة أي عناصر أخرى هنا حسب رغبتك */}
         <Box mt={2}>
-          {/* <Box bgcolor="primary.light" p={3} mb={3} overflow="hidden" position="relative">
-            <Box display="flex" justifyContent="space-between">
-              <Box>
-                <Typography variant="h5" mb={2}>
-                  Unlimited <br />
-                  Access
-                </Typography>
-                <Button variant="contained" color="primary">
-                  Upgrade
-                </Button>
-              </Box>
-              <img src={unlimitedImg} alt="unlimited" className="signup-bg"></img>
-            </Box>
-          </Box> */}
-          <Button to="/auth/login" variant="outlined" color="primary" component={Link} fullWidth>
+          {/* عند الضغط على الزر سيتم تنفيذ handleLogout */}
+          <Button onClick={handleLogout} variant="outlined" color="primary" fullWidth>
             Logout
           </Button>
         </Box>

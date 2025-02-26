@@ -1,4 +1,3 @@
-// src/layouts/full/vertical/auth/AuthLogin.tsx
 import React, { useState } from 'react';
 import {
   Box,
@@ -10,20 +9,31 @@ import {
   FormControlLabel,
   Checkbox,
 } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { loginApi } from 'src/services/authService';
+import Cookies from 'js-cookie';
 
-interface AuthLoginProps {
-  subtext?: React.ReactNode;
-  subtitle?: React.ReactNode;
-}
-const AuthLogin: React.FC<AuthLoginProps> = () => {
+const AuthLogin: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // هنا يمكنك ربط بيانات الدخول بـ API للتحقق
-    console.log('Login data:', { username, password });
+    try {
+      const response = await loginApi({ UserName: username, Password: password });
+      console.log('Login success:', response);
+
+      // تخزين التوكن في الكوكيز
+      // يمكنك إضافة خيارات مثل مدة الانتهاء (expires) أو secure أو غيرها
+      Cookies.set('token', response.token, { expires: 7 }); // تخزين لمدة 7 أيام كمثال
+
+      // توجيه للداشبورد أو أي صفحة أخرى
+      navigate('/dashboard');
+    } catch (error: any) {
+      console.error('Login error:', error);
+      alert('اسم المستخدم أو كلمة المرور غير صحيحة!');
+    }
   };
 
   return (
@@ -64,20 +74,6 @@ const AuthLogin: React.FC<AuthLoginProps> = () => {
           Sign In
         </Button>
       </Box>
-      <Stack direction="row" spacing={1} mt={3} justifyContent="center">
-        <Typography variant="subtitle1" color="textSecondary">
-          New to Modernize?
-        </Typography>
-        <Typography
-          component={Link}
-          to="/auth/register"
-          variant="subtitle1"
-          fontWeight="500"
-          sx={{ textDecoration: 'none', color: 'primary.main' }}
-        >
-          Create an account
-        </Typography>
-      </Stack>
     </Box>
   );
 };

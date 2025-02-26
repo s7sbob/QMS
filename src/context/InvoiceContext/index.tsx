@@ -2,7 +2,7 @@
 import React, { createContext, useEffect, useState } from 'react';
 import { InvoiceList } from 'src/types/apps/invoice';
 
-import axios from '../../utils/axios';
+import axios from '../../utils/axiosServices';
 
 interface InvoiceContextType {
     invoices: InvoiceList[];

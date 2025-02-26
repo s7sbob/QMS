@@ -1,6 +1,6 @@
 
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import axios from '../../utils/axios';
+import axios from '../../utils/axiosServices';
 
 import { TodoCategory } from 'src/types/apps/kanban';
 

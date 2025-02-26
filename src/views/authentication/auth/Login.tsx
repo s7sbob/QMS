@@ -1,6 +1,8 @@
 // src/layouts/full/vertical/auth/Login2.tsx
+
 import React from 'react';
-import { Grid, Box, Card } from '@mui/material';
+import { Grid, Box, Card, Typography, Link as MuiLink } from '@mui/material';
+import { Link } from 'react-router-dom'; // لاستعمال Link الخاص بـ React Router
 import PageContainer from 'src/components/container/PageContainer';
 import Logo from 'src/layouts/full/shared/logo/Logo';
 import AuthLogin from '../authForms/AuthLogin';
@@ -35,10 +37,31 @@ const Login2: React.FC = () => {
             alignItems="center"
           >
             <Card elevation={9} sx={{ p: 4, zIndex: 1, width: '100%', maxWidth: '450px' }}>
-              <Box display="flex" alignItems="center" justifyContent="center">
+              <Box display="flex" alignItems="center" justifyContent="center" mb={2}>
                 <Logo />
               </Box>
+              
+              {/* مكوّن الفورم الخاص بتسجيل الدخول */}
               <AuthLogin />
+
+              {/* رابط الانتقال إلى صفحة التسجيل (Register) */}
+              <Box mt={3} textAlign="center">
+                <Typography variant="body2" color="textSecondary">
+                  Don’t have an account?{' '}
+                  <MuiLink
+                    component={Link}
+                    to="/auth/register"
+                    sx={{
+                      textDecoration: 'none',
+                      fontWeight: '500',
+                      color: 'primary.main',
+                    }}
+                  >
+                    Sign up
+                  </MuiLink>
+                </Typography>
+              </Box>
+
             </Card>
           </Grid>
         </Grid>

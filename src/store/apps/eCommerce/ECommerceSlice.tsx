@@ -1,4 +1,4 @@
-import axios from '../../../utils/axios';
+import axios from '../../../utils/axiosServices';
 import { filter, map } from 'lodash';
 import { createSlice } from '@reduxjs/toolkit';
 import { AppDispatch } from 'src/store/Store';

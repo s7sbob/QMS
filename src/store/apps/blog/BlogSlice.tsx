@@ -1,4 +1,4 @@
-import axios from 'src/utils/axios';
+import axios from 'src/utils/axiosServices';
 import { createSlice } from '@reduxjs/toolkit';
 import { AppDispatch } from 'src/store/Store';
 

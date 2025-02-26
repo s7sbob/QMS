@@ -1,6 +1,6 @@
 import { useState, useContext } from 'react';
 import { KanbanDataContext } from 'src/context/kanbancontext/index';
-import axios from 'src/utils/axios';
+import axios from 'src/utils/axiosServices';
 import {
   Dialog,
   DialogActions,

@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { Box, Typography, Button, Stack, TextField } from '@mui/material';
 import { Link } from 'react-router-dom';
+import { addEditUserApi } from 'src/services/userService'; // استيراد دالة الاتصال
+import { useNavigate } from 'react-router-dom';
 
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{8,}$/;
 
@@ -23,11 +25,13 @@ const AuthRegister: React.FC<AuthRegisterProps> = () => {
   });
   const [errors, setErrors] = useState<{ password?: string; confirmPassword?: string }>({});
 
+  const navigate = useNavigate();
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const newErrors: { password?: string; confirmPassword?: string } = {};
 
@@ -41,8 +45,33 @@ const AuthRegister: React.FC<AuthRegisterProps> = () => {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      // هنا يتم إرسال البيانات إلى الـ API الخاص بالتسجيل
-      console.log('Registering user:', formData);
+      try {
+        // إنشاء كائن اليوزر الذي سنرسله للـ API
+        const userToCreate = {
+          Id: '', // نرسل Id فارغ أو undefined لإنشاء مستخدم جديد
+          FName: formData.fName,
+          LName: formData.lName,
+          Email: formData.email,
+          UserName: formData.userName,
+          Password: formData.password,
+          contacts: [
+            // مثلا لو عندك هاتف وعنوان وغيرها
+            {
+              PhoneNumber: '', 
+              address: '',
+            },
+          ],
+        };
+
+        const response = await addEditUserApi(userToCreate);
+        console.log('User created:', response);
+
+        // بعد النجاح، يمكن توجيه المستخدم لصفحة أخرى
+        navigate('/auth/login2');
+      } catch (error) {
+        console.error('Registration error:', error);
+        alert('حدث خطأ أثناء تسجيل الحساب');
+      }
     }
   };
 
@@ -141,7 +170,7 @@ const AuthRegister: React.FC<AuthRegisterProps> = () => {
         </Typography>
         <Typography
           component={Link}
-          to="/auth/login2"
+          to="/auth/login"
           variant="subtitle1"
           fontWeight="500"
           sx={{ textDecoration: 'none', color: 'primary.main' }}

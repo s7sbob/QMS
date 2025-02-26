@@ -5,6 +5,7 @@ import React, { lazy } from 'react';
 import { Navigate } from 'react-router-dom';
 import Loadable from '../layouts/full/shared/loadable/Loadable';
 import Dashboard from '../views/dashboard/Dashboard';
+import TwoSteps from 'src/views/authentication/auth/TwoSteps';
 
 /* ***Layouts**** */
 const FullLayout = Loadable(lazy(() => import('../layouts/full/FullLayout')));
@@ -142,15 +143,12 @@ const WidgetBanners = Loadable(lazy(() => import('../views/widgets/banners/Widge
 const WidgetCharts = Loadable(lazy(() => import('../views/widgets/charts/WidgetCharts')));
 
 // authentication
-const Login = Loadable(lazy(() => import('../views/authentication/auth1/Login')));
-const Login2 = Loadable(lazy(() => import('../views/authentication/auth2/Login2')));
-const Register2 = Loadable(lazy(() => import('../views/authentication/auth2/Register2')));
-const ForgotPassword = Loadable(lazy(() => import('../views/authentication/auth1/ForgotPassword')));
+const Login = Loadable(lazy(() => import('../views/authentication/auth/Login')));
+const Register2 = Loadable(lazy(() => import('../views/authentication/auth/Register')));
+const ForgotPassword = Loadable(lazy(() => import('../views/authentication/auth/ForgotPassword')));
 const ForgotPassword2 = Loadable(
-  lazy(() => import('../views/authentication/auth2/ForgotPassword2')),
+  lazy(() => import('../views/authentication/auth/ForgotPassword')),
 );
-const TwoSteps = Loadable(lazy(() => import('../views/authentication/auth1/TwoSteps')));
-const TwoSteps2 = Loadable(lazy(() => import('../views/authentication/auth2/TwoSteps2')));
 const Error = Loadable(lazy(() => import('../views/authentication/Error')));
 const Maintenance = Loadable(lazy(() => import('../views/authentication/Maintenance')));
 
@@ -275,14 +273,12 @@ const Router = [
     element: <BlankLayout />,
     children: [
       { path: '/auth/404', element: <Error /> },
-      { path: '/auth/login2', element: <Login /> },
-      { path: '/auth/login', element: <Login2 /> },
+      { path: '/auth/login', element: <Login /> },
       { path: '/auth/register2', element: <Register2 /> },
       { path: '/auth/register', element: <Register2 /> },
       { path: '/auth/forgot-password2', element: <ForgotPassword /> },
       { path: '/auth/forgot-password', element: <ForgotPassword2 /> },
       { path: '/auth/two-steps', element: <TwoSteps /> },
-      { path: '/auth/two-steps2', element: <TwoSteps2 /> },
       { path: '/auth/maintenance', element: <Maintenance /> },
       { path: '/landingpage', element: <Landingpage /> },
       { path: '/frontend-pages/homepage', element: <Homepage /> },
