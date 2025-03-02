@@ -26,6 +26,12 @@ const Distribution_form = Loadable(lazy(() => import('../views/documentation/pag
 
 const Users_Page = Loadable(lazy(() => import('../views/Users-Page/Users')));
 
+
+
+/* **** ITManagementPage ***** */
+
+const ITManagementPage = Loadable(lazy(() => import('../views/ITManagement/ITManagementPage')));
+
 // authentication
 const Login = Loadable(lazy(() => import('../views/authentication/auth/Login')));
 const Register2 = Loadable(lazy(() => import('../views/authentication/auth/Register')));
@@ -69,6 +75,8 @@ const Router = [
       },
       { path: '/documentation-control/CancellationForm', element: <CancellationForm /> },
       { path: '/documentation-control/distribution_form', element: <Distribution_form /> },
+      { path: '/ITManagementPage', element: <ITManagementPage /> },
+
       // لو كتب أي شيء مش معروف نوجهه لصفحة 404
       { path: '*', element: <Navigate to="/auth/404" /> },
     ],

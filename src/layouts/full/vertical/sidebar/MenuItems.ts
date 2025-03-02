@@ -16,7 +16,7 @@ interface MenuitemsType {
   variant?: string;
   external?: boolean;
 }
-import { IconUserCircle, IconCertificate } from '@tabler/icons-react';
+import { IconUserCircle, IconCertificate, IconHierarchy } from '@tabler/icons-react';
 
 const Menuitems: MenuitemsType[] = [
   {
@@ -100,6 +100,14 @@ const Menuitems: MenuitemsType[] = [
     icon: IconUserCircle,
     chipColor: 'secondary',
     href: '/Users-Page',
+  },
+
+  {
+    id: uniqueId(),
+    title: 'IT Management Page',
+    icon: IconHierarchy,
+    chipColor: 'secondary',
+    href: '/ITManagementPage',
   },
 
   // {
