@@ -1,9 +1,22 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // src/layouts/full/vertical/auth/AuthRegister.tsx
+
 import React, { useState } from 'react';
-import { Box, Typography, Button, Stack, TextField } from '@mui/material';
-import { Link } from 'react-router-dom';
-import { addEditUserApi } from 'src/services/userService'; // استيراد دالة الاتصال
-import { useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Typography,
+  Button,
+  Stack,
+  TextField
+} from '@mui/material';
+import { Link, useNavigate } from 'react-router-dom';
+import { addEditUserApi } from 'src/services/userService';
+import {
+  LocalizationProvider,
+  DesktopDatePicker,
+} from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs from 'dayjs';
 
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{8,}$/;
 
@@ -31,6 +44,25 @@ const AuthRegister: React.FC<AuthRegisterProps> = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // التحكم في رفع الملف + عرض المعاينة
+  const [previewImg, setPreviewImg] = useState<string>(''); // لعرض معاينة الصورة
+  
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64Str = reader.result as string;
+        setFormData((prev) => ({
+          ...prev,
+          userImgUrl: base64Str,
+        }));
+        setPreviewImg(base64Str);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const newErrors: { password?: string; confirmPassword?: string } = {};
@@ -48,16 +80,17 @@ const AuthRegister: React.FC<AuthRegisterProps> = () => {
       try {
         // إنشاء كائن اليوزر الذي سنرسله للـ API
         const userToCreate = {
-          Id: '', // نرسل Id فارغ أو undefined لإنشاء مستخدم جديد
+          Id: '',
           FName: formData.fName,
           LName: formData.lName,
           Email: formData.email,
           UserName: formData.userName,
           Password: formData.password,
+          userImg_Url: formData.userImgUrl, 
+          dateOfBirth: formData.dateOfBirth,
           contacts: [
-            // مثلا لو عندك هاتف وعنوان وغيرها
             {
-              PhoneNumber: '', 
+              PhoneNumber: '',
               address: '',
             },
           ],
@@ -65,8 +98,6 @@ const AuthRegister: React.FC<AuthRegisterProps> = () => {
 
         const response = await addEditUserApi(userToCreate);
         console.log('User created:', response);
-
-        // بعد النجاح، يمكن توجيه المستخدم لصفحة أخرى
         navigate('/auth/login2');
       } catch (error) {
         console.error('Registration error:', error);
@@ -76,7 +107,11 @@ const AuthRegister: React.FC<AuthRegisterProps> = () => {
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit} noValidate>
+    <Box
+      component="form"
+      onSubmit={handleSubmit}
+      noValidate
+    >
       <Stack spacing={2}>
         <TextField
           required
@@ -96,17 +131,31 @@ const AuthRegister: React.FC<AuthRegisterProps> = () => {
           variant="outlined"
           fullWidth
         />
-        <TextField
-          required
-          label="Date of Birth"
-          name="dateOfBirth"
-          type="date"
-          value={formData.dateOfBirth}
-          onChange={handleChange}
-          InputLabelProps={{ shrink: true }}
-          variant="outlined"
-          fullWidth
-        />
+
+        {/* Date of Birth عبر Picker */}
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <DesktopDatePicker
+            label="Date of Birth"
+            inputFormat="YYYY-MM-DD"
+            value={formData.dateOfBirth ? dayjs(formData.dateOfBirth) : null}
+            onChange={(newValue) => {
+              setFormData((prev) => ({
+                ...prev,
+                dateOfBirth: newValue
+                  ? newValue.format('YYYY-MM-DD')
+                  : '',
+              }));
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                required
+                fullWidth
+              />
+            )}
+          />
+        </LocalizationProvider>
+
         <TextField
           required
           label="Username"
@@ -150,17 +199,48 @@ const AuthRegister: React.FC<AuthRegisterProps> = () => {
           error={!!errors.confirmPassword}
           helperText={errors.confirmPassword}
         />
-        <TextField
-          label="Image URL (optional)"
-          name="userImgUrl"
-          value={formData.userImgUrl}
-          onChange={handleChange}
-          variant="outlined"
-          fullWidth
-        />
+
+        {/* حقل رفع ملف للصورة + معاينة */}
+        <Box>
+          <Typography variant="body1" sx={{ mb: 1 }}>
+            Upload Profile Image (optional)
+          </Typography>
+          <Button variant="outlined" component="label">
+            Select File
+            <input
+              type="file"
+              hidden
+              onChange={handleFileChange}
+            />
+          </Button>
+
+          {/* معاينة الصورة */}
+          {previewImg && (
+            <Box mt={2}>
+              <Typography variant="subtitle2">Preview:</Typography>
+              <img
+                src={previewImg}
+                alt="Preview"
+                style={{
+                  maxWidth: '100px',
+                  border: '1px solid #ccc',
+                  borderRadius: '4px',
+                  marginTop: '8px'
+                }}
+              />
+            </Box>
+          )}
+        </Box>
+
       </Stack>
       <Box mt={3}>
-        <Button type="submit" color="primary" variant="contained" size="large" fullWidth>
+        <Button
+          type="submit"
+          color="primary"
+          variant="contained"
+          size="large"
+          fullWidth
+        >
           Sign Up
         </Button>
       </Box>
