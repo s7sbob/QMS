@@ -8,39 +8,34 @@ import {
   TextField,
   Button,
   Typography,
-  List, 
-  ListItem, 
-  ListItemText, 
+  List,
+  ListItem,
+  ListItemText,
   ListItemSecondaryAction,
-  IconButton
+  IconButton,
 } from '@mui/material';
 import { IconUpload, IconTrash } from '@tabler/icons-react';
 
 const NewCreation: React.FC = () => {
-  // دالة الطباعة
   const handlePrint = () => {
     window.print();
   };
 
   const [attachments, setAttachments] = useState<File[]>([]);
 
-
-  // دالة إرسال النموذج
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // هنا يمكنك إضافة منطق الإرسال (API call) بعد الانتهاء من واجهة المستخدم
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
-      setAttachments(prev => [...prev, ...Array.from(event.target.files!)]);
+      setAttachments((prev) => [...prev, ...Array.from(event.target.files!)]);
     }
   };
-  
+
   const handleFileDelete = (index: number) => {
-    setAttachments(prev => prev.filter((_, i) => i !== index));
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
   };
-  
 
   return (
     <Paper sx={{ p: 4, m: 2 }}>
@@ -186,43 +181,40 @@ const NewCreation: React.FC = () => {
                 variant="outlined"
                 margin="normal"
               />
-<Box>
-  <Typography variant="subtitle1" gutterBottom>المرفقـــات:</Typography>
-  <Button
-    variant="outlined"
-    component="label"
-    startIcon={<IconUpload />}
-    sx={{ mb: 2 }}
-  >
-    رفع الملفات
-    <input
-      type="file"
-      multiple
-      hidden
-      onChange={handleFileUpload}
-    />
-  </Button>
-  
-  <List>
-    {attachments.map((file, index) => (
-      <ListItem key={index}>
-        <ListItemText 
-          primary={file.name}
-          secondary={`${(file.size / 1024 / 1024).toFixed(2)} MB`}
-        />
-        <ListItemSecondaryAction>
-          <IconButton 
-            edge="end" 
-            onClick={() => handleFileDelete(index)}
-            color="error"
-          >
-            <IconTrash size={20} />
-          </IconButton>
-        </ListItemSecondaryAction>
-      </ListItem>
-    ))}
-  </List>
-</Box>
+              <Box>
+                <Typography variant="subtitle1" gutterBottom>
+                  المرفقـــات:
+                </Typography>
+                <Button
+                  variant="outlined"
+                  component="label"
+                  startIcon={<IconUpload />}
+                  sx={{ mb: 2 }}
+                >
+                  رفع الملفات
+                  <input type="file" multiple hidden onChange={handleFileUpload} />
+                </Button>
+
+                <List>
+                  {attachments.map((file, index) => (
+                    <ListItem key={index}>
+                      <ListItemText
+                        primary={file.name}
+                        secondary={`${(file.size / 1024 / 1024).toFixed(2)} MB`}
+                      />
+                      <ListItemSecondaryAction>
+                        <IconButton
+                          edge="end"
+                          onClick={() => handleFileDelete(index)}
+                          color="error"
+                        >
+                          <IconTrash size={20} />
+                        </IconButton>
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                  ))}
+                </List>
+              </Box>
             </Grid>
 
             {/* العمود الإنجليزي */}
@@ -348,7 +340,7 @@ const NewCreation: React.FC = () => {
                 variant="outlined"
                 margin="normal"
               />
-                <TextField
+              <TextField
                 fullWidth
                 label="Reference Documents:"
                 id="ReferenceDocumentsEn"
@@ -358,55 +350,50 @@ const NewCreation: React.FC = () => {
                 variant="outlined"
                 margin="normal"
               />
-<Box>
-  <Typography variant="subtitle1" gutterBottom>Attachments:</Typography>
-  <Button
-    variant="outlined"
-    component="label"
-    startIcon={<IconUpload />}
-    sx={{ mb: 2 }}
-  >
-    Upload Files
-    <input
-      type="file"
-      multiple
-      hidden
-      onChange={handleFileUpload}
-    />
-  </Button>
-  
-  <List>
-    {attachments.map((file, index) => (
-      <ListItem key={index}>
-        <ListItemText 
-          primary={file.name}
-          secondary={`${(file.size / 1024 / 1024).toFixed(2)} MB`}
-        />
-        <ListItemSecondaryAction>
-          <IconButton 
-            edge="end" 
-            onClick={() => handleFileDelete(index)}
-            color="error"
-          >
-            <IconTrash size={20} />
-          </IconButton>
-        </ListItemSecondaryAction>
-      </ListItem>
-    ))}
-  </List>
-</Box>
+              <Box>
+                <Typography variant="subtitle1" gutterBottom>
+                  Attachments:
+                </Typography>
+                <Button
+                  variant="outlined"
+                  component="label"
+                  startIcon={<IconUpload />}
+                  sx={{ mb: 2 }}
+                >
+                  Upload Files
+                  <input type="file" multiple hidden onChange={handleFileUpload} />
+                </Button>
 
-
+                <List>
+                  {attachments.map((file, index) => (
+                    <ListItem key={index}>
+                      <ListItemText
+                        primary={file.name}
+                        secondary={`${(file.size / 1024 / 1024).toFixed(2)} MB`}
+                      />
+                      <ListItemSecondaryAction>
+                        <IconButton
+                          edge="end"
+                          onClick={() => handleFileDelete(index)}
+                          color="error"
+                        >
+                          <IconTrash size={20} />
+                        </IconButton>
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                  ))}
+                </List>
+              </Box>
             </Grid>
           </Grid>
 
           {/* الأزرار */}
           <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2 }}>
             <Button variant="outlined" onClick={handlePrint}>
-              Print
+              cancel
             </Button>
             <Button variant="contained" type="submit">
-              Save
+              submit
             </Button>
           </Box>
         </form>

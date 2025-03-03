@@ -4,9 +4,8 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 
 const axiosServices = axios.create({
-  baseURL: 'http://localhost:3000', 
-  // أو تمررها من ملف env
-  // baseURL: process.env.REACT_APP_API_BASE_URL
+  // baseURL: 'http://localhost:3000',
+  baseURL: 'https://qualitylead-qms.duckdns.org:3000',
 });
 
 // نسمح بإرسال الكوكيز تلقائياً مع الطلبات في حال كان السيرفر يدعم CORS
@@ -23,7 +22,7 @@ axiosServices.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 // Interceptor لمعالجة الأخطاء أو الاستجابة
@@ -32,7 +31,7 @@ axiosServices.interceptors.response.use(
   (error) => {
     // يمكنك إضافة لوجيك لمعالجة الأخطاء هنا
     return Promise.reject(error);
-  }
+  },
 );
 
 export default axiosServices;
