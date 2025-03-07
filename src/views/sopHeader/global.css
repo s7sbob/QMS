@@ -1,0 +1,12 @@
+/* يمكنك وضع أي تنسيقات عامة للموقع أو للصفحة ككل */
+@page {
+    size: A4;
+    margin: 20mm;
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+  }
+  

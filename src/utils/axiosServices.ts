@@ -5,7 +5,7 @@ import Cookies from 'js-cookie';
 
 const axiosServices = axios.create({
   // baseURL: 'http://localhost:3000',
-  baseURL: 'https://qualitylead-qms.duckdns.org:3000',
+  baseURL: 'http://localhost:3000',
 });
 
 // نسمح بإرسال الكوكيز تلقائياً مع الطلبات في حال كان السيرفر يدعم CORS

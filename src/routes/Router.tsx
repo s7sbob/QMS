@@ -13,7 +13,7 @@ const BlankLayout = Loadable(lazy(() => import('../layouts/blank/BlankLayout')))
 
 /* *** Guards (الحارس) *** */
 import AuthGuard from 'src/guards/AuthGuard'; // <--  تأكد من المسار الصحيح
-import SOPDocument from 'src/views/SOP/SOPDocument';
+import SOPDocument from 'src/views/sopPurpose&Definition/App';
 
 /* ****Pages***** */
 const Documentation_Control = Loadable(lazy(() => import('../views/documentation/DocumentationControl')));
