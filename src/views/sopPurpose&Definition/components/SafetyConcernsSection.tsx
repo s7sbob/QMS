@@ -1,7 +1,7 @@
+// src/components/SafetyConcernsSection.tsx
+
 import React, { useEffect, useState } from "react";
 import axiosServices from "src/utils/axiosServices";
-
-// استيراد مكونات MUI (أو حسب ما تستخدم)
 import {
   Table,
   TableBody,
@@ -29,7 +29,7 @@ interface Modification {
   change: string;
 }
 
-interface Purpose {
+interface SafetyConcern {
   Id: string;
   Content_en: string;
   Content_ar: string;
@@ -44,66 +44,65 @@ interface Purpose {
   modificationLog?: Modification[];
 }
 
-const PurposeSection: React.FC = () => {
-  const [purposes, setPurposes] = useState<Purpose[]>([]);
-  const [selectedPurpose, setSelectedPurpose] = useState<Purpose | null>(null);
+const SafetyConcernsSection: React.FC = () => {
+  const [safetyConcerns, setSafetyConcerns] = useState<SafetyConcern[]>([]);
+  const [selectedItem, setSelectedItem] = useState<SafetyConcern | null>(null);
   const [openDialog, setOpenDialog] = useState<boolean>(false);
 
-  // الحقول التي سيتم التعديل عليها
+  // حقول التعديل
   const [editContentEn, setEditContentEn] = useState<string>("");
   const [editContentAr, setEditContentAr] = useState<string>("");
 
-  // جلب بيانات الـ Purpose عند تحميل المكون
   useEffect(() => {
     axiosServices
-      .get("/api/soppurpose/getAllSop-Purpose")
+      .get("/api/sopSafetyConcerns/getAllSop-SafetyConcerns")
       .then((res) => {
-        setPurposes(res.data);
+        setSafetyConcerns(res.data);
       })
-      .catch((error) => console.error("Error fetching purposes:", error));
+      .catch((error) =>
+        console.error("Error fetching safety concerns:", error)
+      );
   }, []);
 
-  // عند النقر المزدوج على صف في الجدول لعرض التفاصيل
   const handleDoubleClick = (id: string) => {
     axiosServices
-      .get(`/api/soppurpose/getSop-Purpose/${id}`)
+      .get(`/api/sopSafetyConcerns/getSop-SafetyConcerns/${id}`)
       .then((res) => {
-        setSelectedPurpose(res.data);
+        setSelectedItem(res.data);
         setEditContentEn(res.data.Content_en);
         setEditContentAr(res.data.Content_ar);
         setOpenDialog(true);
       })
-      .catch((error) => console.error("Error fetching purpose:", error));
+      .catch((error) => console.error("Error fetching item:", error));
   };
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
-    setSelectedPurpose(null);
+    setSelectedItem(null);
   };
 
-  // حفظ التعديلات
   const handleSave = () => {
-    if (!selectedPurpose) return;
+    if (!selectedItem) return;
 
     axiosServices
-      .put(`/api/soppurpose/updateSop-Purpose/${selectedPurpose.Id}`, {
+      .put(`/api/sopSafetyConcerns/updateSop-SafetyConcerns/${selectedItem.Id}`, {
         Content_en: editContentEn,
         Content_ar: editContentAr,
       })
       .then((res) => {
-        // تحديث القائمة بعد الحفظ
-        setPurposes((prev) =>
-          prev.map((pur) => (pur.Id === selectedPurpose.Id ? res.data : pur))
+        // تحديث القائمة
+        setSafetyConcerns((prev) =>
+          prev.map((i) => (i.Id === selectedItem.Id ? res.data : i))
         );
         handleCloseDialog();
       })
-      .catch((error) => console.error("Error updating purpose:", error));
+      .catch((error) => console.error("Error updating item:", error));
   };
 
   return (
     <Box sx={{ mt: 2, fontFamily: "Arial, sans-serif" }}>
       <Typography variant="h6" gutterBottom>
-        1. Purpose:
+        6. Safety Concerns:
       </Typography>
 
       <TableContainer component={Paper} sx={{ mt: 1 }}>
@@ -122,16 +121,16 @@ const PurposeSection: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {purposes.map((pur) => (
+            {safetyConcerns.map((item) => (
               <TableRow
-                key={pur.Id}
-                onDoubleClick={() => handleDoubleClick(pur.Id)}
+                key={item.Id}
+                onDoubleClick={() => handleDoubleClick(item.Id)}
                 hover
                 sx={{ cursor: "pointer" }}
               >
-                <TableCell>{pur.Content_en}</TableCell>
+                <TableCell>{item.Content_en}</TableCell>
                 <TableCell align="right" style={{ direction: "rtl" }}>
-                  {pur.Content_ar}
+                  {item.Content_ar}
                 </TableCell>
               </TableRow>
             ))}
@@ -139,29 +138,29 @@ const PurposeSection: React.FC = () => {
         </Table>
       </TableContainer>
 
-      {/* Dialog للتعديل وعرض التفاصيل */}
+      {/* Dialog للتعديل */}
       <Dialog
         open={openDialog}
         onClose={handleCloseDialog}
         fullWidth
         maxWidth="md"
       >
-        <DialogTitle>تفاصيل الغرض</DialogTitle>
+        <DialogTitle>تفاصيل الـ Safety Concerns</DialogTitle>
         <DialogContent dividers>
-          {selectedPurpose && (
+          {selectedItem && (
             <Box>
               <Typography variant="subtitle1" gutterBottom>
-                <strong>Id:</strong> {selectedPurpose.Id}
+                <strong>Id:</strong> {selectedItem.Id}
               </Typography>
               <Typography variant="subtitle1" gutterBottom>
-                <strong>Version:</strong> {selectedPurpose.Version}
+                <strong>Version:</strong> {selectedItem.Version}
               </Typography>
               <Typography variant="subtitle1" gutterBottom>
-                <strong>Crt_Date:</strong> {selectedPurpose.Crt_Date}
+                <strong>Crt_Date:</strong> {selectedItem.Crt_Date}
               </Typography>
               <Typography variant="subtitle1" gutterBottom>
                 <strong>Modified_Date:</strong>{" "}
-                {selectedPurpose.Modified_Date || "N/A"}
+                {selectedItem.Modified_Date || "N/A"}
               </Typography>
 
               <Stack spacing={2} sx={{ mt: 2 }}>
@@ -184,13 +183,16 @@ const PurposeSection: React.FC = () => {
                 />
               </Stack>
 
-              {selectedPurpose.modificationLog && (
+              {selectedItem.modificationLog && (
                 <Box sx={{ mt: 2 }}>
                   <Typography variant="h6">سجل التعديلات:</Typography>
                   <List>
-                    {selectedPurpose.modificationLog.map((log, index) => (
+                    {selectedItem.modificationLog.map((log, index) => (
                       <ListItem key={index} disablePadding>
-                        <ListItemText primary={log.change} secondary={log.date} />
+                        <ListItemText
+                          primary={log.change}
+                          secondary={log.date}
+                        />
                       </ListItem>
                     ))}
                   </List>
@@ -212,4 +214,4 @@ const PurposeSection: React.FC = () => {
   );
 };
 
-export default PurposeSection;
+export default SafetyConcernsSection;

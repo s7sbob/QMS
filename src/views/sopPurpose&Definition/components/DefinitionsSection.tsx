@@ -1,9 +1,6 @@
-// src/components/DefinitionsSection.tsx
-
 import React, { useEffect, useState } from "react";
 import axiosServices from "src/utils/axiosServices";
 
-// استيراد مكونات MUI
 import {
   Table,
   TableBody,
@@ -26,13 +23,11 @@ import {
   Stack,
 } from "@mui/material";
 
-// واجهة سجل التعديلات
 interface Modification {
   date: string;
   change: string;
 }
 
-// واجهة بيانات الـ Definition
 interface Definition {
   Id: string;
   Content_en: string;
@@ -53,11 +48,10 @@ const DefinitionsSection: React.FC = () => {
   const [selectedDefinition, setSelectedDefinition] = useState<Definition | null>(null);
   const [openDialog, setOpenDialog] = useState<boolean>(false);
 
-  // الحقول التي سيتم التعديل عليها
   const [editContentEn, setEditContentEn] = useState<string>("");
   const [editContentAr, setEditContentAr] = useState<string>("");
 
-  // جلب جميع التعريفات عند تحميل المكون
+  // جلب بيانات Definitions
   useEffect(() => {
     axiosServices
       .get("/api/sopDefinition/getAllSop-Definition")
@@ -67,13 +61,11 @@ const DefinitionsSection: React.FC = () => {
       .catch((error) => console.error("Error fetching definitions:", error));
   }, []);
 
-  // عند النقر المزدوج على صف في الجدول
   const handleDoubleClick = (id: string) => {
     axiosServices
       .get(`/api/sopDefinition/getSop-Definition/${id}`)
       .then((res) => {
         setSelectedDefinition(res.data);
-        // تعبئة الحقول بالقيم الحالية
         setEditContentEn(res.data.Content_en);
         setEditContentAr(res.data.Content_ar);
         setOpenDialog(true);
@@ -81,13 +73,11 @@ const DefinitionsSection: React.FC = () => {
       .catch((error) => console.error("Error fetching definition:", error));
   };
 
-  // إغلاق الـ Dialog
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setSelectedDefinition(null);
   };
 
-  // حفظ التعديل وإرساله للـ API
   const handleSave = () => {
     if (!selectedDefinition) return;
 
@@ -97,7 +87,7 @@ const DefinitionsSection: React.FC = () => {
         Content_ar: editContentAr,
       })
       .then((res) => {
-        // تحديث القائمة في الواجهة
+        // تحديث القائمة
         setDefinitions((prev) =>
           prev.map((def) => (def.Id === selectedDefinition.Id ? res.data : def))
         );
@@ -116,8 +106,13 @@ const DefinitionsSection: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: "bold", width: "50%" }}>English Content</TableCell>
-              <TableCell sx={{ fontWeight: "bold", width: "50%" }} align="right">
+              <TableCell sx={{ fontWeight: "bold", width: "50%" }}>
+                English Content
+              </TableCell>
+              <TableCell
+                sx={{ fontWeight: "bold", width: "50%" }}
+                align="right"
+              >
                 المحتوى العربي
               </TableCell>
             </TableRow>
@@ -131,7 +126,7 @@ const DefinitionsSection: React.FC = () => {
                 sx={{ cursor: "pointer" }}
               >
                 <TableCell>{def.Content_en}</TableCell>
-                <TableCell align="right" sx={{ direction: "rtl" }}>
+                <TableCell align="right" style={{ direction: "rtl" }}>
                   {def.Content_ar}
                 </TableCell>
               </TableRow>
@@ -140,7 +135,7 @@ const DefinitionsSection: React.FC = () => {
         </Table>
       </TableContainer>
 
-      {/* Dialog لعرض التفاصيل والتعديل */}
+      {/* Dialog للتعديل */}
       <Dialog
         open={openDialog}
         onClose={handleCloseDialog}
@@ -151,7 +146,6 @@ const DefinitionsSection: React.FC = () => {
         <DialogContent dividers>
           {selectedDefinition && (
             <Box>
-              {/* عرض معلومات عامة */}
               <Typography variant="subtitle1" gutterBottom>
                 <strong>Id:</strong> {selectedDefinition.Id}
               </Typography>
@@ -166,7 +160,6 @@ const DefinitionsSection: React.FC = () => {
                 {selectedDefinition.Modified_Date || "N/A"}
               </Typography>
 
-              {/* حقول التعديل */}
               <Stack spacing={2} sx={{ mt: 2 }}>
                 <TextField
                   label="English Content"
@@ -181,21 +174,19 @@ const DefinitionsSection: React.FC = () => {
                   minRows={2}
                   value={editContentAr}
                   onChange={(e) => setEditContentAr(e.target.value)}
-                  inputProps={{ style: { textAlign: "right", direction: "rtl" } }}
+                  inputProps={{
+                    style: { textAlign: "right", direction: "rtl" },
+                  }}
                 />
               </Stack>
 
-              {/* عرض سجل التعديلات إن وجد */}
               {selectedDefinition.modificationLog && (
                 <Box sx={{ mt: 2 }}>
                   <Typography variant="h6">سجل التعديلات:</Typography>
                   <List>
                     {selectedDefinition.modificationLog.map((log, index) => (
                       <ListItem key={index} disablePadding>
-                        <ListItemText
-                          primary={log.change}
-                          secondary={log.date}
-                        />
+                        <ListItemText primary={log.change} secondary={log.date} />
                       </ListItem>
                     ))}
                   </List>

@@ -1,4 +1,3 @@
-// src/components/PreparedBySection.tsx
 import React from "react";
 
 interface PreparedBySectionProps {
