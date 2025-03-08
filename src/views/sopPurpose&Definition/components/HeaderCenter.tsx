@@ -1,13 +1,19 @@
 // src/components/HeaderCenter.tsx
 import React from "react";
+import { SopHeader } from "../types/SopHeader";
 
-const HeaderCenter: React.FC = () => {
+interface HeaderCenterProps {
+  headerData?: SopHeader | null;
+}
+
+const HeaderCenter: React.FC<HeaderCenterProps> = ({ headerData }) => {
+  const docTitle = headerData?.Doc_Title_en || "Documentation System";
+
   return (
     <div style={{ textAlign: "center" }}>
       <div style={{ fontWeight: "bold", fontSize: "16px" }}>
-        Document Title: Documentation System
+        Document Title: {docTitle}
       </div>
-      {/* يمكن إضافة سطر إضافي أو تفاصيل أخرى حسب الحاجة */}
     </div>
   );
 };

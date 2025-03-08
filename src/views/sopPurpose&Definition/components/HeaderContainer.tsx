@@ -3,8 +3,13 @@ import React from "react";
 import HeaderLeft from "./HeaderLeft";
 import HeaderCenter from "./HeaderCenter";
 import HeaderRight from "./HeaderRight";
+import { SopHeader } from "../types/SopHeader";
 
-const HeaderContainer: React.FC = () => {
+interface HeaderContainerProps {
+  headerData?: SopHeader | null;
+}
+
+const HeaderContainer: React.FC<HeaderContainerProps> = ({ headerData }) => {
   return (
     <div
       style={{
@@ -16,9 +21,9 @@ const HeaderContainer: React.FC = () => {
         fontFamily: "Arial, sans-serif",
       }}
     >
-      <HeaderLeft />
-      <HeaderCenter />
-      <HeaderRight />
+      <HeaderLeft headerData={headerData} />
+      <HeaderCenter headerData={headerData} />
+      <HeaderRight headerData={headerData} />
     </div>
   );
 };
