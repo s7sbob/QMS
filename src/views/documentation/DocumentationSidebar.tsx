@@ -26,7 +26,8 @@ const DocumentationSidebar: React.FC = () => {
   const navigate = useNavigate();
 
   const handleNavigate = (path: string) => {
-    // يمكنك تعديل هذا السطر إذا أردت فتح روابط خارجية باستخدام window.open
+    // يمكنك تعديل هذا السطر إذا أردت فتح روابط خارجية في نافذة منفصلة:
+    // window.open(path, '_blank');
     navigate(path);
   };
 

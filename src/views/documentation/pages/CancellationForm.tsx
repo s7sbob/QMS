@@ -12,6 +12,7 @@ import {
   FormGroup,
   Box,
 } from '@mui/material';
+import axiosServices from 'src/utils/axiosServices';
 
 interface FormData {
   date: string;
@@ -79,25 +80,29 @@ const CancellationForm: React.FC = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // هنا يمكنك استدعاء API لإرسال البيانات إلى الـ backend
-    console.log('Cancellation Form Data:', formData);
+    try {
+      // Endpoint وهمي
+      // await axiosServices.post('/api/cancellation-request', formData);
+      console.log('Cancellation Form Data:', formData);
+      alert('تم إرسال طلب التغيير/الإلغاء بنجاح (مثال وهمي)!');
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
     <Container sx={{ py: 4 }}>
       <Paper sx={{ p: 3 }}>
-      <Box component="header" sx={{ textAlign: 'center', mb: 3 }}>
-
-        <Typography variant="h4" gutterBottom>
-          Change / Cancellation Request
-        </Typography>
+        <Box component="header" sx={{ textAlign: 'center', mb: 3 }}>
+          <Typography variant="h4" gutterBottom>
+            Change / Cancellation Request
+          </Typography>
         </Box>
 
         <Box component="form" onSubmit={handleSubmit} noValidate>
           <Grid container spacing={2}>
-            {/* تاريخ الطلب */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -110,7 +115,6 @@ const CancellationForm: React.FC = () => {
                 onChange={handleChange}
               />
             </Grid>
-            {/* القسم المطلوب */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -121,7 +125,6 @@ const CancellationForm: React.FC = () => {
                 onChange={handleChange}
               />
             </Grid>
-            {/* عنوان الوثيقة */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -132,7 +135,6 @@ const CancellationForm: React.FC = () => {
                 onChange={handleChange}
               />
             </Grid>
-            {/* كود الوثيقة */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -143,7 +145,6 @@ const CancellationForm: React.FC = () => {
                 onChange={handleChange}
               />
             </Grid>
-            {/* الإصدار الحالي */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -154,7 +155,6 @@ const CancellationForm: React.FC = () => {
                 onChange={handleChange}
               />
             </Grid>
-            {/* تاريخ الإصدار الحالي */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -167,7 +167,6 @@ const CancellationForm: React.FC = () => {
                 onChange={handleChange}
               />
             </Grid>
-            {/* أسباب التغيير / الإلغاء */}
             <Grid item xs={12}>
               <Typography variant="subtitle1" gutterBottom>
                 Reason for Change/Cancellation:
@@ -189,7 +188,6 @@ const CancellationForm: React.FC = () => {
                 ))}
               </FormGroup>
             </Grid>
-            {/* سبب التغيير / الإلغاء */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -202,7 +200,6 @@ const CancellationForm: React.FC = () => {
                 onChange={handleChange}
               />
             </Grid>
-            {/* وصف التغيير */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -215,7 +212,6 @@ const CancellationForm: React.FC = () => {
                 onChange={handleChange}
               />
             </Grid>
-            {/* التاريخ المقترح لتطبيق التغييرات */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -228,7 +224,6 @@ const CancellationForm: React.FC = () => {
                 onChange={handleChange}
               />
             </Grid>
-            {/* الطلب من */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -239,7 +234,6 @@ const CancellationForm: React.FC = () => {
                 onChange={handleChange}
               />
             </Grid>
-            {/* مدير القسم */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -250,7 +244,6 @@ const CancellationForm: React.FC = () => {
                 onChange={handleChange}
               />
             </Grid>
-            {/* قرار مدير الجودة */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth

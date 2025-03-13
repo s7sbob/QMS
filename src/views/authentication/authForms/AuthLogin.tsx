@@ -1,3 +1,5 @@
+// src/layouts/full/vertical/auth/authForms/AuthLogin.tsx
+
 import React, { useState } from 'react';
 import {
   Box,
@@ -5,9 +7,6 @@ import {
   Button,
   Stack,
   TextField,
-  FormGroup,
-  FormControlLabel,
-  Checkbox,
 } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { loginApi } from 'src/services/authService';
@@ -25,10 +24,9 @@ const AuthLogin: React.FC = () => {
       console.log('Login success:', response);
 
       // تخزين التوكن في الكوكيز
-      // يمكنك إضافة خيارات مثل مدة الانتهاء (expires) أو secure أو غيرها
-      Cookies.set('token', response.token, { expires: 7 }); // تخزين لمدة 7 أيام كمثال
+      Cookies.set('token', response.token, { expires: 7 }); // أو حسب رغبتك
 
-      // توجيه للداشبورد أو أي صفحة أخرى
+      // توجيه لصفحة رئيسية / داشبورد
       navigate('/');
     } catch (error: any) {
       console.error('Login error:', error);
@@ -56,10 +54,9 @@ const AuthLogin: React.FC = () => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <Stack direction="row" justifyContent="space-between" alignItems="center">
-          <FormGroup>
-            <FormControlLabel control={<Checkbox defaultChecked />} label="Remember this Device" />
-          </FormGroup>
+
+        {/* تمت إزالة الـ "Remember this Device" بناءً على طلبك */}
+        <Box display="flex" justifyContent="flex-end">
           <Typography
             component={Link}
             to="/auth/forgot-password"
@@ -67,8 +64,9 @@ const AuthLogin: React.FC = () => {
           >
             Forgot Password?
           </Typography>
-        </Stack>
+        </Box>
       </Stack>
+
       <Box mt={3}>
         <Button type="submit" color="primary" variant="contained" size="large" fullWidth>
           Sign In

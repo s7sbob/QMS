@@ -9,6 +9,7 @@ import {
   Grid,
   Box
 } from '@mui/material';
+import axiosServices from 'src/utils/axiosServices';
 
 interface CopyDetail {
   copyNumber: string;
@@ -23,7 +24,7 @@ interface FormData {
   version: string;
   issueDate: string;
   revisionDate: string;
-  numberOfCopies: string; // نستخدم string هنا لاستقبال قيمة المدخل من الحقل
+  numberOfCopies: string;
   destruction: string;
   copies: CopyDetail[];
 }
@@ -43,10 +44,7 @@ const DistributionForm: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleCopyChange = (
@@ -56,23 +54,26 @@ const DistributionForm: React.FC = () => {
   ) => {
     const updatedCopies = [...formData.copies];
     updatedCopies[index] = { ...updatedCopies[index], [field]: value };
-    setFormData(prev => ({
-      ...prev,
-      copies: updatedCopies,
-    }));
+    setFormData(prev => ({ ...prev, copies: updatedCopies }));
   };
 
   const addCopyDetail = () => {
     setFormData(prev => ({
       ...prev,
-      copies: [...prev.copies, { copyNumber: '', receivedBy: '', receivedSign: '' }],
+      copies: [...prev.copies, { copyNumber: '', receivedBy: '', receivedSign: '' }]
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // هنا يمكنك ربط البيانات مع الـ API الخاص بالـ backend
-    console.log('Distribution Form Data:', formData);
+    try {
+      // إرسال إلى Endpoint وهمي
+      // await axiosServices.post('/api/distribution-form', formData);
+      console.log('Distribution Form Data:', formData);
+      alert('تم إرسال النموذج بنجاح (هذا مثال وهمي)!');
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -83,7 +84,6 @@ const DistributionForm: React.FC = () => {
         </Typography>
         <Box component="form" onSubmit={handleSubmit} noValidate>
           <Grid container spacing={2}>
-            {/* Document Type */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -94,7 +94,6 @@ const DistributionForm: React.FC = () => {
                 onChange={handleChange}
               />
             </Grid>
-            {/* Document Code */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -105,7 +104,6 @@ const DistributionForm: React.FC = () => {
                 onChange={handleChange}
               />
             </Grid>
-            {/* Document Title */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -116,7 +114,6 @@ const DistributionForm: React.FC = () => {
                 onChange={handleChange}
               />
             </Grid>
-            {/* Version */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -127,7 +124,6 @@ const DistributionForm: React.FC = () => {
                 onChange={handleChange}
               />
             </Grid>
-            {/* Issue Date */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -140,7 +136,6 @@ const DistributionForm: React.FC = () => {
                 onChange={handleChange}
               />
             </Grid>
-            {/* Revision Date */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -153,13 +148,11 @@ const DistributionForm: React.FC = () => {
                 onChange={handleChange}
               />
             </Grid>
-            {/* عنوان القسم الخاص بتوزيع النسخ */}
             <Grid item xs={12}>
               <Typography variant="h6" gutterBottom>
                 Department - Approved Copies Distribution
               </Typography>
             </Grid>
-            {/* Initial No. of Copies */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -172,7 +165,6 @@ const DistributionForm: React.FC = () => {
                 onChange={handleChange}
               />
             </Grid>
-            {/* Dynamic Copies Container */}
             <Grid item xs={12}>
               <Typography variant="subtitle1" gutterBottom>
                 Copy Details:
@@ -191,19 +183,19 @@ const DistributionForm: React.FC = () => {
                     label="Copy #"
                     required
                     value={copy.copyNumber}
-                    onChange={e => handleCopyChange(index, 'copyNumber', e.target.value)}
+                    onChange={(e) => handleCopyChange(index, 'copyNumber', e.target.value)}
                   />
                   <TextField
                     label="Received By (Name)"
                     required
                     value={copy.receivedBy}
-                    onChange={e => handleCopyChange(index, 'receivedBy', e.target.value)}
+                    onChange={(e) => handleCopyChange(index, 'receivedBy', e.target.value)}
                   />
                   <TextField
                     label="Sign/Date"
                     required
                     value={copy.receivedSign}
-                    onChange={e => handleCopyChange(index, 'receivedSign', e.target.value)}
+                    onChange={(e) => handleCopyChange(index, 'receivedSign', e.target.value)}
                   />
                 </Box>
               ))}
@@ -211,7 +203,6 @@ const DistributionForm: React.FC = () => {
                 Add Another Copy
               </Button>
             </Grid>
-            {/* Destruction When Obsoletes */}
             <Grid item xs={12}>
               <TextField
                 fullWidth

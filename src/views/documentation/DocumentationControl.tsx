@@ -1,12 +1,36 @@
 // src/pages/DocumentationControl.tsx
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Grid, Stack } from '@mui/material';
 import PageContainer from 'src/components/container/PageContainer';
 import SOPCard from './SOPCard';
 import SOPFilter from './SOPFilter';
-import sopData from 'src/data/sopData';
+import axiosServices from 'src/utils/axiosServices';
+
+interface SopHeader {
+  Id: string;
+  Doc_Title_en: string;
+  Doc_Title_ar: string;
+  Doc_Code: string;
+  Version: number;
+  // يمكنك إضافة الحقول الأخرى الموجودة في الـ backend
+}
 
 const DocumentationControl: React.FC = () => {
+  const [sopHeaders, setSopHeaders] = useState<SopHeader[]>([]);
+
+  useEffect(() => {
+    const fetchSOPHeaders = async () => {
+      try {
+        const resp = await axiosServices.get('/api/sopheader/getAllsop-Header');
+        setSopHeaders(resp.data || []);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchSOPHeaders();
+  }, []);
+
   return (
     <PageContainer title="Documentation Control" description="SOP Management">
       <Stack direction="row" spacing={2}>
@@ -25,8 +49,8 @@ const DocumentationControl: React.FC = () => {
         {/* Main Content */}
         <Box sx={{ flexGrow: 1 }}>
           <Grid container spacing={3}>
-            {sopData.map((sop) => (
-              <Grid item xs={12} sm={6} lg={4} key={sop.id}>
+            {sopHeaders.map((sop) => (
+              <Grid item xs={12} sm={6} lg={4} key={sop.Id}>
                 <SOPCard sop={sop} />
               </Grid>
             ))}

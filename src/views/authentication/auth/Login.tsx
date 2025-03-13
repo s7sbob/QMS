@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Grid, Box, Card, Typography, Link as MuiLink } from '@mui/material';
-import { Link } from 'react-router-dom'; // لاستعمال Link الخاص بـ React Router
+import { Link } from 'react-router-dom';
 import PageContainer from 'src/components/container/PageContainer';
 import Logo from 'src/layouts/full/shared/logo/Logo';
 import AuthLogin from '../authForms/AuthLogin';
@@ -40,11 +40,11 @@ const Login2: React.FC = () => {
               <Box display="flex" alignItems="center" justifyContent="center" mb={2}>
                 <Logo />
               </Box>
-              
+
               {/* مكوّن الفورم الخاص بتسجيل الدخول */}
               <AuthLogin />
 
-              {/* رابط الانتقال إلى صفحة التسجيل (Register) */}
+              {/* رابط الانتقال إلى صفحة التسجيل */}
               <Box mt={3} textAlign="center">
                 <Typography variant="body2" color="textSecondary">
                   Don’t have an account?{' '}
@@ -61,7 +61,6 @@ const Login2: React.FC = () => {
                   </MuiLink>
                 </Typography>
               </Box>
-
             </Card>
           </Grid>
         </Grid>

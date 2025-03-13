@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-// src/layouts/full/vertical/auth/AuthRegister.tsx
+// src/layouts/full/vertical/auth/authForms/AuthRegister.tsx
 
 import React, { useState } from 'react';
 import {
@@ -7,7 +6,9 @@ import {
   Typography,
   Button,
   Stack,
-  TextField
+  TextField,
+  IconButton,
+  InputAdornment
 } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { addEditUserApi } from 'src/services/userService';
@@ -18,14 +19,12 @@ import {
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 
+// أيقونات العين
+import { IconEye, IconEyeOff } from '@tabler/icons-react';
+
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{8,}$/;
 
-interface AuthRegisterProps {
-  subtext?: React.ReactNode;
-  subtitle?: React.ReactNode;
-}
-
-const AuthRegister: React.FC<AuthRegisterProps> = () => {
+const AuthRegister: React.FC = () => {
   const [formData, setFormData] = useState({
     fName: '',
     lName: '',
@@ -38,15 +37,17 @@ const AuthRegister: React.FC<AuthRegisterProps> = () => {
   });
   const [errors, setErrors] = useState<{ password?: string; confirmPassword?: string }>({});
 
+  const [previewImg, setPreviewImg] = useState<string>(''); // لمعاينة الصورة
   const navigate = useNavigate();
+
+  // لرؤية/إخفاء كلمة المرور
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // التحكم في رفع الملف + عرض المعاينة
-  const [previewImg, setPreviewImg] = useState<string>(''); // لعرض معاينة الصورة
-  
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -65,6 +66,8 @@ const AuthRegister: React.FC<AuthRegisterProps> = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // تحقق من كلمة المرور
     const newErrors: { password?: string; confirmPassword?: string } = {};
 
     if (!passwordRegex.test(formData.password)) {
@@ -74,11 +77,11 @@ const AuthRegister: React.FC<AuthRegisterProps> = () => {
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match.';
     }
+
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
       try {
-        // إنشاء كائن اليوزر الذي سنرسله للـ API
         const userToCreate = {
           Id: '',
           FName: formData.fName,
@@ -86,7 +89,7 @@ const AuthRegister: React.FC<AuthRegisterProps> = () => {
           Email: formData.email,
           UserName: formData.userName,
           Password: formData.password,
-          userImg_Url: formData.userImgUrl, 
+          userImg_Url: formData.userImgUrl,
           dateOfBirth: formData.dateOfBirth,
           contacts: [
             {
@@ -98,6 +101,8 @@ const AuthRegister: React.FC<AuthRegisterProps> = () => {
 
         const response = await addEditUserApi(userToCreate);
         console.log('User created:', response);
+
+        // عند نجاح التسجيل، الانتقال لصفحة تسجيل الدخول
         navigate('/auth/login2');
       } catch (error) {
         console.error('Registration error:', error);
@@ -107,11 +112,7 @@ const AuthRegister: React.FC<AuthRegisterProps> = () => {
   };
 
   return (
-    <Box
-      component="form"
-      onSubmit={handleSubmit}
-      noValidate
-    >
+    <Box component="form" onSubmit={handleSubmit} noValidate>
       <Stack spacing={2}>
         <TextField
           required
@@ -141,9 +142,7 @@ const AuthRegister: React.FC<AuthRegisterProps> = () => {
             onChange={(newValue) => {
               setFormData((prev) => ({
                 ...prev,
-                dateOfBirth: newValue
-                  ? newValue.format('YYYY-MM-DD')
-                  : '',
+                dateOfBirth: newValue ? newValue.format('YYYY-MM-DD') : '',
               }));
             }}
             renderInput={(params) => (
@@ -175,29 +174,59 @@ const AuthRegister: React.FC<AuthRegisterProps> = () => {
           variant="outlined"
           fullWidth
         />
+
+        {/* حقل Password مع إظهار/إخفاء عبر أيقونة العين */}
         <TextField
           required
           label="Password"
           name="password"
-          type="password"
+          type={showPassword ? 'text' : 'password'}
           value={formData.password}
           onChange={handleChange}
           variant="outlined"
           fullWidth
           error={!!errors.password}
           helperText={errors.password}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="toggle password visibility"
+                  onClick={() => setShowPassword(!showPassword)}
+                  edge="end"
+                >
+                  {showPassword ? <IconEyeOff /> : <IconEye />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
         />
+
+        {/* حقل Confirm Password مع إظهار/إخفاء عبر الأيقونة */}
         <TextField
           required
           label="Confirm Password"
           name="confirmPassword"
-          type="password"
+          type={showConfirmPass ? 'text' : 'password'}
           value={formData.confirmPassword}
           onChange={handleChange}
           variant="outlined"
           fullWidth
           error={!!errors.confirmPassword}
           helperText={errors.confirmPassword}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="toggle confirm password visibility"
+                  onClick={() => setShowConfirmPass(!showConfirmPass)}
+                  edge="end"
+                >
+                  {showConfirmPass ? <IconEyeOff /> : <IconEye />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
         />
 
         {/* حقل رفع ملف للصورة + معاينة */}
@@ -231,8 +260,8 @@ const AuthRegister: React.FC<AuthRegisterProps> = () => {
             </Box>
           )}
         </Box>
-
       </Stack>
+
       <Box mt={3}>
         <Button
           type="submit"
@@ -250,7 +279,7 @@ const AuthRegister: React.FC<AuthRegisterProps> = () => {
         </Typography>
         <Typography
           component={Link}
-          to="/auth/login"
+          to="/auth/login2"
           variant="subtitle1"
           fontWeight="500"
           sx={{ textDecoration: 'none', color: 'primary.main' }}
