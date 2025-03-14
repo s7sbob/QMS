@@ -44,6 +44,7 @@
     "fslightbox-react": "1.7.6",
     "i18next": "22.0.6",
     "js-cookie": "^3.0.5",
+    "jwt-decode": "^4.0.0",
     "lodash": "4.17.21",
     "moment": "2.29.4",
     "react": "18.3.1",

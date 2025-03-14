@@ -1,5 +1,4 @@
 // src/layouts/full/vertical/auth/authForms/AuthLogin.tsx
-
 import React, { useState } from 'react';
 import {
   Box,
@@ -23,8 +22,12 @@ const AuthLogin: React.FC = () => {
       const response = await loginApi({ UserName: username, Password: password });
       console.log('Login success:', response);
 
-      // تخزين التوكن في الكوكيز
-      Cookies.set('token', response.token, { expires: 7 }); // أو حسب رغبتك
+      // تخزين التوكن مع باقي البيانات في الكوكيز
+      Cookies.set('token', response.token, { expires: 7 });
+      // تخزين بيانات المستخدم كرابط JSON في كوكيز
+      Cookies.set('user', JSON.stringify(response.user), { expires: 7 });
+      // تخزين الرتبة (userRole) في كوكيز
+      Cookies.set('userRole', response.userRole, { expires: 7 });
 
       // توجيه لصفحة رئيسية / داشبورد
       navigate('/');
@@ -55,7 +58,6 @@ const AuthLogin: React.FC = () => {
           onChange={(e) => setPassword(e.target.value)}
         />
 
-        {/* تمت إزالة الـ "Remember this Device" بناءً على طلبك */}
         <Box display="flex" justifyContent="flex-end">
           <Typography
             component={Link}

@@ -23,7 +23,7 @@ const SOPFullDocument: React.FC = () => {
   useEffect(() => {
     // جلب بيانات الهيدر
     axiosServices
-      .get("/api/sopheader/getAllsop-Header")
+      .get("/api/sopheader/getAllSopHeaders")
       .then((res) => {
         if (Array.isArray(res.data) && res.data.length > 0) {
           // نفترض أنك تريد أول عنصر فقط

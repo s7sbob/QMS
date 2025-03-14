@@ -1,5 +1,5 @@
 // src/pages/NewCreation.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   Container,
   Paper,
@@ -13,23 +13,44 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   IconButton,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Select,
+  Checkbox,
+  FormControlLabel,
+  CircularProgress,
 } from '@mui/material';
 import { IconUpload, IconTrash } from '@tabler/icons-react';
 import axiosServices from 'src/utils/axiosServices';
+import { UserContext } from 'src/context/UserContext';
+
+interface Department {
+  Id: string;
+  Dept_name: string;
+  // يمكنك إضافة خصائص أخرى إذا احتجت
+}
 
 const NewCreation: React.FC = () => {
-  // State للاحتفاظ بملفات المرفقات (إن أردت لاحقًا رفعها لسيرفر)
+  // State للملفات المرفقة
   const [attachments, setAttachments] = useState<File[]>([]);
 
-  // State للحقول العربية والإنجليزية
+  // الحصول على بيانات المستخدم من الـ UserContext
+  const user = useContext(UserContext);
+  // نستخرج compId من بيانات المستخدم
+  const compId = user?.compId || '';
+
+  // state لتخزين الأقسام بناءً على compId
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [selectedDepartment, setSelectedDepartment] = useState<string>('');
+
+  // state للcheckbox "contain training"
+  const [containTraining, setContainTraining] = useState<boolean>(false);
+
+  // state للحقول النصية (العناوين والمحتوى)
   const [formData, setFormData] = useState({
-    // عربي
     titleAr: '',
-    codeAr: '',
-    versionAr: '',
-    issueDateAr: '',
-    effectiveDateAr: '',
-    revisionDateAr: '',
+    titleEn: '',
     purposeAr: '',
     definitionsAr: '',
     scopeAr: '',
@@ -37,14 +58,6 @@ const NewCreation: React.FC = () => {
     safetyConcernsAr: '',
     procedureAr: '',
     referenceDocumentsAr: '',
-
-    // إنجليزي
-    titleEn: '',
-    codeEn: '',
-    versionEn: '',
-    issueDateEn: '',
-    effectiveDateEn: '',
-    revisionDateEn: '',
     purposeEn: '',
     definitionsEn: '',
     scopeEn: '',
@@ -53,6 +66,44 @@ const NewCreation: React.FC = () => {
     procedureEn: '',
     referenceDocumentsEn: '',
   });
+
+  // عرض تاريخ الإنشاء (محسوب من النظام)
+  const creationDate = new Date().toISOString().slice(0, 10);
+
+  // حالة مؤشر التحميل
+  const [loading, setLoading] = useState<boolean>(false);
+
+  // جلب الأقسام بناءً على compId
+  useEffect(() => {
+    if (compId) {
+      console.log("Using compId:", compId);
+      setLoading(true);
+      axiosServices
+        .get(`/api/department/compdepartments/${compId}`)
+        .then((res) => {
+          console.log("Response from departments API:", res.data);
+          let data = res.data;
+          if (!Array.isArray(data)) {
+            try {
+              data = JSON.parse(data);
+            } catch (error) {
+              console.error("Error parsing departments:", error);
+              data = [];
+            }
+          }
+          console.log("Parsed departments:", data);
+          setDepartments(data);
+        })
+        .catch((err) => {
+          console.error("Error fetching departments:", err);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    } else {
+      console.log("compId not available yet");
+    }
+  }, [compId]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -80,20 +131,16 @@ const NewCreation: React.FC = () => {
     event.preventDefault();
 
     try {
-      // 1) إنشاء أو تعديل الـ Header
-      // حسبما يتطلب الـ backend
+      // إرسال بيانات الـ Header المطلوبة فقط: Doc_Title_en, Doc_Title_ar, Com_Id, Dept_Id
       const headerPayload = {
         Doc_Title_en: formData.titleEn,
         Doc_Title_ar: formData.titleAr,
-        Doc_Code: formData.codeEn || formData.codeAr,
-        Version: formData.versionEn ? parseInt(formData.versionEn) : 1,
-        Issue_Date: formData.issueDateEn,
-        Effective_Date: formData.effectiveDateEn,
-        Revision_Date: formData.revisionDateEn,
-        // ... حقول أخرى لو لزم
+        Com_Id: compId,
+        Dept_Id: selectedDepartment,
       };
+
       const headerResponse = await axiosServices.post(
-        '/api/sopheader/addeditsop-Header',
+        '/api/sopheader/addEditSopHeader',
         headerPayload
       );
       const headerId = headerResponse.data?.Id;
@@ -102,15 +149,11 @@ const NewCreation: React.FC = () => {
         return;
       }
 
-      // رقم الإصدار (لإعادة استخدامه)
-      const versionNumber = formData.versionEn ? parseInt(formData.versionEn) : 1;
-
-      // 2) إضافة Definitions
+      // باقي استدعاءات API الخاصة بالمحتوى (مثلاً Definitions, Purpose, ...)
       if (formData.definitionsEn || formData.definitionsAr) {
         const defPayload = {
           Content_en: formData.definitionsEn,
           Content_ar: formData.definitionsAr,
-          Version: versionNumber,
           Is_Current: 1,
           Is_Active: 1,
           Sop_HeaderId: headerId,
@@ -118,12 +161,10 @@ const NewCreation: React.FC = () => {
         await axiosServices.post('/api/sopDefinition/addSop-Definition', defPayload);
       }
 
-      // 3) إضافة Purpose
       if (formData.purposeEn || formData.purposeAr) {
         const purposePayload = {
           Content_en: formData.purposeEn,
           Content_ar: formData.purposeAr,
-          Version: versionNumber,
           Is_Current: 1,
           Is_Active: 1,
           Sop_HeaderId: headerId,
@@ -131,12 +172,10 @@ const NewCreation: React.FC = () => {
         await axiosServices.post('/api/soppurpose/addSop-Purpose', purposePayload);
       }
 
-      // 4) إضافة Responsibilities
       if (formData.responsibilityEn || formData.responsibilityAr) {
         const resPayload = {
           Content_en: formData.responsibilityEn,
           Content_ar: formData.responsibilityAr,
-          Version: versionNumber,
           Is_Current: 1,
           Is_Active: 1,
           Sop_HeaderId: headerId,
@@ -144,12 +183,10 @@ const NewCreation: React.FC = () => {
         await axiosServices.post('/api/sopRes/addSop-Res', resPayload);
       }
 
-      // 5) إضافة Procedures
       if (formData.procedureEn || formData.procedureAr) {
         const procPayload = {
           Content_en: formData.procedureEn,
           Content_ar: formData.procedureAr,
-          Version: versionNumber,
           Is_Current: 1,
           Is_Active: 1,
           Sop_HeaderId: headerId,
@@ -157,12 +194,10 @@ const NewCreation: React.FC = () => {
         await axiosServices.post('/api/soprocedures/addSop-Procedure', procPayload);
       }
 
-      // 6) إضافة Scope
       if (formData.scopeEn || formData.scopeAr) {
         const scopePayload = {
           Content_en: formData.scopeEn,
           Content_ar: formData.scopeAr,
-          Version: versionNumber,
           Is_Current: 1,
           Is_Active: 1,
           Sop_HeaderId: headerId,
@@ -170,43 +205,35 @@ const NewCreation: React.FC = () => {
         await axiosServices.post('/api/sopScope/addSop-Scope', scopePayload);
       }
 
-      // 7) إضافة SafetyConcerns
       if (formData.safetyConcernsEn || formData.safetyConcernsAr) {
         const safetyPayload = {
           Content_en: formData.safetyConcernsEn,
           Content_ar: formData.safetyConcernsAr,
-          Version: versionNumber,
           Is_Current: 1,
           Is_Active: 1,
           Sop_HeaderId: headerId,
         };
-        await axiosServices.post(
-          '/api/sopSafetyConcerns/addSop-SafetyConcerns',
-          safetyPayload
-        );
+        await axiosServices.post('/api/sopSafetyConcerns/addSop-SafetyConcerns', safetyPayload);
       }
-
-      // رفع المرفقات - إن كان لديك Endpoint خاص لذلك (ليس موجودًا بالـ Swagger)
-      /*
-      if (attachments.length > 0) {
-        const formDataFiles = new FormData();
-        attachments.forEach((file) => {
-          formDataFiles.append('files', file);
-        });
-        formDataFiles.append('Sop_HeaderId', headerId);
-
-        await axiosServices.post('/api/sopFiles/upload', formDataFiles, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-      }
-      */
 
       alert('تم إنشاء الـ SOP بنجاح وإرسال كل جزء للـ Endpoint الخاص به.');
     } catch (error) {
-      console.error(error);
+      console.error("Error in submit:", error);
       alert('حدث خطأ أثناء إنشاء الـ SOP. راجع الـ Console لمعرفة التفاصيل.');
     }
   };
+
+  // إذا لم يتوفر user أو compId بعد، نعرض مؤشر تحميل
+  if (!user || !compId) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <CircularProgress />
+        <Typography variant="h6" sx={{ ml: 2 }}>
+          جاري تحميل بيانات المستخدم...
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Paper sx={{ p: 4, m: 2 }}>
@@ -236,61 +263,40 @@ const NewCreation: React.FC = () => {
               />
               <TextField
                 fullWidth
-                label="كود الوثيقة:"
-                id="codeAr"
-                name="codeAr"
+                label="تاريخ الإنشاء:"
+                id="creationDateAr"
+                name="creationDateAr"
                 variant="outlined"
                 margin="normal"
-                value={formData.codeAr}
-                onChange={handleInputChange}
+                value={creationDate}
+                disabled
               />
-              <TextField
-                fullWidth
-                label="رقم الإصدار:"
-                id="versionAr"
-                name="versionAr"
-                variant="outlined"
-                margin="normal"
-                value={formData.versionAr}
-                onChange={handleInputChange}
-              />
-              <TextField
-                fullWidth
-                label="تاريخ الإصدار:"
-                id="issueDateAr"
-                name="issueDateAr"
-                type="date"
-                InputLabelProps={{ shrink: true }}
-                variant="outlined"
-                margin="normal"
-                value={formData.issueDateAr}
-                onChange={handleInputChange}
-              />
-              <TextField
-                fullWidth
-                label="تاريخ الفعالية:"
-                id="effectiveDateAr"
-                name="effectiveDateAr"
-                type="date"
-                InputLabelProps={{ shrink: true }}
-                variant="outlined"
-                margin="normal"
-                value={formData.effectiveDateAr}
-                onChange={handleInputChange}
-              />
-              <TextField
-                fullWidth
-                label="تاريخ المراجعة:"
-                id="revisionDateAr"
-                name="revisionDateAr"
-                type="date"
-                InputLabelProps={{ shrink: true }}
-                variant="outlined"
-                margin="normal"
-                value={formData.revisionDateAr}
-                onChange={handleInputChange}
-              />
-
+              <FormControl fullWidth margin="normal">
+                <InputLabel id="dept-label">القسم</InputLabel>
+                <Select
+                  labelId="dept-label"
+                  id="selectedDepartment"
+                  value={selectedDepartment}
+                  label="القسم"
+                  onChange={(e) => setSelectedDepartment(e.target.value)}
+                >
+                  {loading ? (
+                    <MenuItem disabled>
+                      <em>جار التحميل...</em>
+                    </MenuItem>
+                  ) : departments.length > 0 ? (
+                    departments.map((dept) => (
+                      <MenuItem key={dept.Id} value={dept.Id}>
+                        {dept.Dept_name}
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem disabled>
+                      <em>لا توجد أقسام</em>
+                    </MenuItem>
+                  )}
+                </Select>
+              </FormControl>
               <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
                 المحتوى
               </Typography>
@@ -378,26 +384,24 @@ const NewCreation: React.FC = () => {
                 value={formData.referenceDocumentsAr}
                 onChange={handleInputChange}
               />
-
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={containTraining}
+                    onChange={(e) => setContainTraining(e.target.checked)}
+                  />
+                }
+                label="يتضمن تدريب"
+                sx={{ mt: 2 }}
+              />
               <Box>
                 <Typography variant="subtitle1" gutterBottom>
                   المرفقـــات:
                 </Typography>
-                <Button
-                  variant="outlined"
-                  component="label"
-                  startIcon={<IconUpload />}
-                  sx={{ mb: 2 }}
-                >
+                <Button variant="outlined" component="label" startIcon={<IconUpload />} sx={{ mb: 2 }}>
                   رفع الملفات
-                  <input
-                    type="file"
-                    multiple
-                    hidden
-                    onChange={handleFileUpload}
-                  />
+                  <input type="file" multiple hidden onChange={handleFileUpload} />
                 </Button>
-
                 <List>
                   {attachments.map((file, index) => (
                     <ListItem key={index}>
@@ -406,11 +410,7 @@ const NewCreation: React.FC = () => {
                         secondary={`${(file.size / 1024 / 1024).toFixed(2)} MB`}
                       />
                       <ListItemSecondaryAction>
-                        <IconButton
-                          edge="end"
-                          onClick={() => handleFileDelete(index)}
-                          color="error"
-                        >
+                        <IconButton edge="end" onClick={() => handleFileDelete(index)} color="error">
                           <IconTrash size={20} />
                         </IconButton>
                       </ListItemSecondaryAction>
@@ -419,7 +419,6 @@ const NewCreation: React.FC = () => {
                 </List>
               </Box>
             </Grid>
-
             {/* العمود الإنجليزي */}
             <Grid item xs={12} md={6} sx={{ textAlign: 'left', direction: 'ltr' }}>
               <Typography variant="h5" gutterBottom>
@@ -437,61 +436,40 @@ const NewCreation: React.FC = () => {
               />
               <TextField
                 fullWidth
-                label="Code Number:"
-                id="codeEn"
-                name="codeEn"
+                label="Creation Date:"
+                id="creationDateEn"
+                name="creationDateEn"
                 variant="outlined"
                 margin="normal"
-                value={formData.codeEn}
-                onChange={handleInputChange}
+                value={creationDate}
+                disabled
               />
-              <TextField
-                fullWidth
-                label="Version Number:"
-                id="versionEn"
-                name="versionEn"
-                variant="outlined"
-                margin="normal"
-                value={formData.versionEn}
-                onChange={handleInputChange}
-              />
-              <TextField
-                fullWidth
-                label="Issue Date:"
-                id="issueDateEn"
-                name="issueDateEn"
-                type="date"
-                InputLabelProps={{ shrink: true }}
-                variant="outlined"
-                margin="normal"
-                value={formData.issueDateEn}
-                onChange={handleInputChange}
-              />
-              <TextField
-                fullWidth
-                label="Effective Date:"
-                id="effectiveDateEn"
-                name="effectiveDateEn"
-                type="date"
-                InputLabelProps={{ shrink: true }}
-                variant="outlined"
-                margin="normal"
-                value={formData.effectiveDateEn}
-                onChange={handleInputChange}
-              />
-              <TextField
-                fullWidth
-                label="Revision Date:"
-                id="revisionDateEn"
-                name="revisionDateEn"
-                type="date"
-                InputLabelProps={{ shrink: true }}
-                variant="outlined"
-                margin="normal"
-                value={formData.revisionDateEn}
-                onChange={handleInputChange}
-              />
-
+              <FormControl fullWidth margin="normal">
+                <InputLabel id="dept-label-en">Department</InputLabel>
+                <Select
+                  labelId="dept-label-en"
+                  id="selectedDepartmentEn"
+                  value={selectedDepartment}
+                  label="Department"
+                  onChange={(e) => setSelectedDepartment(e.target.value)}
+                >
+                  {loading ? (
+                    <MenuItem disabled>
+                      <em>جار التحميل...</em>
+                    </MenuItem>
+                  ) : departments.length > 0 ? (
+                    departments.map((dept) => (
+                      <MenuItem key={dept.Id} value={dept.Id}>
+                        {dept.Dept_name}
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem disabled>
+                      <em>لا توجد أقسام</em>
+                    </MenuItem>
+                  )}
+                </Select>
+              </FormControl>
               <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
                 Content
               </Typography>
@@ -579,26 +557,24 @@ const NewCreation: React.FC = () => {
                 value={formData.referenceDocumentsEn}
                 onChange={handleInputChange}
               />
-
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={containTraining}
+                    onChange={(e) => setContainTraining(e.target.checked)}
+                  />
+                }
+                label="Contain Training"
+                sx={{ mt: 2 }}
+              />
               <Box>
                 <Typography variant="subtitle1" gutterBottom>
                   Attachments:
                 </Typography>
-                <Button
-                  variant="outlined"
-                  component="label"
-                  startIcon={<IconUpload />}
-                  sx={{ mb: 2 }}
-                >
+                <Button variant="outlined" component="label" startIcon={<IconUpload />} sx={{ mb: 2 }}>
                   Upload Files
-                  <input
-                    type="file"
-                    multiple
-                    hidden
-                    onChange={handleFileUpload}
-                  />
+                  <input type="file" multiple hidden onChange={handleFileUpload} />
                 </Button>
-
                 <List>
                   {attachments.map((file, index) => (
                     <ListItem key={index}>
@@ -607,11 +583,7 @@ const NewCreation: React.FC = () => {
                         secondary={`${(file.size / 1024 / 1024).toFixed(2)} MB`}
                       />
                       <ListItemSecondaryAction>
-                        <IconButton
-                          edge="end"
-                          onClick={() => handleFileDelete(index)}
-                          color="error"
-                        >
+                        <IconButton edge="end" onClick={() => handleFileDelete(index)} color="error">
                           <IconTrash size={20} />
                         </IconButton>
                       </ListItemSecondaryAction>
@@ -621,8 +593,6 @@ const NewCreation: React.FC = () => {
               </Box>
             </Grid>
           </Grid>
-
-          {/* الأزرار */}
           <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2 }}>
             <Button variant="outlined" onClick={handlePrint}>
               cancel
@@ -633,8 +603,6 @@ const NewCreation: React.FC = () => {
           </Box>
         </form>
       </Container>
-
-      {/* Footer */}
       <Box component="footer" sx={{ textAlign: 'center', mt: 3 }}>
         <Typography variant="body2">
           Unauthorized duplication is prohibited | يمنع إعادة الطباعة لغير المختصين

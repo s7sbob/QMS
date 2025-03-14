@@ -21,7 +21,7 @@ const DocumentationControl: React.FC = () => {
   useEffect(() => {
     const fetchSOPHeaders = async () => {
       try {
-        const resp = await axiosServices.get('/api/sopheader/getAllsop-Header');
+        const resp = await axiosServices.get('/api/sopheader/getAllSopHeaders');
         setSopHeaders(resp.data || []);
       } catch (error) {
         console.error(error);
