@@ -37,24 +37,53 @@ const Header: React.FC<HeaderProps> = ({
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr>
-              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "left"  }}>Issue Date</th>
-              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "right"  }}>:تاريخ الإصدار</th>
-              </tr>
-              <tr>
-              <td colSpan={2} style={{ border: "1px solid #000", padding: "5px", textAlign: "center" }}>{issueDate}</td>
-              </tr>
-              <tr>
-              <th style={{ border: "1px solid #000", padding: "2px", textAlign: "left" }}>Effective Date</th>
-              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "right" }}>:تاريخ النفاذ</th>
-              </tr>
-              <tr>
-              <td colSpan={2} style={{ border: "1px solid #000", padding: "5px", textAlign: "center" }}>{effectiveDate}</td>              </tr>
-              <tr>
-              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "left"  }}>Revision Date</th>
-              <th style={{ border: "1px solid #000", padding: "2px", textAlign: "right" }}>:تاريخ المراجعة</th>
+              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "left" }}>
+                Issue Date
+              </th>
+              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "right" }}>
+                :تاريخ الإصدار
+              </th>
             </tr>
             <tr>
-            <td colSpan={2} style={{ border: "1px solid #000", padding: "5px", textAlign: "center" }}>{revisionDate}</td>              </tr>
+              <td
+                colSpan={2}
+                style={{ border: "1px solid #000", padding: "5px", textAlign: "center" }}
+              >
+                {issueDate}
+              </td>
+            </tr>
+            <tr>
+              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "left" }}>
+                Effective Date
+              </th>
+              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "right" }}>
+                :تاريخ النفاذ
+              </th>
+            </tr>
+            <tr>
+              <td
+                colSpan={2}
+                style={{ border: "1px solid #000", padding: "5px", textAlign: "center" }}
+              >
+                {effectiveDate}
+              </td>
+            </tr>
+            <tr>
+              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "left" }}>
+                Revision Date
+              </th>
+              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "right" }}>
+                :تاريخ المراجعة
+              </th>
+            </tr>
+            <tr>
+              <td
+                colSpan={2}
+                style={{ border: "1px solid #000", padding: "5px", textAlign: "center" }}
+              >
+                {revisionDate}
+              </td>
+            </tr>
           </thead>
         </table>
       </div>
@@ -77,31 +106,62 @@ const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* الجدول الثاني (يمين) */}
-      <div         style={{
+      <div
+        style={{
           width: "25%",
           borderRight: "1px solid #000",
-        }}>
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        }}
+      >
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr>
-              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "left"  }}>Code #:</th>
-              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "right" }}>:كود الوثيقة</th>
-              </tr>
-              <tr>
-              <td colSpan={2} style={{ border: "1px solid #000", padding: "5px", textAlign: "center" }}>{codeNumber}</td>
-              </tr>
-              <tr>
-              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "left"  }}>Version #:</th>
-              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "right" }}>:رقم الإصدار</th>
-              </tr>
-              <tr>
-              <td colSpan={2} style={{ border: "1px solid #000", padding: "5px", textAlign: "center" }}>{versionNumber}</td>              </tr>
-              <tr>
-              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "left"  }}>Page #:</th>
-              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "right" }}>:رقم الصفحة</th>
+              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "left" }}>
+                Code #:
+              </th>
+              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "right" }}>
+                :كود الوثيقة
+              </th>
             </tr>
             <tr>
-            <td colSpan={2} style={{ border: "1px solid #000", padding: "5px", textAlign: "center" }}>{pageNumber}</td>              </tr>
+              <td
+                colSpan={2}
+                style={{ border: "1px solid #000", padding: "5px", textAlign: "center" }}
+              >
+                {codeNumber}
+              </td>
+            </tr>
+            <tr>
+              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "left" }}>
+                Version #:
+              </th>
+              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "right" }}>
+                :رقم الإصدار
+              </th>
+            </tr>
+            <tr>
+              <td
+                colSpan={2}
+                style={{ border: "1px solid #000", padding: "5px", textAlign: "center" }}
+              >
+                {versionNumber}
+              </td>
+            </tr>
+            <tr>
+              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "left" }}>
+                Page #:
+              </th>
+              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "right" }}>
+                :رقم الصفحة
+              </th>
+            </tr>
+            <tr>
+              <td
+                colSpan={2}
+                style={{ border: "1px solid #000", padding: "5px", textAlign: "center" }}
+              >
+                {pageNumber}
+              </td>
+            </tr>
           </thead>
         </table>
       </div>

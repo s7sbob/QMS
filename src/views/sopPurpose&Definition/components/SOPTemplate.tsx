@@ -1,5 +1,5 @@
 import React from 'react';
-import HeaderContainer from './HeaderContainer';
+import Header from '../../sopHeader/components/Header';
 import PreparedBySection from './PreparedBySection';
 import Footer from './Footer';
 import PaginatedSOPContent from './PaginatedSOPContent';
@@ -12,7 +12,16 @@ interface SOPTemplateProps {
 
 const SOPTemplate: React.FC<SOPTemplateProps> = ({ children, headerData }) => {
   // محتوى الهيدر والفوتر (سيوضع في كل صفحة)
-  const headerComponent = <HeaderContainer headerData={headerData} />;
+  const headerComponent =  headerData ? (    <Header
+  issueDate={headerData.Issued_Date || ""}
+  effectiveDate={headerData.Effective_Date || ""}
+  revisionDate={headerData.Revision_Date || ""}
+  codeNumber={headerData.Doc_Code || ""}
+  versionNumber={headerData.Version || ""}
+  pageNumber={headerData.Page_Number || "1"}
+/>  ) : (
+    <div>No Header Data</div>
+  );
   const footerComponent = (
     <>
       <PreparedBySection
