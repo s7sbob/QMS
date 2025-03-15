@@ -1,9 +1,9 @@
-import React from "react";
-import HeaderContainer from "./HeaderContainer";
-import PreparedBySection from "./PreparedBySection";
-import Footer from "./Footer";
-import PaginatedSOPContent from "./PaginatedSOPContent";
-import { SopHeader } from "../types/SopHeader";
+import React from 'react';
+import HeaderContainer from './HeaderContainer';
+import PreparedBySection from './PreparedBySection';
+import Footer from './Footer';
+import PaginatedSOPContent from './PaginatedSOPContent';
+import { SopHeader } from '../types/SopHeader';
 
 interface SOPTemplateProps {
   children: React.ReactNode;
@@ -22,6 +22,10 @@ const SOPTemplate: React.FC<SOPTemplateProps> = ({ children, headerData }) => {
         preparedName="Syed Mazhar"
         reviewedName="Walid Nafea"
         approvedName="El Hassan Fathy"
+        stampImageUrl="./public/Stamps/DraftCopy.svg"
+        preparedSignatureUrl="./public/signatures/sign1.png"
+        reviewedSignatureUrl="./public/signatures/sign2.png"
+        approvedSignatureUrl="./public/signatures/sign3.png"
       />
       <Footer />
     </>
@@ -33,10 +37,10 @@ const SOPTemplate: React.FC<SOPTemplateProps> = ({ children, headerData }) => {
       style={{
         // يمكنك الاكتفاء بخلفية خفيفة للمستند أو إزالتها تمامًا
         // ولا داعي لوضع حدود أو أحجام هنا، لأننا وضعناها داخل PaginatedSOPContent
-        margin: "auto",
-        padding: "10px",
-        fontFamily: "Arial, sans-serif",
-        fontSize: 14
+        margin: 'auto',
+        padding: '10px',
+        fontFamily: 'Arial, sans-serif',
+        fontSize: 14,
       }}
     >
       <PaginatedSOPContent

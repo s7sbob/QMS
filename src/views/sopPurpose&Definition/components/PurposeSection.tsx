@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import axiosServices from "src/utils/axiosServices";
+import React, { useEffect, useState } from 'react';
+import axiosServices from 'src/utils/axiosServices';
 import {
   Box,
   Button,
@@ -9,7 +9,6 @@ import {
   DialogTitle,
   List,
   ListItem,
-  ListItemText,
   Paper,
   Stack,
   Table,
@@ -20,7 +19,7 @@ import {
   TableRow,
   TextField,
   Typography,
-} from "@mui/material";
+} from '@mui/material';
 
 export interface Modification {
   date: string;
@@ -50,9 +49,9 @@ interface PurposeSectionProps {
 const PurposeSection: React.FC<PurposeSectionProps> = ({ initialData }) => {
   const [purpose, setPurpose] = useState<Purpose | null>(null);
   // Editable fields للـ Current Record
-  const [editContentEn, setEditContentEn] = useState<string>("");
-  const [editContentAr, setEditContentAr] = useState<string>("");
-  const [editReviewerComment, setEditReviewerComment] = useState<string>("");
+  const [editContentEn, setEditContentEn] = useState<string>('');
+  const [editContentAr, setEditContentAr] = useState<string>('');
+  const [editReviewerComment, setEditReviewerComment] = useState<string>('');
 
   // History records (read-only)
   const [historicalPurposes, setHistoricalPurposes] = useState<Purpose[]>([]);
@@ -63,7 +62,7 @@ const PurposeSection: React.FC<PurposeSectionProps> = ({ initialData }) => {
       setPurpose(initialData);
       setEditContentEn(initialData.Content_en);
       setEditContentAr(initialData.Content_ar);
-      setEditReviewerComment(initialData.reviewer_Comment || "");
+      setEditReviewerComment(initialData.reviewer_Comment || '');
     }
   }, [initialData]);
 
@@ -73,13 +72,12 @@ const PurposeSection: React.FC<PurposeSectionProps> = ({ initialData }) => {
     axiosServices
       .get(`/api/soppurpose/getAllHistory/${purpose.Sop_HeaderId}`)
       .then((res) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const activeRecords = res.data.filter((item: any) => item.Is_Active === 1);
         setHistoricalPurposes(activeRecords);
         setOpenDialog(true);
       })
-      .catch((error) =>
-        console.error("Error fetching historical purposes:", error)
-      );
+      .catch((error) => console.error('Error fetching historical purposes:', error));
   };
 
   // حفظ التعديلات على السجل الحالي (يتضمن Content و reviewer_Comment)
@@ -95,7 +93,7 @@ const PurposeSection: React.FC<PurposeSectionProps> = ({ initialData }) => {
         setPurpose(res.data);
         setOpenDialog(false);
       })
-      .catch((error) => console.error("Error updating purpose:", error));
+      .catch((error) => console.error('Error updating purpose:', error));
   };
 
   const handleCloseDialog = () => {
@@ -103,7 +101,7 @@ const PurposeSection: React.FC<PurposeSectionProps> = ({ initialData }) => {
   };
 
   return (
-    <Box sx={{ mt: 2, fontFamily: "Arial, sans-serif" }}>
+    <Box sx={{ mt: 2, fontFamily: 'Arial, sans-serif' }}>
       <Typography variant="h6" gutterBottom>
         1. Purpose:
       </Typography>
@@ -111,19 +109,17 @@ const PurposeSection: React.FC<PurposeSectionProps> = ({ initialData }) => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: "bold", width: "50%" }}>
-                English Content
-              </TableCell>
-              <TableCell sx={{ fontWeight: "bold", width: "50%" }} align="right">
+              <TableCell sx={{ fontWeight: 'bold', width: '50%' }}>English Content</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', width: '50%' }} align="right">
                 المحتوى العربي
               </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {purpose && (
-              <TableRow onDoubleClick={handleDoubleClick} hover sx={{ cursor: "pointer" }}>
+              <TableRow onDoubleClick={handleDoubleClick} hover sx={{ cursor: 'pointer' }}>
                 <TableCell>{purpose.Content_en}</TableCell>
-                <TableCell align="right" style={{ direction: "rtl" }}>
+                <TableCell align="right" style={{ direction: 'rtl' }}>
                   {purpose.Content_ar}
                 </TableCell>
               </TableRow>
@@ -139,7 +135,7 @@ const PurposeSection: React.FC<PurposeSectionProps> = ({ initialData }) => {
             Current Record
           </Typography>
           {purpose && (
-            <Box sx={{ mb: 2, border: "1px solid #ccc", p: 2, borderRadius: 1 }}>
+            <Box sx={{ mb: 2, border: '1px solid #ccc', p: 2, borderRadius: 1 }}>
               <Stack spacing={2}>
                 <TextField
                   label="English Content"
@@ -154,7 +150,7 @@ const PurposeSection: React.FC<PurposeSectionProps> = ({ initialData }) => {
                   minRows={2}
                   value={editContentAr}
                   onChange={(e) => setEditContentAr(e.target.value)}
-                  inputProps={{ style: { textAlign: "right", direction: "rtl" } }}
+                  inputProps={{ style: { textAlign: 'right', direction: 'rtl' } }}
                 />
                 <TextField
                   label="Reviewer Comment"
@@ -162,7 +158,7 @@ const PurposeSection: React.FC<PurposeSectionProps> = ({ initialData }) => {
                   minRows={1}
                   value={editReviewerComment}
                   onChange={(e) => setEditReviewerComment(e.target.value)}
-                  InputProps={{ style: { color: "red" } }}
+                  InputProps={{ style: { color: 'red' } }}
                 />
                 <Typography variant="body2">
                   <strong>Version:</strong> {purpose.Version}
@@ -171,13 +167,13 @@ const PurposeSection: React.FC<PurposeSectionProps> = ({ initialData }) => {
                   <strong>Crt_Date:</strong> {purpose.Crt_Date}
                 </Typography>
                 <Typography variant="body2">
-                  <strong>Modified_Date:</strong> {purpose.Modified_Date || "N/A"}
+                  <strong>Modified_Date:</strong> {purpose.Modified_Date || 'N/A'}
                 </Typography>
                 <Typography variant="body2">
                   <strong>Crt_by:</strong> {purpose.Crt_by}
                 </Typography>
                 <Typography variant="body2">
-                  <strong>Modified_by:</strong> {purpose.Modified_by || "N/A"}
+                  <strong>Modified_by:</strong> {purpose.Modified_by || 'N/A'}
                 </Typography>
               </Stack>
             </Box>
@@ -205,16 +201,16 @@ const PurposeSection: React.FC<PurposeSectionProps> = ({ initialData }) => {
                       <strong>Crt_Date:</strong> {record.Crt_Date}
                     </Typography>
                     <Typography variant="body2">
-                      <strong>Modified_Date:</strong> {record.Modified_Date || "N/A"}
+                      <strong>Modified_Date:</strong> {record.Modified_Date || 'N/A'}
                     </Typography>
                     <Typography variant="body2">
                       <strong>Crt_by:</strong> {record.Crt_by}
                     </Typography>
                     <Typography variant="body2">
-                      <strong>Modified_by:</strong> {record.Modified_by || "N/A"}
+                      <strong>Modified_by:</strong> {record.Modified_by || 'N/A'}
                     </Typography>
                     {record.reviewer_Comment && (
-                      <Typography variant="body2" sx={{ color: "red" }}>
+                      <Typography variant="body2" sx={{ color: 'red' }}>
                         <strong>Reviewer Comment:</strong> {record.reviewer_Comment}
                       </Typography>
                     )}

@@ -1,14 +1,15 @@
-import React, { useEffect, useState } from "react";
-import axiosServices from "src/utils/axiosServices";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useEffect, useState } from 'react';
+import axiosServices from 'src/utils/axiosServices';
 
 // استيراد القالب والمكونات الفرعية
-import SOPTemplate from "../components/SOPTemplate";
-import PurposeSection from "../components/PurposeSection";
-import DefinitionsSection from "../components/DefinitionsSection";
-import ScopeSection from "../components/ScopeSection";
-import ProceduresSection from "../components/ProceduresSection";
-import ResponsibilitiesSection from "../components/ResponsibilitiesSection";
-import SafetyConcernsSection from "../components/SafetyConcernsSection";
+import SOPTemplate from '../components/SOPTemplate';
+import PurposeSection from '../components/PurposeSection';
+import DefinitionsSection from '../components/DefinitionsSection';
+import ScopeSection from '../components/ScopeSection';
+import ProceduresSection from '../components/ProceduresSection';
+import ResponsibilitiesSection from '../components/ResponsibilitiesSection';
+import SafetyConcernsSection from '../components/SafetyConcernsSection';
 
 // واجهة الداتا الخاصة بتتبع الـ SOP
 export interface SopDetailTracking {
@@ -30,39 +31,25 @@ const SOPFullDocument: React.FC = () => {
 
   useEffect(() => {
     axiosServices
-      .get("/api/sopDetailTracking/getSop?isCurrent=true")
+      .get('/api/sopDetailTracking/getSop?isCurrent=true')
       .then((res) => {
-        // اختيار السجلات النشطة فقط (Is_Active === 1)
-        const activeRecords = res.data.filter(
-          (item: SopDetailTracking) => item.Is_Active === 1
-        );
+        const activeRecords = res.data.filter((item: SopDetailTracking) => item.Is_Active === 1);
         if (activeRecords.length > 0) {
           // نستخدم أول سجل نشط للعرض الأولي
           setSopDetail(activeRecords[0]);
         }
       })
-      .catch((error) =>
-        console.error("Error fetching sop detail tracking data:", error)
-      );
+      .catch((error) => console.error('Error fetching sop detail tracking data:', error));
   }, []);
 
   return (
-
     <SOPTemplate headerData={sopDetail ? sopDetail.Sop_header : null}>
       <PurposeSection initialData={sopDetail ? sopDetail.sop_purpose : null} />
-      <DefinitionsSection
-        initialData={sopDetail ? sopDetail.Sop_Definitions : null}
-      />
+      <DefinitionsSection initialData={sopDetail ? sopDetail.Sop_Definitions : null} />
       <ScopeSection initialData={sopDetail ? sopDetail.Sop_Scope : null} />
-      <ProceduresSection
-        initialData={sopDetail ? sopDetail.Sop_Procedures : null}
-      />
-      <ResponsibilitiesSection
-        initialData={sopDetail ? sopDetail.Sop_Res : null}
-      />
-      <SafetyConcernsSection
-        initialData={sopDetail ? sopDetail.Sop_SafetyConcerns : null}
-      />
+      <ProceduresSection initialData={sopDetail ? sopDetail.Sop_Procedures : null} />
+      <ResponsibilitiesSection initialData={sopDetail ? sopDetail.Sop_Res : null} />
+      <SafetyConcernsSection initialData={sopDetail ? sopDetail.Sop_SafetyConcerns : null} />
     </SOPTemplate>
   );
 };
