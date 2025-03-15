@@ -4,8 +4,8 @@ interface PaginatedSOPContentProps {
   sections: React.ReactNode[];
   header: React.ReactNode;
   footer: React.ReactNode;
-  sectionHeight?: number;
-  pageHeight?: number;
+  sectionHeight?: number; // تقديري لكل قسم
+  pageHeight?: number;    // ارتفاع المحتوى لكل صفحة
 }
 
 const PaginatedSOPContent: React.FC<PaginatedSOPContentProps> = ({
@@ -39,31 +39,30 @@ const PaginatedSOPContent: React.FC<PaginatedSOPContentProps> = ({
           key={i}
           className="page"
           style={{
-            width: "794px",
-            height: "1123px",
+            width: "210mm",
+            height: "297mm",
+            margin: "0 auto 20px auto",
             border: "1px solid #000",
-            margin: "0 auto 75px auto", // توسيط الصفحة + مسافة من الأسفل
+            position: "relative",
             boxSizing: "border-box",
             display: "flex",
             flexDirection: "column",
             background: "#fff",
-            position: "relative",
           }}
         >
-          {/* الهيدر */}
-          <div style={{ flexShrink: 0 }}>{header}</div>
-
-          {/* المحتوى في المنتصف */}
-          <div style={{ flexGrow: 1 }}>
+          <div className="header" style={{ flexShrink: 0 }}>
+            {header}
+          </div>
+          <div className="content" style={{ flexGrow: 1, overflow: "hidden", padding: "10px" }}>
             {pageSections.map((section, j) => (
-              <div key={j} style={{ marginBottom: "10px" }}>
+              <div key={j} className="section" style={{ marginBottom: "10px" }}>
                 {section}
               </div>
             ))}
           </div>
-
-          {/* الفوتر */}
-          <div style={{ flexShrink: 0 }}>{footer}</div>
+          <div className="footer" style={{ flexShrink: 0 }}>
+            {footer}
+          </div>
         </div>
       ))}
     </>

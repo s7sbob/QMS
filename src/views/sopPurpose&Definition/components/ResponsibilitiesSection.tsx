@@ -9,7 +9,6 @@ import {
   DialogTitle,
   List,
   ListItem,
-  ListItemText,
   Paper,
   Stack,
   Table,
@@ -44,11 +43,12 @@ interface ResponsibilitiesSectionProps {
 
 const ResponsibilitiesSection: React.FC<ResponsibilitiesSectionProps> = ({ initialData }) => {
   const [responsibility, setResponsibility] = useState<Responsibility | null>(null);
-  const [editContentEn, setEditContentEn] = useState<string>("");
-  const [editContentAr, setEditContentAr] = useState<string>("");
-  const [editReviewerComment, setEditReviewerComment] = useState<string>("");
+  const [editContentEn, setEditContentEn] = useState("");
+  const [editContentAr, setEditContentAr] = useState("");
+  const [editReviewerComment, setEditReviewerComment] = useState("");
+
   const [historicalResponsibilities, setHistoricalResponsibilities] = useState<Responsibility[]>([]);
-  const [openDialog, setOpenDialog] = useState<boolean>(false);
+  const [openDialog, setOpenDialog] = useState(false);
 
   useEffect(() => {
     if (initialData) {
@@ -59,33 +59,50 @@ const ResponsibilitiesSection: React.FC<ResponsibilitiesSectionProps> = ({ initi
     }
   }, [initialData]);
 
+  const hasComment = Boolean(editReviewerComment.trim());
+
   const handleDoubleClick = () => {
     if (!responsibility) return;
     axiosServices
       .get(`/api/sopRes/getAllHistory/${responsibility.Sop_HeaderId}`)
       .then((res) => {
-        const activeRecords = res.data.filter((item: any) => item.Is_Active === 1);
+        const activeRecords = res.data.filter((item: any) => item.Is_Active === 0);
         setHistoricalResponsibilities(activeRecords);
         setOpenDialog(true);
       })
-      .catch((error) =>
-        console.error("Error fetching historical responsibilities:", error)
-      );
+      .catch((error) => console.error("Error fetching historical responsibilities:", error));
   };
 
   const handleSave = () => {
     if (!responsibility) return;
-    axiosServices
-      .put(`/api/sopRes/updateSop-Res/${responsibility.Id}`, {
-        Content_en: editContentEn,
-        Content_ar: editContentAr,
-        reviewer_Comment: editReviewerComment,
-      })
-      .then((res) => {
-        setResponsibility(res.data);
-        setOpenDialog(false);
-      })
-      .catch((error) => console.error("Error updating responsibility:", error));
+    if (editContentEn !== responsibility.Content_en || editContentAr !== responsibility.Content_ar) {
+      // Insert call
+      axiosServices
+        .post("/api/sopRes/addSop-Res", {
+          Content_en: editContentEn,
+          Content_ar: editContentAr,
+          reviewer_Comment: editReviewerComment,
+          Sop_HeaderId: responsibility.Sop_HeaderId,
+        })
+        .then((res) => {
+          setResponsibility(res.data);
+          setOpenDialog(false);
+        })
+        .catch((error) => console.error("Error inserting responsibility:", error));
+    } else {
+      // Update call
+      axiosServices
+        .put(`/api/sopRes/updateSop-Res/${responsibility.Id}`, {
+          Content_en: editContentEn,
+          Content_ar: editContentAr,
+          reviewer_Comment: editReviewerComment,
+        })
+        .then((res) => {
+          setResponsibility(res.data);
+          setOpenDialog(false);
+        })
+        .catch((error) => console.error("Error updating responsibility:", error));
+    }
   };
 
   const handleCloseDialog = () => {
@@ -94,115 +111,67 @@ const ResponsibilitiesSection: React.FC<ResponsibilitiesSectionProps> = ({ initi
 
   return (
     <Box sx={{ mt: 2, fontFamily: "Arial, sans-serif" }}>
-      <Typography variant="h6" gutterBottom>
-        5. Responsibilities:
+      <Typography
+        variant="h6"
+        gutterBottom
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          color: hasComment ? "red" : "inherit",
+        }}
+      >
+        <span>5. Responsibilities:</span>
+        <span>(المسؤوليات)</span>
       </Typography>
       <TableContainer component={Paper} sx={{ mt: 1 }}>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: "bold", width: "50%" }}>
-                English Content
-              </TableCell>
-              <TableCell sx={{ fontWeight: "bold", width: "50%" }} align="right">
-                المحتوى العربي
-              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", width: "50%" }}>English Content</TableCell>
+              <TableCell sx={{ fontWeight: "bold", width: "50%" }} align="right">المحتوى العربي</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {responsibility && (
               <TableRow onDoubleClick={handleDoubleClick} hover sx={{ cursor: "pointer" }}>
                 <TableCell>{responsibility.Content_en}</TableCell>
-                <TableCell align="right" style={{ direction: "rtl" }}>
-                  {responsibility.Content_ar}
-                </TableCell>
+                <TableCell align="right" style={{ direction: "rtl" }}>{responsibility.Content_ar}</TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </TableContainer>
       <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth maxWidth="md">
-        <DialogTitle>تفاصيل Responsibility</DialogTitle>
+        <DialogTitle>تفاصيل المسؤوليات</DialogTitle>
         <DialogContent dividers>
-          {/* Current Record Editable */}
-          <Typography variant="h6" gutterBottom>
-            Current Record
-          </Typography>
+          <Typography variant="h6" gutterBottom>Current Record</Typography>
           {responsibility && (
             <Box sx={{ mb: 2, border: "1px solid #ccc", p: 2, borderRadius: 1 }}>
               <Stack spacing={2}>
-                <TextField
-                  label="English Content"
-                  multiline
-                  minRows={2}
-                  value={editContentEn}
-                  onChange={(e) => setEditContentEn(e.target.value)}
-                />
-                <TextField
-                  label="Arabic Content"
-                  multiline
-                  minRows={2}
-                  value={editContentAr}
-                  onChange={(e) => setEditContentAr(e.target.value)}
-                  inputProps={{ style: { textAlign: "right", direction: "rtl" } }}
-                />
-                <TextField
-                  label="Reviewer Comment"
-                  multiline
-                  minRows={1}
-                  value={editReviewerComment}
-                  onChange={(e) => setEditReviewerComment(e.target.value)}
-                  InputProps={{ style: { color: "red" } }}
-                />
-                <Typography variant="body2">
-                  <strong>Version:</strong> {responsibility.Version}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Crt_Date:</strong> {responsibility.Crt_Date}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Modified_Date:</strong> {responsibility.Modified_Date || "N/A"}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Crt_by:</strong> {responsibility.Crt_by}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Modified_by:</strong> {responsibility.Modified_by || "N/A"}
-                </Typography>
+                <TextField label="English Content" multiline minRows={2} value={editContentEn} onChange={(e) => setEditContentEn(e.target.value)} />
+                <TextField label="Arabic Content" multiline minRows={2} value={editContentAr} onChange={(e) => setEditContentAr(e.target.value)} inputProps={{ style: { textAlign: "right", direction: "rtl" } }} />
+                <TextField label="Reviewer Comment" multiline minRows={1} value={editReviewerComment} onChange={(e) => setEditReviewerComment(e.target.value)} InputProps={{ style: { color: "red" } }} />
+                <Typography variant="body2"><strong>Version:</strong> {responsibility.Version}</Typography>
+                <Typography variant="body2"><strong>Crt_Date:</strong> {responsibility.Crt_Date}</Typography>
+                <Typography variant="body2"><strong>Modified_Date:</strong> {responsibility.Modified_Date || "N/A"}</Typography>
+                <Typography variant="body2"><strong>Crt_by:</strong> {responsibility.Crt_by}</Typography>
+                <Typography variant="body2"><strong>Modified_by:</strong> {responsibility.Modified_by || "N/A"}</Typography>
               </Stack>
             </Box>
           )}
-
-          {/* History Section (read-only) */}
-          <Typography variant="h6" gutterBottom>
-            History (read-only)
-          </Typography>
+          <Typography variant="h6" gutterBottom>History (read-only)</Typography>
           {historicalResponsibilities.length > 0 ? (
             <List>
               {historicalResponsibilities.map((record) => (
                 <ListItem key={record.Id} alignItems="flex-start">
                   <Box>
-                    <Typography variant="body2">
-                      <strong>Content (EN):</strong> {record.Content_en}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Content (AR):</strong> {record.Content_ar}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Version:</strong> {record.Version}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Crt_Date:</strong> {record.Crt_Date}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Modified_Date:</strong> {record.Modified_Date || "N/A"}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Crt_by:</strong> {record.Crt_by}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Modified_by:</strong> {record.Modified_by || "N/A"}
-                    </Typography>
+                    <Typography variant="body2"><strong>Content (EN):</strong> {record.Content_en}</Typography>
+                    <Typography variant="body2"><strong>Content (AR):</strong> {record.Content_ar}</Typography>
+                    <Typography variant="body2"><strong>Version:</strong> {record.Version}</Typography>
+                    <Typography variant="body2"><strong>Crt_Date:</strong> {record.Crt_Date}</Typography>
+                    <Typography variant="body2"><strong>Modified_Date:</strong> {record.Modified_Date || "N/A"}</Typography>
+                    <Typography variant="body2"><strong>Crt_by:</strong> {record.Crt_by}</Typography>
+                    <Typography variant="body2"><strong>Modified_by:</strong> {record.Modified_by || "N/A"}</Typography>
                     {record.reviewer_Comment && (
                       <Typography variant="body2" sx={{ color: "red" }}>
                         <strong>Reviewer Comment:</strong> {record.reviewer_Comment}
@@ -217,12 +186,8 @@ const ResponsibilitiesSection: React.FC<ResponsibilitiesSectionProps> = ({ initi
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog} color="inherit">
-            Cancel
-          </Button>
-          <Button onClick={handleSave} variant="contained" color="primary">
-            Save Current Record
-          </Button>
+          <Button onClick={handleCloseDialog} color="inherit">Cancel</Button>
+          <Button onClick={handleSave} variant="contained" color="primary">Save Current Record</Button>
         </DialogActions>
       </Dialog>
     </Box>
