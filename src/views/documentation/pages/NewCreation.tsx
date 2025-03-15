@@ -76,38 +76,36 @@ const NewCreation: React.FC = () => {
   // جلب الأقسام بناءً على compId
   useEffect(() => {
     if (compId) {
-      console.log("Using compId:", compId);
+      console.log('Using compId:', compId);
       setLoading(true);
       axiosServices
         .get(`/api/department/compdepartments/${compId}`)
         .then((res) => {
-          console.log("Response from departments API:", res.data);
+          console.log('Response from departments API:', res.data);
           let data = res.data;
           if (!Array.isArray(data)) {
             try {
               data = JSON.parse(data);
             } catch (error) {
-              console.error("Error parsing departments:", error);
+              console.error('Error parsing departments:', error);
               data = [];
             }
           }
-          console.log("Parsed departments:", data);
+          console.log('Parsed departments:', data);
           setDepartments(data);
         })
         .catch((err) => {
-          console.error("Error fetching departments:", err);
+          console.error('Error fetching departments:', err);
         })
         .finally(() => {
           setLoading(false);
         });
     } else {
-      console.log("compId not available yet");
+      console.log('compId not available yet');
     }
   }, [compId]);
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -141,7 +139,7 @@ const NewCreation: React.FC = () => {
 
       const headerResponse = await axiosServices.post(
         '/api/sopheader/addEditSopHeader',
-        headerPayload
+        headerPayload,
       );
       const headerId = headerResponse.data?.Id;
       if (!headerId) {
@@ -180,7 +178,7 @@ const NewCreation: React.FC = () => {
           Is_Active: 1,
           Sop_HeaderId: headerId,
         };
-        await axiosServices.post('/api/sopRes/addSop-Res', resPayload);
+        await axiosServices.post('/api/sopRes/SopReponsibility-create', resPayload);
       }
 
       if (formData.procedureEn || formData.procedureAr) {
@@ -191,7 +189,7 @@ const NewCreation: React.FC = () => {
           Is_Active: 1,
           Sop_HeaderId: headerId,
         };
-        await axiosServices.post('/api/soprocedures/addSop-Procedure', procPayload);
+        await axiosServices.post('/api/sopProcedures/addSop-Procedure', procPayload);
       }
 
       if (formData.scopeEn || formData.scopeAr) {
@@ -213,12 +211,12 @@ const NewCreation: React.FC = () => {
           Is_Active: 1,
           Sop_HeaderId: headerId,
         };
-        await axiosServices.post('/api/sopSafetyConcerns/addSop-SafetyConcerns', safetyPayload);
+        await axiosServices.post('/api/sopSafetyConcerns/addsop-safety-concerns', safetyPayload);
       }
 
       alert('تم إنشاء الـ SOP بنجاح وإرسال كل جزء للـ Endpoint الخاص به.');
     } catch (error) {
-      console.error("Error in submit:", error);
+      console.error('Error in submit:', error);
       alert('حدث خطأ أثناء إنشاء الـ SOP. راجع الـ Console لمعرفة التفاصيل.');
     }
   };
@@ -398,7 +396,12 @@ const NewCreation: React.FC = () => {
                 <Typography variant="subtitle1" gutterBottom>
                   المرفقـــات:
                 </Typography>
-                <Button variant="outlined" component="label" startIcon={<IconUpload />} sx={{ mb: 2 }}>
+                <Button
+                  variant="outlined"
+                  component="label"
+                  startIcon={<IconUpload />}
+                  sx={{ mb: 2 }}
+                >
                   رفع الملفات
                   <input type="file" multiple hidden onChange={handleFileUpload} />
                 </Button>
@@ -410,7 +413,11 @@ const NewCreation: React.FC = () => {
                         secondary={`${(file.size / 1024 / 1024).toFixed(2)} MB`}
                       />
                       <ListItemSecondaryAction>
-                        <IconButton edge="end" onClick={() => handleFileDelete(index)} color="error">
+                        <IconButton
+                          edge="end"
+                          onClick={() => handleFileDelete(index)}
+                          color="error"
+                        >
                           <IconTrash size={20} />
                         </IconButton>
                       </ListItemSecondaryAction>
@@ -571,7 +578,12 @@ const NewCreation: React.FC = () => {
                 <Typography variant="subtitle1" gutterBottom>
                   Attachments:
                 </Typography>
-                <Button variant="outlined" component="label" startIcon={<IconUpload />} sx={{ mb: 2 }}>
+                <Button
+                  variant="outlined"
+                  component="label"
+                  startIcon={<IconUpload />}
+                  sx={{ mb: 2 }}
+                >
                   Upload Files
                   <input type="file" multiple hidden onChange={handleFileUpload} />
                 </Button>
@@ -583,7 +595,11 @@ const NewCreation: React.FC = () => {
                         secondary={`${(file.size / 1024 / 1024).toFixed(2)} MB`}
                       />
                       <ListItemSecondaryAction>
-                        <IconButton edge="end" onClick={() => handleFileDelete(index)} color="error">
+                        <IconButton
+                          edge="end"
+                          onClick={() => handleFileDelete(index)}
+                          color="error"
+                        >
                           <IconTrash size={20} />
                         </IconButton>
                       </ListItemSecondaryAction>
