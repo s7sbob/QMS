@@ -30,7 +30,7 @@ const PreparedBySection: React.FC<PreparedBySectionProps> = ({
     >
       {/* الصف الأول (Header) - خلفية داكنة + نص باللون الأبيض */}
       <thead>
-        <tr style={{ backgroundColor: "#274F8E", color: "#fff" }}>
+        <tr >
           <th
             style={{
               border: "1px solid #000",
@@ -107,7 +107,7 @@ const PreparedBySection: React.FC<PreparedBySectionProps> = ({
 
       <tbody>
         {/* الصف الثاني (Job Title) - خلفية زرقاء فاتحة */}
-        <tr style={{ backgroundColor: "#D9E1F2" }}>
+        <tr >
           {/* قسّمنا الخلية الأولى إلى عمودين: الإنجليزية والعربية */}
           <td
             style={{
@@ -165,7 +165,7 @@ const PreparedBySection: React.FC<PreparedBySectionProps> = ({
         </tr>
 
         {/* الصف الثالث (Name) - خلفية بيضاء */}
-        <tr style={{ backgroundColor: "#D9E1F2" }}>
+        <tr >
           <td
             style={{
               border: "1px solid #000",
@@ -219,7 +219,7 @@ const PreparedBySection: React.FC<PreparedBySectionProps> = ({
         </tr>
 
         {/* الصف الرابع (Signature) - خلفية زرقاء فاتحة */}
-        <tr style={{ backgroundColor: "#D9E1F2" }}>
+        <tr >
           <td
             style={{
               border: "1px solid #000",
@@ -249,7 +249,7 @@ const PreparedBySection: React.FC<PreparedBySectionProps> = ({
         </tr>
 
         {/* الصف الخامس (Date) - خلفية بيضاء */}
-        <tr style={{ backgroundColor: "#D9E1F2" }}>
+        <tr >
           <td
             style={{
               border: "1px solid #000",

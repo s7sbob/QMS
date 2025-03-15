@@ -1,11 +1,8 @@
-// src/pages/SOPFullDocument.tsx
 import React, { useEffect, useState } from "react";
 import axiosServices from "src/utils/axiosServices";
 
-// استيراد القالب الذي يحتوي على الهيدر والفوتر والتوقيعات
+// استيراد القالب والمكونات الفرعية
 import SOPTemplate from "../components/SOPTemplate";
-
-// استيراد الأقسام الأخرى
 import PurposeSection from "../components/PurposeSection";
 import DefinitionsSection from "../components/DefinitionsSection";
 import ScopeSection from "../components/ScopeSection";
@@ -13,37 +10,59 @@ import ProceduresSection from "../components/ProceduresSection";
 import ResponsibilitiesSection from "../components/ResponsibilitiesSection";
 import SafetyConcernsSection from "../components/SafetyConcernsSection";
 
-// استيراد الواجهة (للتايبنج) - أو يمكنك تعريفها هنا
-import { SopHeader } from "../types/SopHeader";
+// واجهة الداتا الخاصة بتتبع الـ SOP
+export interface SopDetailTracking {
+  Id: string;
+  Sop_HeaderId: string;
+  sop_purpose: any;
+  Sop_Definitions: any;
+  Sop_Scope: any;
+  Sop_Procedures: any;
+  Sop_Res: any;
+  Sop_SafetyConcerns?: any;
+  Is_Active: number;
+  crt_date: string;
+  Sop_header: any;
+}
 
 const SOPFullDocument: React.FC = () => {
-  // حالة لتخزين بيانات الهيدر
-  const [headerData, setHeaderData] = useState<SopHeader | null>(null);
+  const [sopDetail, setSopDetail] = useState<SopDetailTracking | null>(null);
 
   useEffect(() => {
-    // جلب بيانات الهيدر
     axiosServices
-      .get("/api/sopheader/getAllSopHeaders")
+      .get("/api/sopDetailTracking/getSop?isCurrent=true")
       .then((res) => {
-        if (Array.isArray(res.data) && res.data.length > 0) {
-          // نفترض أنك تريد أول عنصر فقط
-          setHeaderData(res.data[0]);
+        // اختيار السجلات النشطة فقط (Is_Active === 1)
+        const activeRecords = res.data.filter(
+          (item: SopDetailTracking) => item.Is_Active === 1
+        );
+        if (activeRecords.length > 0) {
+          // نستخدم أول سجل نشط للعرض الأولي
+          setSopDetail(activeRecords[0]);
         }
       })
-      .catch((error) => {
-        console.error("Error fetching sop-header data:", error);
-      });
+      .catch((error) =>
+        console.error("Error fetching sop detail tracking data:", error)
+      );
   }, []);
 
   return (
-    <SOPTemplate headerData={headerData}>
-      {/* بقية الأقسام */}
-      <PurposeSection />
-      <DefinitionsSection />
-      <ScopeSection />
-      <ProceduresSection />
-      <ResponsibilitiesSection />
-      <SafetyConcernsSection />
+
+    <SOPTemplate headerData={sopDetail ? sopDetail.Sop_header : null}>
+      <PurposeSection initialData={sopDetail ? sopDetail.sop_purpose : null} />
+      <DefinitionsSection
+        initialData={sopDetail ? sopDetail.Sop_Definitions : null}
+      />
+      <ScopeSection initialData={sopDetail ? sopDetail.Sop_Scope : null} />
+      <ProceduresSection
+        initialData={sopDetail ? sopDetail.Sop_Procedures : null}
+      />
+      <ResponsibilitiesSection
+        initialData={sopDetail ? sopDetail.Sop_Res : null}
+      />
+      <SafetyConcernsSection
+        initialData={sopDetail ? sopDetail.Sop_SafetyConcerns : null}
+      />
     </SOPTemplate>
   );
 };

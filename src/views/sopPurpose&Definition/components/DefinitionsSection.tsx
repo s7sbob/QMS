@@ -1,99 +1,97 @@
 import React, { useEffect, useState } from "react";
 import axiosServices from "src/utils/axiosServices";
-
 import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  List,
+  ListItem,
+  ListItemText,
+  Paper,
+  Stack,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
   TextField,
   Typography,
-  List,
-  ListItem,
-  ListItemText,
-  Box,
-  Stack,
 } from "@mui/material";
 
-interface Modification {
-  date: string;
-  change: string;
-}
-
-interface Definition {
+export interface Definition {
   Id: string;
   Content_en: string;
   Content_ar: string;
-  Version: number;
+  Version: number | null;
   Is_Current: number;
   Crt_Date: string;
-  Crt_by: string;
+  Crt_by: string | null;
   Modified_Date: string | null;
   Modified_by: string | null;
   Sop_HeaderId: string;
   Is_Active: number;
-  modificationLog?: Modification[];
+  modificationLog?: { date: string; change: string }[];
+  reviewer_Comment?: string | null;
 }
 
-const DefinitionsSection: React.FC = () => {
-  const [definitions, setDefinitions] = useState<Definition[]>([]);
-  const [selectedDefinition, setSelectedDefinition] = useState<Definition | null>(null);
-  const [openDialog, setOpenDialog] = useState<boolean>(false);
+interface DefinitionsSectionProps {
+  initialData: Definition | null;
+}
 
+const DefinitionsSection: React.FC<DefinitionsSectionProps> = ({ initialData }) => {
+  const [definition, setDefinition] = useState<Definition | null>(null);
   const [editContentEn, setEditContentEn] = useState<string>("");
   const [editContentAr, setEditContentAr] = useState<string>("");
+  const [editReviewerComment, setEditReviewerComment] = useState<string>("");
+  const [historicalDefinitions, setHistoricalDefinitions] = useState<Definition[]>([]);
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
 
-  // جلب بيانات Definitions
   useEffect(() => {
-    axiosServices
-      .get("/api/sopDefinition/getAllSop-Definition")
-      .then((res) => {
-        setDefinitions(res.data);
-      })
-      .catch((error) => console.error("Error fetching definitions:", error));
-  }, []);
+    if (initialData) {
+      setDefinition(initialData);
+      setEditContentEn(initialData.Content_en);
+      setEditContentAr(initialData.Content_ar);
+      setEditReviewerComment(initialData.reviewer_Comment || "");
+    }
+  }, [initialData]);
 
-  const handleDoubleClick = (id: string) => {
+  const handleDoubleClick = () => {
+    if (!definition) return;
     axiosServices
-      .get(`/api/sopDefinition/getSop-Definition/${id}`)
+      .get(`/api/sopDefinition/getAllHistory/${definition.Sop_HeaderId}`)
       .then((res) => {
-        setSelectedDefinition(res.data);
-        setEditContentEn(res.data.Content_en);
-        setEditContentAr(res.data.Content_ar);
+        const activeRecords = res.data.filter((item: any) => item.Is_Active === 1);
+        setHistoricalDefinitions(activeRecords);
         setOpenDialog(true);
       })
-      .catch((error) => console.error("Error fetching definition:", error));
+      .catch((error) =>
+        console.error("Error fetching historical definitions:", error)
+      );
+  };
+
+  const handleSave = () => {
+    if (!definition) return;
+    axiosServices
+      .put(`/api/sopDefinition/updateSop-Definition/${definition.Id}`, {
+        Content_en: editContentEn,
+        Content_ar: editContentAr,
+        reviewer_Comment: editReviewerComment,
+      })
+      .then((res) => {
+        setDefinition(res.data);
+        setOpenDialog(false);
+      })
+      .catch((error) =>
+        console.error("Error updating definition:", error)
+      );
   };
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
-    setSelectedDefinition(null);
-  };
-
-  const handleSave = () => {
-    if (!selectedDefinition) return;
-
-    axiosServices
-      .put(`/api/sopDefinition/updateSop-Definition/${selectedDefinition.Id}`, {
-        Content_en: editContentEn,
-        Content_ar: editContentAr,
-      })
-      .then((res) => {
-        // تحديث القائمة
-        setDefinitions((prev) =>
-          prev.map((def) => (def.Id === selectedDefinition.Id ? res.data : def))
-        );
-        handleCloseDialog();
-      })
-      .catch((error) => console.error("Error updating definition:", error));
   };
 
   return (
@@ -101,7 +99,6 @@ const DefinitionsSection: React.FC = () => {
       <Typography variant="h6" gutterBottom>
         2. Definitions:
       </Typography>
-
       <TableContainer component={Paper} sx={{ mt: 1 }}>
         <Table>
           <TableHead>
@@ -109,58 +106,33 @@ const DefinitionsSection: React.FC = () => {
               <TableCell sx={{ fontWeight: "bold", width: "50%" }}>
                 English Content
               </TableCell>
-              <TableCell
-                sx={{ fontWeight: "bold", width: "50%" }}
-                align="right"
-              >
+              <TableCell sx={{ fontWeight: "bold", width: "50%" }} align="right">
                 المحتوى العربي
               </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {definitions.map((def) => (
-              <TableRow
-                key={def.Id}
-                onDoubleClick={() => handleDoubleClick(def.Id)}
-                hover
-                sx={{ cursor: "pointer" }}
-              >
-                <TableCell>{def.Content_en}</TableCell>
+            {definition && (
+              <TableRow onDoubleClick={handleDoubleClick} hover sx={{ cursor: "pointer" }}>
+                <TableCell>{definition.Content_en}</TableCell>
                 <TableCell align="right" style={{ direction: "rtl" }}>
-                  {def.Content_ar}
+                  {definition.Content_ar}
                 </TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </TableContainer>
-
-      {/* Dialog للتعديل */}
-      <Dialog
-        open={openDialog}
-        onClose={handleCloseDialog}
-        fullWidth
-        maxWidth="md"
-      >
+      <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth maxWidth="md">
         <DialogTitle>تفاصيل التعريف</DialogTitle>
         <DialogContent dividers>
-          {selectedDefinition && (
-            <Box>
-              <Typography variant="subtitle1" gutterBottom>
-                <strong>Id:</strong> {selectedDefinition.Id}
-              </Typography>
-              <Typography variant="subtitle1" gutterBottom>
-                <strong>Version:</strong> {selectedDefinition.Version}
-              </Typography>
-              <Typography variant="subtitle1" gutterBottom>
-                <strong>Crt_Date:</strong> {selectedDefinition.Crt_Date}
-              </Typography>
-              <Typography variant="subtitle1" gutterBottom>
-                <strong>Modified_Date:</strong>{" "}
-                {selectedDefinition.Modified_Date || "N/A"}
-              </Typography>
-
-              <Stack spacing={2} sx={{ mt: 2 }}>
+          {/* Current Record Editable */}
+          <Typography variant="h6" gutterBottom>
+            Current Record
+          </Typography>
+          {definition && (
+            <Box sx={{ mb: 2, border: "1px solid #ccc", p: 2, borderRadius: 1 }}>
+              <Stack spacing={2}>
                 <TextField
                   label="English Content"
                   multiline
@@ -174,33 +146,84 @@ const DefinitionsSection: React.FC = () => {
                   minRows={2}
                   value={editContentAr}
                   onChange={(e) => setEditContentAr(e.target.value)}
-                  inputProps={{
-                    style: { textAlign: "right", direction: "rtl" },
-                  }}
+                  inputProps={{ style: { textAlign: "right", direction: "rtl" } }}
                 />
+                <TextField
+                  label="Reviewer Comment"
+                  multiline
+                  minRows={1}
+                  value={editReviewerComment}
+                  onChange={(e) => setEditReviewerComment(e.target.value)}
+                  InputProps={{ style: { color: "red" } }}
+                />
+                <Typography variant="body2">
+                  <strong>Version:</strong> {definition.Version}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Crt_Date:</strong> {definition.Crt_Date}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Modified_Date:</strong> {definition.Modified_Date || "N/A"}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Crt_by:</strong> {definition.Crt_by}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Modified_by:</strong> {definition.Modified_by || "N/A"}
+                </Typography>
               </Stack>
-
-              {selectedDefinition.modificationLog && (
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="h6">سجل التعديلات:</Typography>
-                  <List>
-                    {selectedDefinition.modificationLog.map((log, index) => (
-                      <ListItem key={index} disablePadding>
-                        <ListItemText primary={log.change} secondary={log.date} />
-                      </ListItem>
-                    ))}
-                  </List>
-                </Box>
-              )}
             </Box>
+          )}
+
+          {/* History Section (read-only) */}
+          <Typography variant="h6" gutterBottom>
+            History (read-only)
+          </Typography>
+          {historicalDefinitions.length > 0 ? (
+            <List>
+              {historicalDefinitions.map((record) => (
+                <ListItem key={record.Id} alignItems="flex-start">
+                  <Box>
+                    <Typography variant="body2">
+                      <strong>Content (EN):</strong> {record.Content_en}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Content (AR):</strong> {record.Content_ar}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Version:</strong> {record.Version}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Crt_Date:</strong> {record.Crt_Date}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Modified_Date:</strong> {record.Modified_Date || "N/A"}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Crt_by:</strong> {record.Crt_by}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Modified_by:</strong> {record.Modified_by || "N/A"}
+                    </Typography>
+                    {record.reviewer_Comment && (
+                      <Typography variant="body2" sx={{ color: "red" }}>
+                        <strong>Reviewer Comment:</strong> {record.reviewer_Comment}
+                      </Typography>
+                    )}
+                  </Box>
+                </ListItem>
+              ))}
+            </List>
+          ) : (
+            <Typography>No historical records available.</Typography>
           )}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog} color="inherit">
-            إلغاء
+            Cancel
           </Button>
           <Button onClick={handleSave} variant="contained" color="primary">
-            حفظ
+            Save Current Record
           </Button>
         </DialogActions>
       </Dialog>

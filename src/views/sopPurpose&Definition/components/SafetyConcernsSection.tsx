@@ -1,102 +1,95 @@
-// src/components/SafetyConcernsSection.tsx
-
 import React, { useEffect, useState } from "react";
 import axiosServices from "src/utils/axiosServices";
 import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  List,
+  ListItem,
+  ListItemText,
+  Paper,
+  Stack,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
   TextField,
   Typography,
-  List,
-  ListItem,
-  ListItemText,
-  Box,
-  Stack,
 } from "@mui/material";
 
-interface Modification {
-  date: string;
-  change: string;
-}
-
-interface SafetyConcern {
+export interface SafetyConcern {
   Id: string;
   Content_en: string;
   Content_ar: string;
-  Version: number;
+  Version: number | null;
   Is_Current: number;
   Crt_Date: string;
-  Crt_by: string;
+  Crt_by: string | null;
   Modified_Date: string | null;
   Modified_by: string | null;
   Sop_HeaderId: string;
   Is_Active: number;
-  modificationLog?: Modification[];
+  modificationLog?: { date: string; change: string }[];
+  reviewer_Comment?: string | null;
 }
 
-const SafetyConcernsSection: React.FC = () => {
-  const [safetyConcerns, setSafetyConcerns] = useState<SafetyConcern[]>([]);
-  const [selectedItem, setSelectedItem] = useState<SafetyConcern | null>(null);
-  const [openDialog, setOpenDialog] = useState<boolean>(false);
+interface SafetyConcernsSectionProps {
+  initialData: SafetyConcern | null;
+}
 
-  // حقول التعديل
+const SafetyConcernsSection: React.FC<SafetyConcernsSectionProps> = ({ initialData }) => {
+  const [safetyConcern, setSafetyConcern] = useState<SafetyConcern | null>(null);
   const [editContentEn, setEditContentEn] = useState<string>("");
   const [editContentAr, setEditContentAr] = useState<string>("");
+  const [editReviewerComment, setEditReviewerComment] = useState<string>("");
+  const [historicalSafetyConcerns, setHistoricalSafetyConcerns] = useState<SafetyConcern[]>([]);
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
 
   useEffect(() => {
-    axiosServices
-      .get("/api/sopSafetyConcerns/getAllSop-SafetyConcerns")
-      .then((res) => {
-        setSafetyConcerns(res.data);
-      })
-      .catch((error) =>
-        console.error("Error fetching safety concerns:", error)
-      );
-  }, []);
+    if (initialData) {
+      setSafetyConcern(initialData);
+      setEditContentEn(initialData.Content_en);
+      setEditContentAr(initialData.Content_ar);
+      setEditReviewerComment(initialData.reviewer_Comment || "");
+    }
+  }, [initialData]);
 
-  const handleDoubleClick = (id: string) => {
+  const handleDoubleClick = () => {
+    if (!safetyConcern) return;
     axiosServices
-      .get(`/api/sopSafetyConcerns/getSop-SafetyConcerns/${id}`)
+      .get(`/api/sopSafetyConcerns/getAllHistory/${safetyConcern.Sop_HeaderId}`)
       .then((res) => {
-        setSelectedItem(res.data);
-        setEditContentEn(res.data.Content_en);
-        setEditContentAr(res.data.Content_ar);
+        const activeRecords = res.data.filter((item: any) => item.Is_Active === 1);
+        setHistoricalSafetyConcerns(activeRecords);
         setOpenDialog(true);
       })
-      .catch((error) => console.error("Error fetching item:", error));
+      .catch((error) =>
+        console.error("Error fetching historical safety concerns:", error)
+      );
+  };
+
+  const handleSave = () => {
+    if (!safetyConcern) return;
+    axiosServices
+      .put(`/api/sopSafetyConcerns/updateSop-SafetyConcerns/${safetyConcern.Id}`, {
+        Content_en: editContentEn,
+        Content_ar: editContentAr,
+        reviewer_Comment: editReviewerComment,
+      })
+      .then((res) => {
+        setSafetyConcern(res.data);
+        setOpenDialog(false);
+      })
+      .catch((error) => console.error("Error updating safety concern:", error));
   };
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
-    setSelectedItem(null);
-  };
-
-  const handleSave = () => {
-    if (!selectedItem) return;
-
-    axiosServices
-      .put(`/api/sopSafetyConcerns/updateSop-SafetyConcerns/${selectedItem.Id}`, {
-        Content_en: editContentEn,
-        Content_ar: editContentAr,
-      })
-      .then((res) => {
-        // تحديث القائمة
-        setSafetyConcerns((prev) =>
-          prev.map((i) => (i.Id === selectedItem.Id ? res.data : i))
-        );
-        handleCloseDialog();
-      })
-      .catch((error) => console.error("Error updating item:", error));
   };
 
   return (
@@ -104,7 +97,6 @@ const SafetyConcernsSection: React.FC = () => {
       <Typography variant="h6" gutterBottom>
         6. Safety Concerns:
       </Typography>
-
       <TableContainer component={Paper} sx={{ mt: 1 }}>
         <Table>
           <TableHead>
@@ -112,58 +104,33 @@ const SafetyConcernsSection: React.FC = () => {
               <TableCell sx={{ fontWeight: "bold", width: "50%" }}>
                 English Content
               </TableCell>
-              <TableCell
-                sx={{ fontWeight: "bold", width: "50%" }}
-                align="right"
-              >
+              <TableCell sx={{ fontWeight: "bold", width: "50%" }} align="right">
                 المحتوى العربي
               </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {safetyConcerns.map((item) => (
-              <TableRow
-                key={item.Id}
-                onDoubleClick={() => handleDoubleClick(item.Id)}
-                hover
-                sx={{ cursor: "pointer" }}
-              >
-                <TableCell>{item.Content_en}</TableCell>
+            {safetyConcern && (
+              <TableRow onDoubleClick={handleDoubleClick} hover sx={{ cursor: "pointer" }}>
+                <TableCell>{safetyConcern.Content_en}</TableCell>
                 <TableCell align="right" style={{ direction: "rtl" }}>
-                  {item.Content_ar}
+                  {safetyConcern.Content_ar}
                 </TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </TableContainer>
-
-      {/* Dialog للتعديل */}
-      <Dialog
-        open={openDialog}
-        onClose={handleCloseDialog}
-        fullWidth
-        maxWidth="md"
-      >
-        <DialogTitle>تفاصيل الـ Safety Concerns</DialogTitle>
+      <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth maxWidth="md">
+        <DialogTitle>تفاصيل Safety Concerns</DialogTitle>
         <DialogContent dividers>
-          {selectedItem && (
-            <Box>
-              <Typography variant="subtitle1" gutterBottom>
-                <strong>Id:</strong> {selectedItem.Id}
-              </Typography>
-              <Typography variant="subtitle1" gutterBottom>
-                <strong>Version:</strong> {selectedItem.Version}
-              </Typography>
-              <Typography variant="subtitle1" gutterBottom>
-                <strong>Crt_Date:</strong> {selectedItem.Crt_Date}
-              </Typography>
-              <Typography variant="subtitle1" gutterBottom>
-                <strong>Modified_Date:</strong>{" "}
-                {selectedItem.Modified_Date || "N/A"}
-              </Typography>
-
-              <Stack spacing={2} sx={{ mt: 2 }}>
+          {/* Current Record Editable */}
+          <Typography variant="h6" gutterBottom>
+            Current Record
+          </Typography>
+          {safetyConcern && (
+            <Box sx={{ mb: 2, border: "1px solid #ccc", p: 2, borderRadius: 1 }}>
+              <Stack spacing={2}>
                 <TextField
                   label="English Content"
                   multiline
@@ -177,36 +144,84 @@ const SafetyConcernsSection: React.FC = () => {
                   minRows={2}
                   value={editContentAr}
                   onChange={(e) => setEditContentAr(e.target.value)}
-                  inputProps={{
-                    style: { textAlign: "right", direction: "rtl" },
-                  }}
+                  inputProps={{ style: { textAlign: "right", direction: "rtl" } }}
                 />
+                <TextField
+                  label="Reviewer Comment"
+                  multiline
+                  minRows={1}
+                  value={editReviewerComment}
+                  onChange={(e) => setEditReviewerComment(e.target.value)}
+                  InputProps={{ style: { color: "red" } }}
+                />
+                <Typography variant="body2">
+                  <strong>Version:</strong> {safetyConcern.Version}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Crt_Date:</strong> {safetyConcern.Crt_Date}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Modified_Date:</strong> {safetyConcern.Modified_Date || "N/A"}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Crt_by:</strong> {safetyConcern.Crt_by}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Modified_by:</strong> {safetyConcern.Modified_by || "N/A"}
+                </Typography>
               </Stack>
-
-              {selectedItem.modificationLog && (
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="h6">سجل التعديلات:</Typography>
-                  <List>
-                    {selectedItem.modificationLog.map((log, index) => (
-                      <ListItem key={index} disablePadding>
-                        <ListItemText
-                          primary={log.change}
-                          secondary={log.date}
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
-                </Box>
-              )}
             </Box>
+          )}
+
+          {/* History Section (read-only) */}
+          <Typography variant="h6" gutterBottom>
+            History (read-only)
+          </Typography>
+          {historicalSafetyConcerns.length > 0 ? (
+            <List>
+              {historicalSafetyConcerns.map((record) => (
+                <ListItem key={record.Id} alignItems="flex-start">
+                  <Box>
+                    <Typography variant="body2">
+                      <strong>Content (EN):</strong> {record.Content_en}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Content (AR):</strong> {record.Content_ar}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Version:</strong> {record.Version}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Crt_Date:</strong> {record.Crt_Date}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Modified_Date:</strong> {record.Modified_Date || "N/A"}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Crt_by:</strong> {record.Crt_by}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Modified_by:</strong> {record.Modified_by || "N/A"}
+                    </Typography>
+                    {record.reviewer_Comment && (
+                      <Typography variant="body2" sx={{ color: "red" }}>
+                        <strong>Reviewer Comment:</strong> {record.reviewer_Comment}
+                      </Typography>
+                    )}
+                  </Box>
+                </ListItem>
+              ))}
+            </List>
+          ) : (
+            <Typography>No historical records available.</Typography>
           )}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog} color="inherit">
-            إلغاء
+            Cancel
           </Button>
           <Button onClick={handleSave} variant="contained" color="primary">
-            حفظ
+            Save Current Record
           </Button>
         </DialogActions>
       </Dialog>
