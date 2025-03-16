@@ -12,7 +12,6 @@ import {
   FormGroup,
   Box,
 } from '@mui/material';
-import axiosServices from 'src/utils/axiosServices';
 
 interface FormData {
   date: string;
@@ -59,21 +58,19 @@ const reasonsOptions = [
 const CancellationForm: React.FC = () => {
   const [formData, setFormData] = useState<FormData>(initialData);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
 
   const handleCheckboxChange = (reason: string) => {
-    setFormData(prev => {
+    setFormData((prev) => {
       const currentReasons = prev.reasons;
       if (currentReasons.includes(reason)) {
-        return { ...prev, reasons: currentReasons.filter(r => r !== reason) };
+        return { ...prev, reasons: currentReasons.filter((r) => r !== reason) };
       } else {
         return { ...prev, reasons: [...currentReasons, reason] };
       }
@@ -172,7 +169,7 @@ const CancellationForm: React.FC = () => {
                 Reason for Change/Cancellation:
               </Typography>
               <FormGroup row>
-                {reasonsOptions.map(reason => (
+                {reasonsOptions.map((reason) => (
                   <FormControlLabel
                     key={reason}
                     control={
@@ -258,9 +255,7 @@ const CancellationForm: React.FC = () => {
             </Grid>
           </Grid>
 
-          <Box
-            sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2 }}
-          >
+          <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2 }}>
             <Button variant="contained" type="submit">
               Submit
             </Button>

@@ -1,15 +1,6 @@
 // src/pages/DistributionForm.tsx
 import React, { useState } from 'react';
-import {
-  Container,
-  Paper,
-  Typography,
-  TextField,
-  Button,
-  Grid,
-  Box
-} from '@mui/material';
-import axiosServices from 'src/utils/axiosServices';
+import { Container, Paper, Typography, TextField, Button, Grid, Box } from '@mui/material';
 
 interface CopyDetail {
   copyNumber: string;
@@ -39,28 +30,24 @@ const DistributionForm: React.FC = () => {
     revisionDate: '',
     numberOfCopies: '',
     destruction: '',
-    copies: [{ copyNumber: '', receivedBy: '', receivedSign: '' }]
+    copies: [{ copyNumber: '', receivedBy: '', receivedSign: '' }],
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleCopyChange = (
-    index: number,
-    field: keyof CopyDetail,
-    value: string
-  ) => {
+  const handleCopyChange = (index: number, field: keyof CopyDetail, value: string) => {
     const updatedCopies = [...formData.copies];
     updatedCopies[index] = { ...updatedCopies[index], [field]: value };
-    setFormData(prev => ({ ...prev, copies: updatedCopies }));
+    setFormData((prev) => ({ ...prev, copies: updatedCopies }));
   };
 
   const addCopyDetail = () => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      copies: [...prev.copies, { copyNumber: '', receivedBy: '', receivedSign: '' }]
+      copies: [...prev.copies, { copyNumber: '', receivedBy: '', receivedSign: '' }],
     }));
   };
 
@@ -176,7 +163,7 @@ const DistributionForm: React.FC = () => {
                     display: 'flex',
                     gap: 2,
                     mb: 2,
-                    flexWrap: 'wrap'
+                    flexWrap: 'wrap',
                   }}
                 >
                   <TextField

@@ -16,9 +16,8 @@ import {
   TableBody,
   Button,
   Grid,
-  Box
+  Box,
 } from '@mui/material';
-import axiosServices from 'src/utils/axiosServices';
 
 interface ChecklistItem {
   id: number;
@@ -31,7 +30,12 @@ const initialChecklist: ChecklistItem[] = [
   { id: 1, item: 'Document template and font format', comply: 'Yes', comment: '' },
   { id: 2, item: 'Does the document contain all items?', comply: 'Yes', comment: '' },
   // ... إلخ (تابع بقية العناصر)
-  { id: 24, item: 'Are all changes in the previous version mentioned in the change history?', comply: 'Yes', comment: '' }
+  {
+    id: 24,
+    item: 'Are all changes in the previous version mentioned in the change history?',
+    comply: 'Yes',
+    comment: '',
+  },
 ];
 
 interface FormData {
@@ -50,7 +54,7 @@ const DocumentRevisionChecklist: React.FC = () => {
     revisionDate: '',
     department: '',
     revisedBy: '',
-    approvedBy: ''
+    approvedBy: '',
   });
 
   const [checklist, setChecklist] = useState<ChecklistItem[]>(initialChecklist);
@@ -58,17 +62,13 @@ const DocumentRevisionChecklist: React.FC = () => {
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
-  const handleChecklistChange = (
-    id: number,
-    field: 'comply' | 'comment',
-    value: string
-  ) => {
-    setChecklist(prev =>
-      prev.map(item => (item.id === id ? { ...item, [field]: value } : item))
+  const handleChecklistChange = (id: number, field: 'comply' | 'comment', value: string) => {
+    setChecklist((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)),
     );
   };
 
@@ -157,7 +157,7 @@ const DocumentRevisionChecklist: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {checklist.map(row => (
+                {checklist.map((row) => (
                   <TableRow key={row.id}>
                     <TableCell>{row.item}</TableCell>
                     <TableCell>
@@ -167,9 +167,7 @@ const DocumentRevisionChecklist: React.FC = () => {
                           labelId={`select-label-${row.id}`}
                           value={row.comply}
                           label="Select"
-                          onChange={e =>
-                            handleChecklistChange(row.id, 'comply', e.target.value)
-                          }
+                          onChange={(e) => handleChecklistChange(row.id, 'comply', e.target.value)}
                         >
                           <MenuItem value="Yes">Yes</MenuItem>
                           <MenuItem value="No">No</MenuItem>
@@ -182,7 +180,7 @@ const DocumentRevisionChecklist: React.FC = () => {
                         fullWidth
                         placeholder="Comment"
                         value={row.comment}
-                        onChange={e => handleChecklistChange(row.id, 'comment', e.target.value)}
+                        onChange={(e) => handleChecklistChange(row.id, 'comment', e.target.value)}
                         size="small"
                       />
                     </TableCell>
