@@ -1,116 +1,123 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import React, { useState } from 'react';
-import {
-  IconButton,
-  Box,
-  Badge,
-  Menu,
-  MenuItem,
-  Avatar,
-  Typography,
-  Button,
-  Chip,
-  Stack
-} from '@mui/material';
-import * as dropdownData from './data';
-import Scrollbar from 'src/components/custom-scroll/Scrollbar';
+// src/components/Notifications.tsx
+import React, { useEffect, useState } from "react";
+import { IconButton, Box, Badge, Menu, MenuItem, Avatar, Typography, Button, Chip, Stack } from "@mui/material";
+import { IconBellRinging } from "@tabler/icons-react";
+import { Link } from "react-router-dom";
+import axiosServices from "src/utils/axiosServices";
+import Scrollbar from "./Scrollbar";
+import { io, Socket } from "socket.io-client";
+import Cookies from "js-cookie";
 
-import { IconBellRinging } from '@tabler/icons-react';
-import { Link } from 'react-router-dom';
+interface NotificationItem {
+  id: string;
+  userId: string;
+  message: string;
+  data?: any;
+  isRead: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
 
-const Notifications = () => {
-  const [anchorEl2, setAnchorEl2] = useState(null);
+const Notifications: React.FC = () => {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [socket, setSocket] = useState<Socket | null>(null);
 
-  const handleClick2 = (event: any) => {
-    setAnchorEl2(event.currentTarget);
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
   };
 
-  const handleClose2 = () => {
-    setAnchorEl2(null);
+  const handleClose = () => {
+    setAnchorEl(null);
   };
+
+  const fetchNotifications = async () => {
+    try {
+      const res = await axiosServices.get<NotificationItem[]>("/api/notifications");
+      setNotifications(res.data);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    }
+  };
+
+  useEffect(() => {
+    const newSocket = io("http://localhost:3000", {
+      query: {
+        token: Cookies.get("token"),
+      },
+    });
+    setSocket(newSocket);
+
+    newSocket.on("notification", (notif: NotificationItem) => {
+      setNotifications((prev) => [notif, ...prev]);
+    });
+
+    fetchNotifications();
+
+    return () => {
+      newSocket.disconnect();
+    };
+  }, []);
+
+  const unreadCount = notifications.length;
 
   return (
     <Box>
       <IconButton
         size="large"
-        aria-label="show 11 new notifications"
         color="inherit"
-        aria-controls="msgs-menu"
-        aria-haspopup="true"
-        sx={{
-          color: anchorEl2 ? 'primary.main' : 'text.secondary',
-        }}
-        onClick={handleClick2}
+        sx={{ color: anchorEl ? "primary.main" : "text.secondary" }}
+        onClick={handleClick}
       >
-        <Badge variant="dot" color="primary">
+        <Badge color="primary" badgeContent={unreadCount}>
           <IconBellRinging size="21" stroke="1.5" />
         </Badge>
       </IconButton>
-      {/* ------------------------------------------- */}
-      {/* Message Dropdown */}
-      {/* ------------------------------------------- */}
+
       <Menu
-        id="msgs-menu"
-        anchorEl={anchorEl2}
-        keepMounted
-        open={Boolean(anchorEl2)}
-        onClose={handleClose2}
-        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        id="notification-menu"
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleClose}
+        anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+        transformOrigin={{ horizontal: "right", vertical: "top" }}
         sx={{
-          '& .MuiMenu-paper': {
-            width: '360px',
+          "& .MuiMenu-paper": {
+            width: "360px",
           },
         }}
       >
         <Stack direction="row" py={2} px={4} justifyContent="space-between" alignItems="center">
           <Typography variant="h6">Notifications</Typography>
-          <Chip label="5 new" color="primary" size="small" />
+          {unreadCount > 0 && <Chip label={`${unreadCount} new`} color="primary" size="small" />}
         </Stack>
-        <Scrollbar sx={{ height: '385px' }}>
-          {dropdownData.notifications.map((notification, index) => (
-            <Box key={index}>
-              <MenuItem sx={{ py: 2, px: 4 }}>
+        <Scrollbar sx={{ height: "385px" }}>
+          {notifications.length === 0 ? (
+            <Box px={4} py={2}>
+              <Typography variant="subtitle2" color="textSecondary">
+                No notifications yet.
+              </Typography>
+            </Box>
+          ) : (
+            notifications.map((notification) => (
+              <MenuItem key={notification.id} sx={{ py: 2, px: 4 }}>
                 <Stack direction="row" spacing={2}>
-                  <Avatar
-                    src={notification.avatar}
-                    alt={notification.avatar}
-                    sx={{
-                      width: 48,
-                      height: 48,
-                    }}
-                  />
+                  <Avatar sx={{ width: 48, height: 48 }} />
                   <Box>
-                    <Typography
-                      variant="subtitle2"
-                      color="textPrimary"
-                      fontWeight={600}
-                      noWrap
-                      sx={{
-                        width: '240px',
-                      }}
-                    >
-                      {notification.title}
+                    <Typography variant="subtitle2" color="textPrimary" fontWeight={600} noWrap sx={{ width: "240px" }}>
+                      {notification.message}
                     </Typography>
-                    <Typography
-                      color="textSecondary"
-                      variant="subtitle2"
-                      sx={{
-                        width: '240px',
-                      }}
-                      noWrap
-                    >
-                      {notification.subtitle}
+                    <Typography variant="caption" color="textDisabled">
+                      {new Date(notification.createdAt).toLocaleString()}
                     </Typography>
                   </Box>
                 </Stack>
               </MenuItem>
-            </Box>
-          ))}
+            ))
+          )}
         </Scrollbar>
         <Box p={3} pb={1}>
-          <Button to="/apps/email" variant="outlined" component={Link} color="primary" fullWidth>
+          <Button to="/all-notifications" variant="outlined" component={Link} color="primary" fullWidth>
             See all Notifications
           </Button>
         </Box>
