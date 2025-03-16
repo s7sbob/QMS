@@ -91,7 +91,7 @@ const SafetyConcernsSection: React.FC<SafetyConcernsSectionProps> = ({ initialDa
     } else {
       // Update
       axiosServices
-        .put(`/api/sopSafetyConcerns/updateSop-SafetyConcerns/${safetyConcern.Id}`, {
+        .post(`/api/sopSafetyConcerns/updateSop-SafetyConcerns/${safetyConcern.Id}`, {
           Content_en: editContentEn,
           Content_ar: editContentAr,
           reviewer_Comment: editReviewerComment,

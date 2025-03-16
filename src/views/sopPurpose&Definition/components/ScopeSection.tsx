@@ -91,7 +91,7 @@ const ScopeSection: React.FC<ScopeSectionProps> = ({ initialData }) => {
     } else {
       // Update
       axiosServices
-        .put(`/api/sopScope/updateSop-Scope/${scope.Id}`, {
+        .post(`/api/sopScope/updateSop-Scope/${scope.Id}`, {
           Content_en: editContentEn,
           Content_ar: editContentAr,
           reviewer_Comment: editReviewerComment,

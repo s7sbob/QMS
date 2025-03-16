@@ -91,7 +91,7 @@ const ProceduresSection: React.FC<ProceduresSectionProps> = ({ initialData }) =>
     } else {
       // Update call (only reviewer comment changed)
       axiosServices
-        .put(`/api/soprocedures/updateSop-Procedure/${procedure.Id}`, {
+        .post(`/api/soprocedures/updateSop-Procedure/${procedure.Id}`, {
           Content_en: editContentEn,
           Content_ar: editContentAr,
           reviewer_Comment: editReviewerComment,

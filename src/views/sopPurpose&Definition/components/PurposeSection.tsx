@@ -99,7 +99,7 @@ const PurposeSection: React.FC<PurposeSectionProps> = ({ initialData }) => {
     } else {
       // إذا كانت التعديلات مقتصرة على تعليق المراجع فقط => Update (PUT)
       axiosServices
-        .put(`/api/soppurpose/updateSop-Purpose/${purpose.Id}`, {
+        .post(`/api/soppurpose/updateSop-Purpose/${purpose.Id}`, {
           Content_en: editContentEn,
           Content_ar: editContentAr,
           reviewer_Comment: editReviewerComment,

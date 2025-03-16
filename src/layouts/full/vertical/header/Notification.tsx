@@ -33,7 +33,7 @@ const Notifications: React.FC = () => {
 
   const fetchNotifications = async () => {
     try {
-      const res = await axiosServices.get<NotificationItem[]>("/api/notifications");
+      const res = await axiosServices.get<NotificationItem[]>("/api/notifications/getNotifications");
       setNotifications(res.data);
     } catch (error) {
       console.error("Error fetching notifications:", error);

@@ -92,7 +92,7 @@ const ResponsibilitiesSection: React.FC<ResponsibilitiesSectionProps> = ({ initi
     } else {
       // Update call
       axiosServices
-        .put(`/api/sopRes/updateSop-Res/${responsibility.Id}`, {
+        .post(`/api/sopRes/updateSop-Res/${responsibility.Id}`, {
           Content_en: editContentEn,
           Content_ar: editContentAr,
           reviewer_Comment: editReviewerComment,

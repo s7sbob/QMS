@@ -26,8 +26,8 @@ const DocumentPage: React.FC = () => {
 
       {/* المحتوى الرئيسي */}
       <div style={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
-        <PurposeSection />
-        <DefinitionsSection />
+        <PurposeSection initialData={null} />
+        <DefinitionsSection initialData={null} />
       </div>
 
       {/* جزء التوقيعات */}

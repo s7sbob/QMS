@@ -92,7 +92,7 @@ const DefinitionsSection: React.FC<DefinitionsSectionProps> = ({ initialData }) 
     } else {
       // Update
       axiosServices
-        .put(`/api/sopDefinition/updateSop-Definition/${definition.Id}`, {
+        .post(`/api/sopDefinition/updateSop-Definition/${definition.Id}`, {
           Content_en: editContentEn,
           Content_ar: editContentAr,
           reviewer_Comment: editReviewerComment,
