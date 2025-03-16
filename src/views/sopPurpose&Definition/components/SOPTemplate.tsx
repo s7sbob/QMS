@@ -12,14 +12,16 @@ interface SOPTemplateProps {
 
 const SOPTemplate: React.FC<SOPTemplateProps> = ({ children, headerData }) => {
   // محتوى الهيدر والفوتر (سيوضع في كل صفحة)
-  const headerComponent =  headerData ? (    <Header
-  issueDate={headerData.Issued_Date || ""}
-  effectiveDate={headerData.Effective_Date || ""}
-  revisionDate={headerData.Revision_Date || ""}
-  codeNumber={headerData.Doc_Code || ""}
-  versionNumber={headerData.Version || ""}
-  pageNumber={headerData.Page_Number || "1"}
-/>  ) : (
+  const headerComponent = headerData ? (
+    <Header
+      issueDate={headerData.Issued_Date || ''}
+      effectiveDate={headerData.Effective_Date || ''}
+      revisionDate={headerData.Revision_Date || ''}
+      codeNumber={headerData.Doc_Code || ''}
+      versionNumber={headerData.Version || ''}
+      pageNumber={headerData.Page_Number || '1'}
+    />
+  ) : (
     <div>No Header Data</div>
   );
   const footerComponent = (
@@ -31,7 +33,7 @@ const SOPTemplate: React.FC<SOPTemplateProps> = ({ children, headerData }) => {
         preparedName="Syed Mazhar"
         reviewedName="Walid Nafea"
         approvedName="El Hassan Fathy"
-        stampImageUrl="./public/Stamps/DraftCopy.svg"
+        stampImageUrl="./public/Stamps/QaApproval.svg"
         preparedSignatureUrl="./public/signatures/sign1.png"
         reviewedSignatureUrl="./public/signatures/sign2.png"
         approvedSignatureUrl="./public/signatures/sign3.png"
