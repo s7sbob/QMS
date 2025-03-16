@@ -1,27 +1,28 @@
 // src/utils/axiosServices.ts
-import axios from "axios";
-import Cookies from "js-cookie";
+import axios from 'axios';
+import Cookies from 'js-cookie';
 
 const axiosServices = axios.create({
-  baseURL:  "http://localhost:3000",
+  baseURL: ' https://qualitylead-qms.duckdns.org:3000',
+  // baseURL:  "http://localhost:3000",
 });
 
 axiosServices.defaults.withCredentials = true;
 
 axiosServices.interceptors.request.use(
   (config) => {
-    const token = Cookies.get("token");
+    const token = Cookies.get('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 axiosServices.interceptors.response.use(
   (response) => response,
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 export default axiosServices;
