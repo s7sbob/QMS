@@ -120,7 +120,7 @@ const ScopeSection: React.FC<ScopeSectionProps> = ({ initialData }) => {
         }}
       >
         <span>3. Scope:</span>
-        <span>(النطاق)</span>
+        <span dir="rtl">3. النطاق</span>
       </Typography>
       <TableContainer component={Paper} sx={{ mt: 1 }}>
         <Table>

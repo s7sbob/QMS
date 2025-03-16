@@ -120,7 +120,7 @@ const ProceduresSection: React.FC<ProceduresSectionProps> = ({ initialData }) =>
         }}
       >
         <span>4. Procedures:</span>
-        <span>(الإجراءات)</span>
+        <span dir="rtl">4. الإجراءات</span>
       </Typography>
       <TableContainer component={Paper} sx={{ mt: 1 }}>
         <Table>

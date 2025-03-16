@@ -121,8 +121,8 @@ const DefinitionsSection: React.FC<DefinitionsSectionProps> = ({ initialData }) 
         }}
       >
         <span>2. Definitions:</span>
-        <span>(التعاريف)</span>
-      </Typography>
+        <span dir="rtl">2. التعاريف</span>
+        </Typography>
       <TableContainer component={Paper} sx={{ mt: 1 }}>
         <Table>
           <TableHead>

@@ -128,7 +128,7 @@ const PurposeSection: React.FC<PurposeSectionProps> = ({ initialData }) => {
         }}
       >
         <span>1. Purpose:</span>
-        <span>(الغرض)</span>
+        <span dir="rtl">1. الغرض</span>
       </Typography>
       <TableContainer component={Paper} sx={{ mt: 1 }}>
         <Table>

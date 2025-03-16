@@ -121,7 +121,7 @@ const ResponsibilitiesSection: React.FC<ResponsibilitiesSectionProps> = ({ initi
         }}
       >
         <span>5. Responsibilities:</span>
-        <span>(المسؤوليات)</span>
+        <span dir="rtl">5. المسؤوليات</span>
       </Typography>
       <TableContainer component={Paper} sx={{ mt: 1 }}>
         <Table>

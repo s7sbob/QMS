@@ -120,7 +120,7 @@ const SafetyConcernsSection: React.FC<SafetyConcernsSectionProps> = ({ initialDa
         }}
       >
         <span>6. Safety Concerns:</span>
-        <span>(اشتراطات السلامة)</span>
+        <span dir="rtl">6. اشتراطات السلامة</span>
       </Typography>
       <TableContainer component={Paper} sx={{ mt: 1 }}>
         <Table>
