@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from 'react';
 import axiosServices from 'src/utils/axiosServices';
+import { useSearchParams } from 'react-router-dom';
 
 // استيراد القالب والمكونات الفرعية
 import SOPTemplate from '../components/SOPTemplate';
@@ -28,10 +29,18 @@ export interface SopDetailTracking {
 
 const SOPFullDocument: React.FC = () => {
   const [sopDetail, setSopDetail] = useState<SopDetailTracking | null>(null);
+  const [searchParams] = useSearchParams();
+  const headerId = searchParams.get('headerId');
 
   useEffect(() => {
+    let url = '';
+    if (headerId) {
+      url = `/api/sopDetailTracking/getSop?headerId=${headerId}`;
+    } else {
+      url = `/api/sopDetailTracking/getSop?isCurrent=true`;
+    }
     axiosServices
-      .get('/api/sopDetailTracking/getSop?isCurrent=true')
+      .get(url)
       .then((res) => {
         const activeRecords = res.data.filter((item: SopDetailTracking) => item.Is_Active === 1);
         if (activeRecords.length > 0) {
@@ -40,7 +49,7 @@ const SOPFullDocument: React.FC = () => {
         }
       })
       .catch((error) => console.error('Error fetching sop detail tracking data:', error));
-  }, []);
+  }, [headerId]);
 
   return (
     <SOPTemplate headerData={sopDetail ? sopDetail.Sop_header : null}>

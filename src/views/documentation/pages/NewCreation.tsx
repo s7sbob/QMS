@@ -24,6 +24,8 @@ import {
 import { IconUpload, IconTrash } from '@tabler/icons-react';
 import axiosServices from 'src/utils/axiosServices';
 import { UserContext } from 'src/context/UserContext';
+import Swal from 'sweetalert2';
+import { useNavigate } from 'react-router-dom';
 
 interface Department {
   Id: string;
@@ -72,6 +74,8 @@ const NewCreation: React.FC = () => {
 
   // حالة مؤشر التحميل
   const [loading, setLoading] = useState<boolean>(false);
+
+  const navigate = useNavigate();
 
   // جلب الأقسام بناءً على compId
   useEffect(() => {
@@ -143,7 +147,12 @@ const NewCreation: React.FC = () => {
       );
       const headerId = headerResponse.data?.Id;
       if (!headerId) {
-        alert('لم يرجع السيرفر بمعرف Header صالح');
+        Swal.fire({
+          title: 'خطأ',
+          text: 'لم يرجع السيرفر بمعرف Header صالح',
+          icon: 'error',
+          confirmButtonText: 'حسناً'
+        });
         return;
       }
 
@@ -214,10 +223,25 @@ const NewCreation: React.FC = () => {
         await axiosServices.post('/api/sopSafetyConcerns/addsop-safety-concerns', safetyPayload);
       }
 
-      alert('تم إنشاء الـ SOP بنجاح وإرسال كل جزء للـ Endpoint الخاص به.');
+      // عرض رسالة نجاح باستخدام SweetAlert وإعادة التوجيه للصفحة /test مع تمرير headerId
+      Swal.fire({
+        title: 'تم الإنشاء بنجاح!',
+        text: 'تم إنشاء الـ SOP بنجاح',
+        icon: 'success',
+        confirmButtonText: 'حسناً'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate(`/test?headerId=${headerId}`);
+        }
+      });
     } catch (error) {
       console.error('Error in submit:', error);
-      alert('حدث خطأ أثناء إنشاء الـ SOP. راجع الـ Console لمعرفة التفاصيل.');
+      Swal.fire({
+        title: 'خطأ',
+        text: 'حدث خطأ أثناء إنشاء الـ SOP. راجع الـ Console لمعرفة التفاصيل.',
+        icon: 'error',
+        confirmButtonText: 'حسناً'
+      });
     }
   };
 
@@ -246,7 +270,7 @@ const NewCreation: React.FC = () => {
           <Grid container spacing={2}>
             {/* العمود العربي */}
             <Grid item xs={12} md={6} sx={{ textAlign: 'right', direction: 'rtl' }}>
-              <Typography variant="h5" gutterBottom>
+              <Typography variant="h5" gutterBottom dir="rtl">
                 العربية
               </Typography>
               <TextField
@@ -258,6 +282,8 @@ const NewCreation: React.FC = () => {
                 margin="normal"
                 value={formData.titleAr}
                 onChange={handleInputChange}
+                inputProps={{ dir: 'rtl' }}
+                InputLabelProps={{ style: { direction: 'rtl' } }}
               />
               <TextField
                 fullWidth
@@ -268,15 +294,20 @@ const NewCreation: React.FC = () => {
                 margin="normal"
                 value={creationDate}
                 disabled
+                inputProps={{ dir: 'rtl' }}
+                InputLabelProps={{ style: { direction: 'rtl' } }}
               />
-              <FormControl fullWidth margin="normal">
-                <InputLabel id="dept-label">القسم</InputLabel>
+              <FormControl fullWidth margin="normal" sx={{ direction: 'rtl', textAlign: 'right' }}>
+                <InputLabel id="dept-label" dir="rtl" sx={{ direction: 'rtl' }}>
+                  القسم
+                </InputLabel>
                 <Select
                   labelId="dept-label"
                   id="selectedDepartment"
                   value={selectedDepartment}
                   label="القسم"
                   onChange={(e) => setSelectedDepartment(e.target.value)}
+                  sx={{ direction: 'rtl', textAlign: 'right' }}
                 >
                   {loading ? (
                     <MenuItem disabled>
@@ -295,7 +326,7 @@ const NewCreation: React.FC = () => {
                   )}
                 </Select>
               </FormControl>
-              <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
+              <Typography variant="h6" gutterBottom sx={{ mt: 3 }} dir="rtl">
                 المحتوى
               </Typography>
               <TextField
@@ -309,6 +340,8 @@ const NewCreation: React.FC = () => {
                 margin="normal"
                 value={formData.purposeAr}
                 onChange={handleInputChange}
+                inputProps={{ dir: 'rtl' }}
+                InputLabelProps={{ style: { direction: 'rtl' } }}
               />
               <TextField
                 fullWidth
@@ -321,6 +354,8 @@ const NewCreation: React.FC = () => {
                 margin="normal"
                 value={formData.definitionsAr}
                 onChange={handleInputChange}
+                inputProps={{ dir: 'rtl' }}
+                InputLabelProps={{ style: { direction: 'rtl' } }}
               />
               <TextField
                 fullWidth
@@ -333,6 +368,8 @@ const NewCreation: React.FC = () => {
                 margin="normal"
                 value={formData.scopeAr}
                 onChange={handleInputChange}
+                inputProps={{ dir: 'rtl' }}
+                InputLabelProps={{ style: { direction: 'rtl' } }}
               />
               <TextField
                 fullWidth
@@ -345,6 +382,8 @@ const NewCreation: React.FC = () => {
                 margin="normal"
                 value={formData.responsibilityAr}
                 onChange={handleInputChange}
+                inputProps={{ dir: 'rtl' }}
+                InputLabelProps={{ style: { direction: 'rtl' } }}
               />
               <TextField
                 fullWidth
@@ -357,6 +396,8 @@ const NewCreation: React.FC = () => {
                 margin="normal"
                 value={formData.safetyConcernsAr}
                 onChange={handleInputChange}
+                inputProps={{ dir: 'rtl' }}
+                InputLabelProps={{ style: { direction: 'rtl' } }}
               />
               <TextField
                 fullWidth
@@ -369,6 +410,8 @@ const NewCreation: React.FC = () => {
                 margin="normal"
                 value={formData.procedureAr}
                 onChange={handleInputChange}
+                inputProps={{ dir: 'rtl' }}
+                InputLabelProps={{ style: { direction: 'rtl' } }}
               />
               <TextField
                 fullWidth
@@ -381,19 +424,22 @@ const NewCreation: React.FC = () => {
                 margin="normal"
                 value={formData.referenceDocumentsAr}
                 onChange={handleInputChange}
+                inputProps={{ dir: 'rtl' }}
+                InputLabelProps={{ style: { direction: 'rtl' } }}
               />
               <FormControlLabel
                 control={
                   <Checkbox
                     checked={containTraining}
                     onChange={(e) => setContainTraining(e.target.checked)}
+                    inputProps={{ dir: 'rtl' }}
                   />
                 }
                 label="يتضمن تدريب"
-                sx={{ mt: 2 }}
+                sx={{ mt: 2, direction: 'rtl', textAlign: 'right' }}
               />
-              <Box>
-                <Typography variant="subtitle1" gutterBottom>
+              <Box sx={{ direction: 'rtl', textAlign: 'right' }}>
+                <Typography variant="subtitle1" gutterBottom dir="rtl">
                   المرفقـــات:
                 </Typography>
                 <Button
@@ -405,7 +451,7 @@ const NewCreation: React.FC = () => {
                   رفع الملفات
                   <input type="file" multiple hidden onChange={handleFileUpload} />
                 </Button>
-                <List>
+                <List sx={{ direction: 'rtl', textAlign: 'right' }}>
                   {attachments.map((file, index) => (
                     <ListItem key={index}>
                       <ListItemText
