@@ -1,16 +1,22 @@
+// src/context/UserContext.tsx
 import React, { createContext, useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
-import {jwtDecode} from 'jwt-decode';
 
-interface IUser {
-  userId: string;
-  email: string;
-  userName: string;
-  userFirstName: string;
-  userRole: string;
-  departmentId: string;
-  compId: string;
-  // يمكن إضافة خصائص أخرى حسب الحاجة
+export interface IUser {
+  Id: string;
+  FName: string;
+  LName: string;
+  DateOfBirth: string | null;
+  CrtDate: string;
+  UserName: string;
+  Email: string;
+  userImg_Url: string | null;
+  signUrl: string | null;
+  is_Active: number;
+  // بيانات العلاقات الأخرى إن وجدت
+  Users_Departments_Users_Departments_User_IdToUser_Data?: any[];
+  Comp_Data?: any[];
+  userRole?: any[];
   [key: string]: any;
 }
 
@@ -20,15 +26,14 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<IUser | null>(null);
 
   useEffect(() => {
-    const token = Cookies.get('token');
-    console.log("UserContext: Retrieved token:", token);
-    if (token) {
+    // نحصل على بيانات المستخدم من الكوكيز (المخزنة بصيغة JSON)
+    const userStr = Cookies.get('user');
+    if (userStr) {
       try {
-        const decoded: IUser = jwtDecode(token);
-        console.log("UserContext: Decoded token:", decoded);
-        setUser(decoded);
+        const parsedUser: IUser = JSON.parse(userStr);
+        setUser(parsedUser);
       } catch (error) {
-        console.error('UserContext: Error decoding token:', error);
+        console.error('Error parsing user cookie:', error);
       }
     }
   }, []);

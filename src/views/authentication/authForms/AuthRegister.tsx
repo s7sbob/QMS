@@ -1,5 +1,4 @@
 // src/layouts/full/vertical/auth/authForms/AuthRegister.tsx
-
 import React, { useState } from 'react';
 import {
   Box,
@@ -8,7 +7,7 @@ import {
   Stack,
   TextField,
   IconButton,
-  InputAdornment
+  InputAdornment,
 } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { addEditUserApi } from 'src/services/userService';
@@ -18,8 +17,6 @@ import {
 } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
-
-// أيقونات العين
 import { IconEye, IconEyeOff } from '@tabler/icons-react';
 
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{8,}$/;
@@ -33,14 +30,15 @@ const AuthRegister: React.FC = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    userImgUrl: '',
+    // سنتعامل مع الملفات كـ File objects
+    profileImage: null as File | null,
+    signature: null as File | null,
   });
   const [errors, setErrors] = useState<{ password?: string; confirmPassword?: string }>({});
-
-  const [previewImg, setPreviewImg] = useState<string>(''); // لمعاينة الصورة
+  const [previewImg, setPreviewImg] = useState<string>(''); // لمعاينة الصورة الشخصية
+  const [previewSignature, setPreviewSignature] = useState<string>(''); // لمعاينة التوقيع
   const navigate = useNavigate();
 
-  // لرؤية/إخفاء كلمة المرور
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
 
@@ -48,17 +46,27 @@ const AuthRegister: React.FC = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // رفع الصورة الشخصية
+  const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      setFormData((prev) => ({ ...prev, profileImage: file }));
       const reader = new FileReader();
       reader.onloadend = () => {
-        const base64Str = reader.result as string;
-        setFormData((prev) => ({
-          ...prev,
-          userImgUrl: base64Str,
-        }));
-        setPreviewImg(base64Str);
+        setPreviewImg(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // رفع التوقيع
+  const handleSignatureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setFormData((prev) => ({ ...prev, signature: file }));
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewSignature(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
@@ -67,9 +75,7 @@ const AuthRegister: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // تحقق من كلمة المرور
     const newErrors: { password?: string; confirmPassword?: string } = {};
-
     if (!passwordRegex.test(formData.password)) {
       newErrors.password =
         'Password must be at least 8 characters and include uppercase, lowercase, and a symbol.';
@@ -77,32 +83,27 @@ const AuthRegister: React.FC = () => {
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match.';
     }
-
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
       try {
-        const userToCreate = {
-          Id: '',
-          FName: formData.fName,
-          LName: formData.lName,
-          Email: formData.email,
-          UserName: formData.userName,
-          Password: formData.password,
-          userImg_Url: formData.userImgUrl,
-          dateOfBirth: formData.dateOfBirth,
-          contacts: [
-            {
-              PhoneNumber: '',
-              address: '',
-            },
-          ],
-        };
+        const formDataToSend = new FormData();
+        formDataToSend.append('FName', formData.fName);
+        formDataToSend.append('LName', formData.lName);
+        formDataToSend.append('Email', formData.email);
+        formDataToSend.append('UserName', formData.userName);
+        formDataToSend.append('Password', formData.password);
+        formDataToSend.append('dateOfBirth', formData.dateOfBirth);
+        // رفع الملفات باستخدام الأسماء المتوقعة من الباكند
+        if (formData.profileImage) {
+          formDataToSend.append('userImg', formData.profileImage);
+        }
+        if (formData.signature) {
+          formDataToSend.append('signature', formData.signature);
+        }
 
-        const response = await addEditUserApi(userToCreate);
+        const response = await addEditUserApi(formDataToSend);
         console.log('User created:', response);
-
-        // عند نجاح التسجيل، الانتقال لصفحة تسجيل الدخول
         navigate('/auth/login2');
       } catch (error) {
         console.error('Registration error:', error);
@@ -132,8 +133,6 @@ const AuthRegister: React.FC = () => {
           variant="outlined"
           fullWidth
         />
-
-        {/* Date of Birth عبر Picker */}
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DesktopDatePicker
             label="Date of Birth"
@@ -145,16 +144,9 @@ const AuthRegister: React.FC = () => {
                 dateOfBirth: newValue ? newValue.format('YYYY-MM-DD') : '',
               }));
             }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                required
-                fullWidth
-              />
-            )}
+            renderInput={(params) => <TextField {...params} required fullWidth />}
           />
         </LocalizationProvider>
-
         <TextField
           required
           label="Username"
@@ -174,8 +166,6 @@ const AuthRegister: React.FC = () => {
           variant="outlined"
           fullWidth
         />
-
-        {/* حقل Password مع إظهار/إخفاء عبر أيقونة العين */}
         <TextField
           required
           label="Password"
@@ -201,8 +191,6 @@ const AuthRegister: React.FC = () => {
             ),
           }}
         />
-
-        {/* حقل Confirm Password مع إظهار/إخفاء عبر الأيقونة */}
         <TextField
           required
           label="Confirm Password"
@@ -229,32 +217,52 @@ const AuthRegister: React.FC = () => {
           }}
         />
 
-        {/* حقل رفع ملف للصورة + معاينة */}
+        {/* رفع الصورة الشخصية */}
         <Box>
           <Typography variant="body1" sx={{ mb: 1 }}>
             Upload Profile Image (optional)
           </Typography>
           <Button variant="outlined" component="label">
-            Select File
-            <input
-              type="file"
-              hidden
-              onChange={handleFileChange}
-            />
+            Select Profile Image
+            <input type="file" hidden onChange={handleProfileImageChange} />
           </Button>
-
-          {/* معاينة الصورة */}
           {previewImg && (
             <Box mt={2}>
-              <Typography variant="subtitle2">Preview:</Typography>
+              <Typography variant="subtitle2">Profile Image Preview:</Typography>
               <img
                 src={previewImg}
-                alt="Preview"
+                alt="Profile Preview"
                 style={{
                   maxWidth: '100px',
                   border: '1px solid #ccc',
                   borderRadius: '4px',
-                  marginTop: '8px'
+                  marginTop: '8px',
+                }}
+              />
+            </Box>
+          )}
+        </Box>
+
+        {/* رفع التوقيع */}
+        <Box>
+          <Typography variant="body1" sx={{ mb: 1 }}>
+            Upload Signature (optional)
+          </Typography>
+          <Button variant="outlined" component="label">
+            Select Signature
+            <input type="file" hidden onChange={handleSignatureChange} />
+          </Button>
+          {previewSignature && (
+            <Box mt={2}>
+              <Typography variant="subtitle2">Signature Preview:</Typography>
+              <img
+                src={previewSignature}
+                alt="Signature Preview"
+                style={{
+                  maxWidth: '100px',
+                  border: '1px solid #ccc',
+                  borderRadius: '4px',
+                  marginTop: '8px',
                 }}
               />
             </Box>
@@ -279,7 +287,7 @@ const AuthRegister: React.FC = () => {
         </Typography>
         <Typography
           component={Link}
-          to="/auth/login2"
+          to="/auth/login"
           variant="subtitle1"
           fontWeight="500"
           sx={{ textDecoration: 'none', color: 'primary.main' }}

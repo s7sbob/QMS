@@ -33,15 +33,16 @@ export interface IUser {
  * (تطابق /api/users/addEditUser في الـ OpenAPI)
  */
 export interface UserInput {
-  Id?: string; // إذا أُرسِل، يتم تعديل المستخدم
+  Id?: string;
   FName: string;
   LName: string;
   Email: string;
   UserName: string;
   Password: string;
-  userImg_Url?: string; 
+  userImg?: string;
+  signature: string;
   dateOfBirth?: string;
-  is_Active?: number;   // <--- مضاف
+  is_Active?: number;
   contacts?: Array<{
     PhoneNumber: string;
     address: string;
@@ -74,9 +75,11 @@ export const getUser = async (params: { id?: string; Email?: string }): Promise<
  * إضافة أو تعديل مستخدم
  * POST /api/users/addEditUser
  */
-export const addEditUserApi = async (userData: UserInput) => {
-  const { data } = await axiosServices.post('/api/users/addEditUser', userData);
-  return data; // يحتوي على { message, user }
+export const addEditUserApi = async (userData: FormData) => {
+  const { data } = await axiosServices.post('/api/users/addEditUser', userData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
 };
 
 /**

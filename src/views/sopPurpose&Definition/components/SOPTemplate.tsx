@@ -1,5 +1,5 @@
 import React from 'react';
-import Header from '../../sopHeader/components/Header';
+import Header from './Header';
 import PreparedBySection from './PreparedBySection';
 import Footer from './Footer';
 import PaginatedSOPContent from './PaginatedSOPContent';

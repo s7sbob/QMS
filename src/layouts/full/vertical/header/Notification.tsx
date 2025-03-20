@@ -1,7 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 // src/components/Notifications.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   IconButton,
   Box,
@@ -12,21 +10,19 @@ import {
   Typography,
   Button,
   Chip,
-  Stack,
-} from '@mui/material';
-import { IconBellRinging } from '@tabler/icons-react';
-import { Link } from 'react-router-dom';
-import axiosServices from 'src/utils/axiosServices';
-import Scrollbar from './Scrollbar';
-import Cookies from 'js-cookie';
-// استورد كائن الـ socket من ملفك الخارجي
-import socket from 'src/socket'; // أو المسار الصحيح لملف الـsocket
+  Stack
+} from "@mui/material";
+import { IconBellRinging } from "@tabler/icons-react";
+import { Link, useNavigate } from "react-router-dom";
+import axiosServices from "src/utils/axiosServices";
+import Scrollbar from "./Scrollbar";
+import socket from "src/socket";
 
 interface NotificationItem {
   id: string;
   userId: string;
   message: string;
-  data?: any;
+  data?: { sopHeaderId?: string; [key: string]: any };
   isRead: boolean;
   createdAt: string;
   updatedAt: string;
@@ -35,6 +31,7 @@ interface NotificationItem {
 const Notifications: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const navigate = useNavigate();
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -46,48 +43,42 @@ const Notifications: React.FC = () => {
 
   const fetchNotifications = async () => {
     try {
-      const res = await axiosServices.get<NotificationItem[]>(
-        '/api/notifications/getNotifications',
-      );
+      const res = await axiosServices.get<NotificationItem[]>("/api/notifications/getNotifications");
       setNotifications(res.data);
     } catch (error) {
-      console.error('Error fetching notifications:', error);
+      console.error("Error fetching notifications:", error);
     }
   };
 
   useEffect(() => {
-    // إعداد التوكن (إن كنت ترغب بإرساله عبر query أو أي وسيلة أخرى)
-    const token = Cookies.get('token');
-    // إذا أردت إضافة التوكن في الـquery:
-    socket.io.opts.query = { token: token }; 
-
-    // أنشئ الاتصال (في حال لم يكن متصلًا) – أو يمكنك إبقاءه متصلًا طوال الوقت في مكان آخر
-    socket.connect();
-
-    // عند استقبال حدث notification من السيرفر
-    socket.on('notification', (notif: NotificationItem) => {
+    // استخدام الـ socket الموجود من ملف socket.ts
+    socket.on("notification", (notif: NotificationItem) => {
       setNotifications((prev) => [notif, ...prev]);
     });
 
-    // جلب الإشعارات القديمة من الـAPI
     fetchNotifications();
 
-    // التنظيف (إزالة الاستماع وإغلاق الاتصال) عندما يُدمَّر المكوّن
     return () => {
-      socket.off('notification');
-      socket.disconnect();
+      socket.off("notification");
     };
   }, []);
 
-  const unreadCount = notifications.length;
+  const unreadCount = notifications.length; // يمكنك تعديل هذا ليحسب الإشعارات غير المقروءة فقط
+
+  const handleNotificationClick = (notification: NotificationItem) => {
+    handleClose();
+    if (notification.data?.sopHeaderId) {
+      navigate(`/test?headerId=${notification.data.sopHeaderId}`);
+    }
+  };
 
   return (
     <Box>
       <IconButton
         size="large"
         color="inherit"
-        sx={{ color: anchorEl ? 'primary.main' : 'text.secondary' }}
         onClick={handleClick}
+        sx={{ color: anchorEl ? "primary.main" : "text.secondary" }}
       >
         <Badge color="primary" badgeContent={unreadCount}>
           <IconBellRinging size="21" stroke="1.5" />
@@ -99,19 +90,17 @@ const Notifications: React.FC = () => {
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleClose}
-        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+        transformOrigin={{ horizontal: "right", vertical: "top" }}
         sx={{
-          '& .MuiMenu-paper': {
-            width: '360px',
-          },
+          "& .MuiMenu-paper": { width: "360px" },
         }}
       >
         <Stack direction="row" py={2} px={4} justifyContent="space-between" alignItems="center">
           <Typography variant="h6">Notifications</Typography>
           {unreadCount > 0 && <Chip label={`${unreadCount} new`} color="primary" size="small" />}
         </Stack>
-        <Scrollbar sx={{ height: '385px' }}>
+        <Scrollbar sx={{ height: "385px" }}>
           {notifications.length === 0 ? (
             <Box px={4} py={2}>
               <Typography variant="subtitle2" color="textSecondary">
@@ -120,7 +109,11 @@ const Notifications: React.FC = () => {
             </Box>
           ) : (
             notifications.map((notification) => (
-              <MenuItem key={notification.id} sx={{ py: 2, px: 4 }}>
+              <MenuItem
+                key={notification.id}
+                onClick={() => handleNotificationClick(notification)}
+                sx={{ py: 2, px: 4 }}
+              >
                 <Stack direction="row" spacing={2}>
                   <Avatar sx={{ width: 48, height: 48 }} />
                   <Box>
@@ -129,7 +122,7 @@ const Notifications: React.FC = () => {
                       color="textPrimary"
                       fontWeight={600}
                       noWrap
-                      sx={{ width: '240px' }}
+                      sx={{ width: "240px" }}
                     >
                       {notification.message}
                     </Typography>
@@ -143,13 +136,7 @@ const Notifications: React.FC = () => {
           )}
         </Scrollbar>
         <Box p={3} pb={1}>
-          <Button
-            to="/all-notifications"
-            variant="outlined"
-            component={Link}
-            color="primary"
-            fullWidth
-          >
+          <Button to="/all-notifications" variant="outlined" component={Link} color="primary" fullWidth>
             See all Notifications
           </Button>
         </Box>

@@ -22,14 +22,12 @@ const AuthLogin: React.FC = () => {
       const response = await loginApi({ UserName: username, Password: password });
       console.log('Login success:', response);
 
-      // تخزين التوكن مع باقي البيانات في الكوكيز
+      // حفظ البيانات في الكوكيز لمدة 7 أيام
       Cookies.set('token', response.token, { expires: 7 });
-      // تخزين بيانات المستخدم كرابط JSON في كوكيز
       Cookies.set('user', JSON.stringify(response.user), { expires: 7 });
-      // تخزين الرتبة (userRole) في كوكيز
       Cookies.set('userRole', response.userRole, { expires: 7 });
 
-      // توجيه لصفحة رئيسية / داشبورد
+      // الانتقال للصفحة الرئيسية (أو الداشبورد)
       navigate('/');
     } catch (error: any) {
       console.error('Login error:', error);
@@ -57,7 +55,6 @@ const AuthLogin: React.FC = () => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-
         <Box display="flex" justifyContent="flex-end">
           <Typography
             component={Link}
