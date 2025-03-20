@@ -26,12 +26,14 @@ import axiosServices from 'src/utils/axiosServices';
 import { UserContext } from 'src/context/UserContext';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
+import JoditEditor from 'jodit-react';
 
 interface Department {
   Id: string;
   Dept_name: string;
   // يمكنك إضافة خصائص أخرى إذا احتجت
 }
+
 
 const NewCreation: React.FC = () => {
   // State للملفات المرفقة
@@ -76,6 +78,19 @@ const NewCreation: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
 
   const navigate = useNavigate();
+
+  // إعدادات Jodit Editor
+  const joditConfig = {
+    readonly: false,
+    toolbarSticky: true,
+    buttons: [
+      'bold', 'italic', 'underline', 'strikethrough', 'superscript', 'subscript', '|',
+      'ul', 'ol', 'outdent', 'indent', '|',
+      'font', 'fontsize', 'brush', 'paragraph', '|',
+      'image', 'video', 'table', 'link', 'unlink', '|',
+      'align', 'undo', 'redo', 'print', 'source', 'fullsize'
+    ],
+  };
 
   // جلب الأقسام بناءً على compId
   useEffect(() => {
@@ -157,6 +172,7 @@ const NewCreation: React.FC = () => {
       }
 
       // باقي استدعاءات API الخاصة بالمحتوى (مثلاً Definitions, Purpose, ...)
+
       if (formData.definitionsEn || formData.definitionsAr) {
         const defPayload = {
           Content_en: formData.definitionsEn,
@@ -223,7 +239,6 @@ const NewCreation: React.FC = () => {
         await axiosServices.post('/api/sopSafetyConcerns/addsop-safety-concerns', safetyPayload);
       }
 
-      // عرض رسالة نجاح باستخدام SweetAlert وإعادة التوجيه للصفحة /test مع تمرير headerId
       Swal.fire({
         title: 'تم الإنشاء بنجاح!',
         text: 'تم إنشاء الـ SOP بنجاح',
@@ -329,104 +344,91 @@ const NewCreation: React.FC = () => {
               <Typography variant="h6" gutterBottom sx={{ mt: 3 }} dir="rtl">
                 المحتوى
               </Typography>
-              <TextField
-                fullWidth
-                label="الغرض:"
-                id="purposeAr"
-                name="purposeAr"
-                multiline
-                rows={3}
-                variant="outlined"
-                margin="normal"
-                value={formData.purposeAr}
-                onChange={handleInputChange}
-                inputProps={{ dir: 'rtl' }}
-                InputLabelProps={{ style: { direction: 'rtl' } }}
-              />
-              <TextField
-                fullWidth
-                label="التعريفات:"
-                id="definitionsAr"
-                name="definitionsAr"
-                multiline
-                rows={3}
-                variant="outlined"
-                margin="normal"
-                value={formData.definitionsAr}
-                onChange={handleInputChange}
-                inputProps={{ dir: 'rtl' }}
-                InputLabelProps={{ style: { direction: 'rtl' } }}
-              />
-              <TextField
-                fullWidth
-                label="مجال التطبيق:"
-                id="scopeAr"
-                name="scopeAr"
-                multiline
-                rows={3}
-                variant="outlined"
-                margin="normal"
-                value={formData.scopeAr}
-                onChange={handleInputChange}
-                inputProps={{ dir: 'rtl' }}
-                InputLabelProps={{ style: { direction: 'rtl' } }}
-              />
-              <TextField
-                fullWidth
-                label="المسئـولية:"
-                id="responsibilityAr"
-                name="responsibilityAr"
-                multiline
-                rows={3}
-                variant="outlined"
-                margin="normal"
-                value={formData.responsibilityAr}
-                onChange={handleInputChange}
-                inputProps={{ dir: 'rtl' }}
-                InputLabelProps={{ style: { direction: 'rtl' } }}
-              />
-              <TextField
-                fullWidth
-                label="اشتراطـات السلامة:"
-                id="safetyConcernsAr"
-                name="safetyConcernsAr"
-                multiline
-                rows={3}
-                variant="outlined"
-                margin="normal"
-                value={formData.safetyConcernsAr}
-                onChange={handleInputChange}
-                inputProps={{ dir: 'rtl' }}
-                InputLabelProps={{ style: { direction: 'rtl' } }}
-              />
-              <TextField
-                fullWidth
-                label="الخطـــوات:"
-                id="procedureAr"
-                name="procedureAr"
-                multiline
-                rows={3}
-                variant="outlined"
-                margin="normal"
-                value={formData.procedureAr}
-                onChange={handleInputChange}
-                inputProps={{ dir: 'rtl' }}
-                InputLabelProps={{ style: { direction: 'rtl' } }}
-              />
-              <TextField
-                fullWidth
-                label="الوثائـق المرجعيـــة:"
-                id="referenceDocumentsAr"
-                name="referenceDocumentsAr"
-                multiline
-                rows={3}
-                variant="outlined"
-                margin="normal"
-                value={formData.referenceDocumentsAr}
-                onChange={handleInputChange}
-                inputProps={{ dir: 'rtl' }}
-                InputLabelProps={{ style: { direction: 'rtl' } }}
-              />
+              {/* استخدام Jodit Editor للمحتوى بالعربية */}
+              <Typography variant="subtitle2" sx={{ textAlign: 'right' }}>
+                الغرض:
+              </Typography>
+              <Box dir="rtl">
+                <JoditEditor
+                  value={formData.purposeAr}
+                  config={joditConfig}
+                  onBlur={(newContent) =>
+                    setFormData((prev) => ({ ...prev, purposeAr: newContent }))
+                  }
+                />
+              </Box>
+              <Typography variant="subtitle2" sx={{ mt: 2, textAlign: 'right' }}>
+                التعريفات:
+              </Typography>
+              <Box dir="rtl">
+                <JoditEditor
+                  value={formData.definitionsAr}
+                  config={joditConfig}
+                  onBlur={(newContent) =>
+                    setFormData((prev) => ({ ...prev, definitionsAr: newContent }))
+                  }
+                />
+              </Box>
+              <Typography variant="subtitle2" sx={{ mt: 2, textAlign: 'right' }}>
+                مجال التطبيق:
+              </Typography>
+              <Box dir="rtl">
+                <JoditEditor
+                  value={formData.scopeAr}
+                  config={joditConfig}
+                  onBlur={(newContent) =>
+                    setFormData((prev) => ({ ...prev, scopeAr: newContent }))
+                  }
+                />
+              </Box>
+              <Typography variant="subtitle2" sx={{ mt: 2, textAlign: 'right' }}>
+                المسئـولية:
+              </Typography>
+              <Box dir="rtl">
+                <JoditEditor
+                  value={formData.responsibilityAr}
+                  config={joditConfig}
+                  onBlur={(newContent) =>
+                    setFormData((prev) => ({ ...prev, responsibilityAr: newContent }))
+                  }
+                />
+              </Box>
+              <Typography variant="subtitle2" sx={{ mt: 2, textAlign: 'right' }}>
+                اشتراطـات السلامة:
+              </Typography>
+              <Box dir="rtl">
+                <JoditEditor
+                  value={formData.safetyConcernsAr}
+                  config={joditConfig}
+                  onBlur={(newContent) =>
+                    setFormData((prev) => ({ ...prev, safetyConcernsAr: newContent }))
+                  }
+                />
+              </Box>
+              <Typography variant="subtitle2" sx={{ mt: 2, textAlign: 'right' }}>
+                الخطـــوات:
+              </Typography>
+              <Box dir="rtl">
+                <JoditEditor
+                  value={formData.procedureAr}
+                  config={joditConfig}
+                  onBlur={(newContent) =>
+                    setFormData((prev) => ({ ...prev, procedureAr: newContent }))
+                  }
+                />
+              </Box>
+              <Typography variant="subtitle2" sx={{ mt: 2, textAlign: 'right' }}>
+                الوثائـق المرجعيـــة:
+              </Typography>
+              <Box dir="rtl">
+                <JoditEditor
+                  value={formData.referenceDocumentsAr}
+                  config={joditConfig}
+                  onBlur={(newContent) =>
+                    setFormData((prev) => ({ ...prev, referenceDocumentsAr: newContent }))
+                  }
+                />
+              </Box>
               <FormControlLabel
                 control={
                   <Checkbox
@@ -526,90 +528,91 @@ const NewCreation: React.FC = () => {
               <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
                 Content
               </Typography>
-              <TextField
-                fullWidth
-                label="Purpose:"
-                id="purposeEn"
-                name="purposeEn"
-                multiline
-                rows={3}
-                variant="outlined"
-                margin="normal"
-                value={formData.purposeEn}
-                onChange={handleInputChange}
-              />
-              <TextField
-                fullWidth
-                label="Definitions:"
-                id="definitionsEn"
-                name="definitionsEn"
-                multiline
-                rows={3}
-                variant="outlined"
-                margin="normal"
-                value={formData.definitionsEn}
-                onChange={handleInputChange}
-              />
-              <TextField
-                fullWidth
-                label="Scope:"
-                id="scopeEn"
-                name="scopeEn"
-                multiline
-                rows={3}
-                variant="outlined"
-                margin="normal"
-                value={formData.scopeEn}
-                onChange={handleInputChange}
-              />
-              <TextField
-                fullWidth
-                label="Responsibility:"
-                id="responsibilityEn"
-                name="responsibilityEn"
-                multiline
-                rows={3}
-                variant="outlined"
-                margin="normal"
-                value={formData.responsibilityEn}
-                onChange={handleInputChange}
-              />
-              <TextField
-                fullWidth
-                label="Safety Concerns:"
-                id="safetyConcernsEn"
-                name="safetyConcernsEn"
-                multiline
-                rows={3}
-                variant="outlined"
-                margin="normal"
-                value={formData.safetyConcernsEn}
-                onChange={handleInputChange}
-              />
-              <TextField
-                fullWidth
-                label="Procedure:"
-                id="procedureEn"
-                name="procedureEn"
-                multiline
-                rows={3}
-                variant="outlined"
-                margin="normal"
-                value={formData.procedureEn}
-                onChange={handleInputChange}
-              />
-              <TextField
-                fullWidth
-                label="Reference Documents:"
-                id="referenceDocumentsEn"
-                name="referenceDocumentsEn"
-                multiline
-                rows={3}
-                variant="outlined"
-                margin="normal"
-                value={formData.referenceDocumentsEn}
-                onChange={handleInputChange}
-              />
+              {/* استخدام Jodit Editor للمحتوى بالإنجليزية */}
+              <Typography variant="subtitle2">
+                Purpose:
+              </Typography>
+              <Box dir="ltr">
+                <JoditEditor
+                  value={formData.purposeEn}
+                  config={joditConfig}
+                  onBlur={(newContent) =>
+                    setFormData((prev) => ({ ...prev, purposeEn: newContent }))
+                  }
+                />
+              </Box>
+              <Typography variant="subtitle2" sx={{ mt: 2 }}>
+                Definitions:
+              </Typography>
+              <Box dir="ltr">
+                <JoditEditor
+                  value={formData.definitionsEn}
+                  config={joditConfig}
+                  onBlur={(newContent) =>
+                    setFormData((prev) => ({ ...prev, definitionsEn: newContent }))
+                  }
+                />
+              </Box>
+              <Typography variant="subtitle2" sx={{ mt: 2 }}>
+                Scope:
+              </Typography>
+              <Box dir="ltr">
+                <JoditEditor
+                  value={formData.scopeEn}
+                  config={joditConfig}
+                  onBlur={(newContent) =>
+                    setFormData((prev) => ({ ...prev, scopeEn: newContent }))
+                  }
+                />
+              </Box>
+              <Typography variant="subtitle2" sx={{ mt: 2 }}>
+                Responsibility:
+              </Typography>
+              <Box dir="ltr">
+                <JoditEditor
+                  value={formData.responsibilityEn}
+                  config={joditConfig}
+                  onBlur={(newContent) =>
+                    setFormData((prev) => ({ ...prev, responsibilityEn: newContent }))
+                  }
+                />
+              </Box>
+              <Typography variant="subtitle2" sx={{ mt: 2 }}>
+                Safety Concerns:
+              </Typography>
+              <Box dir="ltr">
+                <JoditEditor
+                  value={formData.safetyConcernsEn}
+                  config={joditConfig}
+                  onBlur={(newContent) =>
+                    setFormData((prev) => ({ ...prev, safetyConcernsEn: newContent }))
+                  }
+                />
+              </Box>
+              <Typography variant="subtitle2" sx={{ mt: 2 }}>
+                Procedure:
+              </Typography>
+              <Box dir="ltr">
+                <JoditEditor
+                  value={formData.procedureEn}
+                  config={joditConfig}
+                  onBlur={(newContent) =>
+                    setFormData((prev) => ({ ...prev, procedureEn: newContent }))
+                  }
+                />
+              </Box>
+              <Typography variant="subtitle2" sx={{ mt: 2 }}>
+                Reference Documents:
+              </Typography>
+              <Box dir="ltr">
+                <JoditEditor
+                  value={formData.referenceDocumentsEn}
+                  config={joditConfig}
+                  onBlur={(newContent) =>
+                    setFormData((prev) => ({ ...prev, referenceDocumentsEn: newContent }))
+                  }
+                />
+              </Box>
               <FormControlLabel
                 control={
                   <Checkbox
@@ -624,12 +627,7 @@ const NewCreation: React.FC = () => {
                 <Typography variant="subtitle1" gutterBottom>
                   Attachments:
                 </Typography>
-                <Button
-                  variant="outlined"
-                  component="label"
-                  startIcon={<IconUpload />}
-                  sx={{ mb: 2 }}
-                >
+                <Button variant="outlined" component="label" startIcon={<IconUpload />} sx={{ mb: 2 }}>
                   Upload Files
                   <input type="file" multiple hidden onChange={handleFileUpload} />
                 </Button>
@@ -641,11 +639,7 @@ const NewCreation: React.FC = () => {
                         secondary={`${(file.size / 1024 / 1024).toFixed(2)} MB`}
                       />
                       <ListItemSecondaryAction>
-                        <IconButton
-                          edge="end"
-                          onClick={() => handleFileDelete(index)}
-                          color="error"
-                        >
+                        <IconButton edge="end" onClick={() => handleFileDelete(index)} color="error">
                           <IconTrash size={20} />
                         </IconButton>
                       </ListItemSecondaryAction>

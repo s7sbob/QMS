@@ -18,8 +18,9 @@ import { IconBellRinging } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
 import axiosServices from 'src/utils/axiosServices';
 import Scrollbar from './Scrollbar';
-import { io, Socket } from 'socket.io-client';
 import Cookies from 'js-cookie';
+// استورد كائن الـ socket من ملفك الخارجي
+import socket from 'src/socket'; // أو المسار الصحيح لملف الـsocket
 
 interface NotificationItem {
   id: string;
@@ -34,7 +35,6 @@ interface NotificationItem {
 const Notifications: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const [socket, setSocket] = useState<Socket | null>(null);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -56,25 +56,28 @@ const Notifications: React.FC = () => {
   };
 
   useEffect(() => {
-    console.log('socket', socket);
-    // const newSocket = io('http://localhost:3000', {
-    const newSocket = io('https://qualitylead-qms.duckdns.org:3000', {
-      query: {
-        token: Cookies.get('token'),
-      },
-    });
-    setSocket(newSocket);
+    // إعداد التوكن (إن كنت ترغب بإرساله عبر query أو أي وسيلة أخرى)
+    const token = Cookies.get('token');
+    // إذا أردت إضافة التوكن في الـquery:
+    socket.io.opts.query = { token: token }; 
 
-    newSocket.on('notification', (notif: NotificationItem) => {
+    // أنشئ الاتصال (في حال لم يكن متصلًا) – أو يمكنك إبقاءه متصلًا طوال الوقت في مكان آخر
+    socket.connect();
+
+    // عند استقبال حدث notification من السيرفر
+    socket.on('notification', (notif: NotificationItem) => {
       setNotifications((prev) => [notif, ...prev]);
     });
 
+    // جلب الإشعارات القديمة من الـAPI
     fetchNotifications();
 
+    // التنظيف (إزالة الاستماع وإغلاق الاتصال) عندما يُدمَّر المكوّن
     return () => {
-      newSocket.disconnect();
+      socket.off('notification');
+      socket.disconnect();
     };
-  }, [socket]);
+  }, []);
 
   const unreadCount = notifications.length;
 

@@ -6,6 +6,8 @@ import RTL from './layouts/full/shared/customizer/RTL';
 import ScrollToTop from './components/shared/ScrollToTop';
 import Router from './routes/Router';
 import { AppState } from './store/Store';
+import 'react-quill/dist/quill.snow.css';
+
 
 function App() {
   const routing = useRoutes(Router);
