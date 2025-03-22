@@ -68,7 +68,7 @@ const Notifications: React.FC = () => {
   const handleNotificationClick = (notification: NotificationItem) => {
     handleClose();
     if (notification.data?.sopHeaderId) {
-      navigate(`/test?headerId=${notification.data.sopHeaderId}`);
+      navigate(`/SOPFullDocument?headerId=${notification.data.sopHeaderId}`);
     }
   };
 

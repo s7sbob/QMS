@@ -1,8 +1,62 @@
-// src/pages/SOPFilter.tsx
 import React from 'react';
-import { Box, Typography, FormGroup, FormControlLabel, Checkbox, RadioGroup, Radio, Divider } from '@mui/material';
+import { Box, Typography, FormGroup, FormControlLabel, Checkbox, Divider } from '@mui/material';
 
-const SOPFilter: React.FC = () => {
+export interface StatusOption {
+  id: string;
+  name_en: string;
+}
+
+export interface DepartmentOption {
+  id: string;
+  dept_name: string;
+}
+
+export interface FilterValues {
+  statuses: string[];
+  departments: string[];
+}
+
+interface SOPFilterProps {
+  statusOptions: StatusOption[];
+  selectedStatuses: string[];
+  onStatusChange: (selected: string[]) => void;
+  departmentOptions: DepartmentOption[];
+  selectedDepartments: string[];
+  onDepartmentChange: (selected: string[]) => void;
+}
+
+const SOPFilter: React.FC<SOPFilterProps> = ({
+  statusOptions,
+  selectedStatuses,
+  onStatusChange,
+  departmentOptions,
+  selectedDepartments,
+  onDepartmentChange,
+}) => {
+  // Toggle a status option
+  const handleStatusChange = (id: string) => {
+    const currentIndex = selectedStatuses.indexOf(id);
+    let newSelected: string[] = [];
+    if (currentIndex === -1) {
+      newSelected = [...selectedStatuses, id];
+    } else {
+      newSelected = selectedStatuses.filter((s) => s !== id);
+    }
+    onStatusChange(newSelected);
+  };
+
+  // Toggle a department option
+  const handleDepartmentChange = (id: string) => {
+    const currentIndex = selectedDepartments.indexOf(id);
+    let newSelected: string[] = [];
+    if (currentIndex === -1) {
+      newSelected = [...selectedDepartments, id];
+    } else {
+      newSelected = selectedDepartments.filter((d) => d !== id);
+    }
+    onDepartmentChange(newSelected);
+  };
+
   return (
     <Box p={3}>
       {/* Status Filter */}
@@ -10,9 +64,18 @@ const SOPFilter: React.FC = () => {
         Status
       </Typography>
       <FormGroup>
-        <FormControlLabel control={<Checkbox defaultChecked />} label="Active" />
-        <FormControlLabel control={<Checkbox />} label="Under Review" />
-        <FormControlLabel control={<Checkbox />} label="Obsolete" />
+        {statusOptions.map((option) => (
+          <FormControlLabel
+            key={option.id}
+            control={
+              <Checkbox
+                checked={selectedStatuses.includes(option.id)}
+                onChange={() => handleStatusChange(option.id)}
+              />
+            }
+            label={option.name_en}
+          />
+        ))}
       </FormGroup>
 
       <Divider sx={{ my: 3 }} />
@@ -22,35 +85,18 @@ const SOPFilter: React.FC = () => {
         Department
       </Typography>
       <FormGroup>
-        <FormControlLabel control={<Checkbox defaultChecked />} label="Quality" />
-        <FormControlLabel control={<Checkbox />} label="Operations" />
-        <FormControlLabel control={<Checkbox />} label="Production" />
-        <FormControlLabel control={<Checkbox />} label="Laboratory" />
-        <FormControlLabel control={<Checkbox />} label="Warehouse" />
-      </FormGroup>
-
-      <Divider sx={{ my: 3 }} />
-
-      {/* Document Type */}
-      <Typography variant="h6" mb={2}>
-        Document Type
-      </Typography>
-      <RadioGroup defaultValue="all">
-        <FormControlLabel value="all" control={<Radio />} label="All" />
-        <FormControlLabel value="sop" control={<Radio />} label="SOP" />
-        <FormControlLabel value="manual" control={<Radio />} label="Manual" />
-        <FormControlLabel value="form" control={<Radio />} label="Form" />
-      </RadioGroup>
-
-      <Divider sx={{ my: 3 }} />
-
-      {/* Version Status */}
-      <Typography variant="h6" mb={2}>
-        Version Status
-      </Typography>
-      <FormGroup>
-        <FormControlLabel control={<Checkbox />} label="Latest Version" />
-        <FormControlLabel control={<Checkbox />} label="Previous Versions" />
+        {departmentOptions.map((dept) => (
+          <FormControlLabel
+            key={dept.id}
+            control={
+              <Checkbox
+                checked={selectedDepartments.includes(dept.id)}
+                onChange={() => handleDepartmentChange(dept.id)}
+              />
+            }
+            label={dept.dept_name}
+          />
+        ))}
       </FormGroup>
     </Box>
   );

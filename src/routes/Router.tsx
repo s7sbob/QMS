@@ -77,7 +77,7 @@ const Router = [
       { path: '/documentation-control/CancellationForm', element: <CancellationForm /> },
       { path: '/documentation-control/distribution_form', element: <Distribution_form /> },
       { path: '/ITManagementPage', element: <ITManagementPage /> },
-      { path: '/test', element: <SOPFullDocument /> },
+      { path: '/SOPFullDocument', element: <SOPFullDocument /> },
 
       
       // لو كتب أي شيء مش معروف نوجهه لصفحة 404

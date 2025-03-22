@@ -246,7 +246,7 @@ const NewCreation: React.FC = () => {
         confirmButtonText: 'حسناً'
       }).then((result) => {
         if (result.isConfirmed) {
-          navigate(`/test?headerId=${headerId}`);
+          navigate(`/SOPFullDocument?headerId=${headerId}`);
         }
       });
     } catch (error) {
