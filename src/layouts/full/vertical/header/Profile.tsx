@@ -25,9 +25,8 @@ const Profile: React.FC = () => {
   const handleLogout = () => {
     try {
       // إزالة كل الكوكيز
-      Object.keys(Cookies.get()).forEach((key) => {
-        Cookies.remove(key, { path: '' });
-      });
+      Cookies.remove('user', { path: '' });
+      Cookies.remove('token', { path: '' });
       navigate('/auth/login');
     } catch (error) {
       console.error('Logout error:', error);

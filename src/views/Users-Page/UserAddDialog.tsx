@@ -29,6 +29,7 @@ const UserAddDialog: React.FC<UserAddDialogProps> = ({ open, onClose, onSave }) 
     Password: '',
     dateOfBirth: '',
     userImg_Url: '',
+    signUrl: '',
     is_Active: 1, // افتراضيًا نفترض أنه 1 (فعال)
     contacts: [],
   });
@@ -59,6 +60,7 @@ const UserAddDialog: React.FC<UserAddDialogProps> = ({ open, onClose, onSave }) 
       UserName: '',
       Password: '',
       dateOfBirth: '',
+      signUrl: '',
       userImg_Url: '',
       is_Active: 1,
       contacts: [],

@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import { IconPencil, IconDeviceFloppy, IconTrash } from '@tabler/icons-react';
 import Tooltip from '@mui/material/Tooltip';
-import { IUser, UserInput, addEditUserApi, deleteUser } from 'src/services/userService';
+import { IUser, addEditUserApi, deleteUser } from 'src/services/userService';
 
 type UserDetailsProps = {
   user: IUser | null;
@@ -32,21 +32,32 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user }) => {
 
   const handleEditToggle = async () => {
     if (editMode && editedUser) {
-      // عند حفظ التعديلات، نستخدم نفس الـ addEditUserApi (مع Id يعني تعديل)
       try {
-        const userData: UserInput = {
-          Id: editedUser.Id,
-          FName: editedUser.FName,
-          LName: editedUser.LName,
-          Email: editedUser.Email,
-          UserName: editedUser.UserName,
-          Password: editedUser.Password || '',  // لو كانت فارغة
-          userImg_Url: editedUser.userImg_Url || '',
-          dateOfBirth: editedUser.dateOfBirth || '',
-          is_Active: editedUser.is_Active,
-          contacts: [], // لو عندك واجهة أخرى لجهات الاتصال
-        };
-        await addEditUserApi(userData);
+        // Create a new FormData instance
+        const formData = new FormData();
+        // Append each field from editedUser to formData
+        formData.append('Id', editedUser.Id);
+        formData.append('FName', editedUser.FName);
+        formData.append('LName', editedUser.LName);
+        formData.append('Email', editedUser.Email);
+        formData.append('UserName', editedUser.UserName);
+        formData.append('Password', editedUser.Password || '');
+        formData.append('userImg_Url', editedUser.userImg_Url || '');
+        if (editedUser.dateOfBirth) {
+          formData.append('dateOfBirth', editedUser.dateOfBirth);
+        }
+        if (editedUser.is_Active !== undefined) {
+          formData.append('is_Active', editedUser.is_Active.toString());
+        }
+        // Append contacts if needed
+        // if (editedUser.contacts && editedUser.contacts.length > 0) {
+        //   editedUser.contacts.forEach((contact, index) => {
+        //     formData.append(`contacts[${index}][PhoneNumber]`, contact.PhoneNumber);
+        //     formData.append(`contacts[${index}][address]`, contact.address);
+        //   });
+        // }
+
+        await addEditUserApi(formData);
         console.log('User updated successfully!');
       } catch (err) {
         console.error('Error updating user:', err);
@@ -55,7 +66,6 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user }) => {
     }
     setEditMode(!editMode);
   };
-
   const handleDelete = async () => {
     if (!user) return;
     try {
@@ -194,9 +204,7 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user }) => {
                 InputLabelProps={{ shrink: true }}
               />
             ) : (
-              <Typography variant="body1">
-                {user.dateOfBirth ? user.dateOfBirth : 'N/A'}
-              </Typography>
+              <Typography variant="body1">{user.dateOfBirth ? user.dateOfBirth : 'N/A'}</Typography>
             )}
           </Grid>
 
@@ -235,9 +243,7 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user }) => {
                 label={editedUser.is_Active === 1 ? 'Active' : 'Inactive'}
               />
             ) : (
-              <Typography variant="body1">
-                {user.is_Active === 1 ? 'Yes' : 'No'}
-              </Typography>
+              <Typography variant="body1">{user.is_Active === 1 ? 'Yes' : 'No'}</Typography>
             )}
           </Grid>
         </Grid>
