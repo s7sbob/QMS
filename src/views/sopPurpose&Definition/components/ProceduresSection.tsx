@@ -89,7 +89,8 @@ const ProceduresSection: React.FC<ProceduresSectionProps> = ({ initialData }) =>
 
   return (
     <Box sx={{ mt: 2 }}>
-      <Typography variant="h6" gutterBottom sx={{ display: "flex", justifyContent: "space-between" }}>
+      <Typography variant="h6" gutterBottom sx={{ display: "flex", justifyContent: "space-between",     color: procedure && procedure.reviewer_Comment ? "red" : "inherit", // الشرط هنا لتلوين العنوان بالاحمر عند وجود تعليق
+ }}>
         <span>4. Procedures:</span>
         <span dir="rtl">4. الإجراءات</span>
       </Typography>

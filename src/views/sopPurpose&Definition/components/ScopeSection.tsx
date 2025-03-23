@@ -89,7 +89,8 @@ const ScopeSection: React.FC<ScopeSectionProps> = ({ initialData }) => {
 
   return (
     <Box sx={{ mt: 2 }}>
-      <Typography variant="h6" gutterBottom sx={{ display: "flex", justifyContent: "space-between" }}>
+      <Typography variant="h6" gutterBottom sx={{ display: "flex", justifyContent: "space-between",     color: scope && scope.reviewer_Comment ? "red" : "inherit", // الشرط هنا لتلوين العنوان بالاحمر عند وجود تعليق
+ }}>
         <span>3. Scope:</span>
         <span dir="rtl">3. النطاق</span>
       </Typography>

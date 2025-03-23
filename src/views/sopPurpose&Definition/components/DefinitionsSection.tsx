@@ -96,7 +96,8 @@ const DefinitionsSection: React.FC<DefinitionsSectionProps> = ({ initialData }) 
       <Typography
         variant="h6"
         gutterBottom
-        sx={{ display: "flex", justifyContent: "space-between" }}
+        sx={{ display: "flex", justifyContent: "space-between",     color: definition && definition.reviewer_Comment ? "red" : "inherit", // الشرط هنا لتلوين العنوان بالاحمر عند وجود تعليق
+        }}
       >
         <span>2. Definitions:</span>
         <span dir="rtl">2. التعاريف</span>

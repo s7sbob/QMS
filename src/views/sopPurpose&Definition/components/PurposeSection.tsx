@@ -89,7 +89,8 @@ const PurposeSection: React.FC<PurposeSectionProps> = ({ initialData }) => {
 
   return (
     <Box sx={{ mt: 2 }}>
-      <Typography variant="h6" gutterBottom sx={{ display: "flex", justifyContent: "space-between" }}>
+      <Typography variant="h6" gutterBottom sx={{ display: "flex", justifyContent: "space-between",     color: purpose && purpose.reviewer_Comment ? "red" : "inherit", // الشرط هنا لتلوين العنوان بالاحمر عند وجود تعليق
+ }}>
         <span>1. Purpose:</span>
         <span dir="rtl">1. الغرض</span>
       </Typography>
