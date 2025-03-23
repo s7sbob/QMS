@@ -9,6 +9,12 @@ export interface IUserContact {
   address?: string;
 }
 
+export interface ICompany {
+  Id: string;
+  Name: string;
+  // Additional company properties if needed
+}
+
 export interface IUser {
   Id: string;
   FName: string;
@@ -21,6 +27,10 @@ export interface IUser {
   is_Active?: number;
   dateOfBirth?: string;
   User_contact?: IUserContact[];
+  // Added property for user-department relation
+  Users_Departments_Users_Departments_User_IdToUser_Data?: any[];
+  // Company data array
+  Comp_Data?: ICompany[];
 }
 
 export interface UserInput {
@@ -64,5 +74,25 @@ export const addEditUserApi = async (userData: FormData) => {
 
 export const deleteUser = async (id: string) => {
   const { data } = await axiosServices.delete(`/api/users/delete/${id}`);
-  return data; // قد يحتوي على user محذوف أو message
+  return data; // May contain the deleted user or a message
+};
+
+export const getAllCompanies = async (): Promise<ICompany[]> => {
+  const { data } = await axiosServices.get('/api/companies/getAllCompanies');
+  return data;
+};
+
+export const getDepartmentsByCompany = async (companyId: string): Promise<any[]> => {
+  const { data } = await axiosServices.get(`/api/department/compdepartments/${companyId}`);
+  return data;
+};
+
+export const getDepartment = async (id: string): Promise<any> => {
+  const { data } = await axiosServices.get(`/api/department/getdepartment/${id}`);
+  return data;
+};
+
+export const getAllUserRoles = async (): Promise<any[]> => {
+  const { data } = await axiosServices.get('/api/userroles/getAll');
+  return data;
 };
