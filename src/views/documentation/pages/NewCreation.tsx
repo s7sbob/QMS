@@ -70,7 +70,6 @@ const NewCreation: React.FC = () => {
 
   useEffect(() => {
     if (compId) {
-      console.log('Using compId:', compId);
       setLoading(true);
       axiosServices
         .get(`/api/department/compdepartments/${compId}`)
@@ -92,8 +91,6 @@ const NewCreation: React.FC = () => {
         .finally(() => {
           setLoading(false);
         });
-    } else {
-      console.log('compId not available yet');
     }
   }, [compId]);
 
@@ -313,13 +310,14 @@ const NewCreation: React.FC = () => {
               <Typography variant="h6" gutterBottom sx={{ mt: 3 }} dir="rtl">
                 المحتوى
               </Typography>
-              {/* استخدام Jodit Editor للمحتوى بالعربية مع إضافة id و aria-label */}
+              {/* محرر الغرض */}
               <Typography variant="subtitle2" sx={{ textAlign: 'right' }}>
                 الغرض:
               </Typography>
               <Box dir="rtl">
                 <JoditEditor
                   id="purposeArEditor"
+                  name="purposeAr"
                   aria-label="محرر الغرض بالعربية"
                   value={formData.purposeAr}
                   config={joditConfig}
@@ -328,12 +326,14 @@ const NewCreation: React.FC = () => {
                   }
                 />
               </Box>
+              {/* محرر التعريفات */}
               <Typography variant="subtitle2" sx={{ mt: 2, textAlign: 'right' }}>
                 التعريفات:
               </Typography>
               <Box dir="rtl">
                 <JoditEditor
                   id="definitionsArEditor"
+                  name="definitionsAr"
                   aria-label="محرر التعريفات بالعربية"
                   value={formData.definitionsAr}
                   config={joditConfig}
@@ -342,12 +342,14 @@ const NewCreation: React.FC = () => {
                   }
                 />
               </Box>
+              {/* محرر مجال التطبيق */}
               <Typography variant="subtitle2" sx={{ mt: 2, textAlign: 'right' }}>
                 مجال التطبيق:
               </Typography>
               <Box dir="rtl">
                 <JoditEditor
                   id="scopeArEditor"
+                  name="scopeAr"
                   aria-label="محرر مجال التطبيق بالعربية"
                   value={formData.scopeAr}
                   config={joditConfig}
@@ -356,12 +358,14 @@ const NewCreation: React.FC = () => {
                   }
                 />
               </Box>
+              {/* محرر المسؤولية */}
               <Typography variant="subtitle2" sx={{ mt: 2, textAlign: 'right' }}>
-                المسئـولية:
+                المسؤولية:
               </Typography>
               <Box dir="rtl">
                 <JoditEditor
                   id="responsibilityArEditor"
+                  name="responsibilityAr"
                   aria-label="محرر المسؤولية بالعربية"
                   value={formData.responsibilityAr}
                   config={joditConfig}
@@ -370,12 +374,14 @@ const NewCreation: React.FC = () => {
                   }
                 />
               </Box>
+              {/* محرر اشتراطات السلامة */}
               <Typography variant="subtitle2" sx={{ mt: 2, textAlign: 'right' }}>
-                اشتراطـات السلامة:
+                اشتراطات السلامة:
               </Typography>
               <Box dir="rtl">
                 <JoditEditor
                   id="safetyConcernsArEditor"
+                  name="safetyConcernsAr"
                   aria-label="محرر اشتراطات السلامة بالعربية"
                   value={formData.safetyConcernsAr}
                   config={joditConfig}
@@ -384,13 +390,15 @@ const NewCreation: React.FC = () => {
                   }
                 />
               </Box>
+              {/* محرر الإجراءات */}
               <Typography variant="subtitle2" sx={{ mt: 2, textAlign: 'right' }}>
-                الخطـــوات:
+                الخطوات:
               </Typography>
               <Box dir="rtl">
                 <JoditEditor
                   id="procedureArEditor"
-                  aria-label="محرر الخطوات بالعربية"
+                  name="procedureAr"
+                  aria-label="محرر الإجراءات بالعربية"
                   value={formData.procedureAr}
                   config={joditConfig}
                   onBlur={(newContent) =>
@@ -398,12 +406,14 @@ const NewCreation: React.FC = () => {
                   }
                 />
               </Box>
+              {/* محرر الوثائق المرجعية */}
               <Typography variant="subtitle2" sx={{ mt: 2, textAlign: 'right' }}>
-                الوثائـق المرجعيـــة:
+                الوثائق المرجعية:
               </Typography>
               <Box dir="rtl">
                 <JoditEditor
                   id="referenceDocumentsArEditor"
+                  name="referenceDocumentsAr"
                   aria-label="محرر الوثائق المرجعية بالعربية"
                   value={formData.referenceDocumentsAr}
                   config={joditConfig}
@@ -426,7 +436,7 @@ const NewCreation: React.FC = () => {
               />
               <Box sx={{ direction: 'rtl', textAlign: 'right' }}>
                 <Typography variant="subtitle1" gutterBottom dir="rtl">
-                  المرفقـــات:
+                  المرفقات:
                 </Typography>
                 <Button
                   variant="outlined"
@@ -519,13 +529,14 @@ const NewCreation: React.FC = () => {
               <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
                 Content
               </Typography>
-              {/* استخدام Jodit Editor للمحتوى بالإنجليزية مع إضافة id و aria-label */}
+              {/* محرر الغرض */}
               <Typography variant="subtitle2">
                 Purpose:
               </Typography>
               <Box dir="ltr">
                 <JoditEditor
                   id="purposeEnEditor"
+                  name="purposeEn"
                   aria-label="English Purpose Editor"
                   value={formData.purposeEn}
                   config={joditConfig}
@@ -534,12 +545,14 @@ const NewCreation: React.FC = () => {
                   }
                 />
               </Box>
+              {/* محرر التعريفات */}
               <Typography variant="subtitle2" sx={{ mt: 2 }}>
                 Definitions:
               </Typography>
               <Box dir="ltr">
                 <JoditEditor
                   id="definitionsEnEditor"
+                  name="definitionsEn"
                   aria-label="English Definitions Editor"
                   value={formData.definitionsEn}
                   config={joditConfig}
@@ -548,12 +561,14 @@ const NewCreation: React.FC = () => {
                   }
                 />
               </Box>
+              {/* محرر النطاق */}
               <Typography variant="subtitle2" sx={{ mt: 2 }}>
                 Scope:
               </Typography>
               <Box dir="ltr">
                 <JoditEditor
                   id="scopeEnEditor"
+                  name="scopeEn"
                   aria-label="English Scope Editor"
                   value={formData.scopeEn}
                   config={joditConfig}
@@ -562,12 +577,14 @@ const NewCreation: React.FC = () => {
                   }
                 />
               </Box>
+              {/* محرر المسؤولية */}
               <Typography variant="subtitle2" sx={{ mt: 2 }}>
                 Responsibility:
               </Typography>
               <Box dir="ltr">
                 <JoditEditor
                   id="responsibilityEnEditor"
+                  name="responsibilityEn"
                   aria-label="English Responsibility Editor"
                   value={formData.responsibilityEn}
                   config={joditConfig}
@@ -576,12 +593,14 @@ const NewCreation: React.FC = () => {
                   }
                 />
               </Box>
+              {/* محرر اشتراطات السلامة */}
               <Typography variant="subtitle2" sx={{ mt: 2 }}>
                 Safety Concerns:
               </Typography>
               <Box dir="ltr">
                 <JoditEditor
                   id="safetyConcernsEnEditor"
+                  name="safetyConcernsEn"
                   aria-label="English Safety Concerns Editor"
                   value={formData.safetyConcernsEn}
                   config={joditConfig}
@@ -590,12 +609,14 @@ const NewCreation: React.FC = () => {
                   }
                 />
               </Box>
+              {/* محرر الإجراءات */}
               <Typography variant="subtitle2" sx={{ mt: 2 }}>
                 Procedure:
               </Typography>
               <Box dir="ltr">
                 <JoditEditor
                   id="procedureEnEditor"
+                  name="procedureEn"
                   aria-label="English Procedure Editor"
                   value={formData.procedureEn}
                   config={joditConfig}
@@ -604,12 +625,14 @@ const NewCreation: React.FC = () => {
                   }
                 />
               </Box>
+              {/* محرر الوثائق المرجعية */}
               <Typography variant="subtitle2" sx={{ mt: 2 }}>
                 Reference Documents:
               </Typography>
               <Box dir="ltr">
                 <JoditEditor
                   id="referenceDocumentsEnEditor"
+                  name="referenceDocumentsEn"
                   aria-label="English Reference Documents Editor"
                   value={formData.referenceDocumentsEn}
                   config={joditConfig}
