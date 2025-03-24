@@ -8,11 +8,11 @@ import {
   TextField,
   Button,
   Typography,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
-  IconButton,
+  // List,
+  // ListItem,
+  // ListItemText,
+  // ListItemSecondaryAction,
+  // IconButton,
   MenuItem,
   FormControl,
   InputLabel,
@@ -21,7 +21,7 @@ import {
   FormControlLabel,
   CircularProgress,
 } from '@mui/material';
-import { IconUpload, IconTrash } from '@tabler/icons-react';
+// import { IconUpload, IconTrash } from '@tabler/icons-react';
 import axiosServices from 'src/utils/axiosServices';
 import { UserContext } from 'src/context/UserContext';
 import Swal from 'sweetalert2';
@@ -36,7 +36,7 @@ interface Department {
 
 const NewCreation: React.FC = () => {
   // State للملفات المرفقة
-  const [attachments, setAttachments] = useState<File[]>([]);
+  // const [attachments, setAttachments] = useState<File[]>([]);
 
   // الحصول على بيانات المستخدم من الـ UserContext
   const user = useContext(UserContext);
