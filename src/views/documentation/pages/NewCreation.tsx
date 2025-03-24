@@ -66,18 +66,36 @@ const NewCreation: React.FC = () => {
   const joditConfig = {
     readonly: false,
     toolbarSticky: true,
-    pasteFilterStyle: false,
-    buttons: [
-      'bold', 'italic', 'underline', 'strikethrough', 'superscript', 'subscript', '|',
-      'ul', 'ol', 'outdent', 'indent', '|',
-      'font', 'fontsize', 'brush', 'paragraph', '|',
-      'link', 'unlink', '|',
-      'align', 'undo', 'redo', 'print', 'source', 'fullsize'
-    ],
-    // تعطيل uploader
+    buttons: ['bold', 'italic', 'underline', 'strikethrough', 'ul', 'ol', 'link', 'undo', 'redo'],
     uploader: {
-      url: ''
-    }
+      insertImageAsBase64URI: false,
+    },
+    filebrowser: {
+      ajax: { url: '' },
+    },
+    events: {
+      // Prevent image file pasting
+      beforePaste: (event: ClipboardEvent) => {
+        if (event.clipboardData) {
+          const items = event.clipboardData.items;
+          for (let i = 0; i < items.length; i++) {
+            if (items[i].type.startsWith('image/')) {
+              event.preventDefault();
+              alert('Image pasting is disabled to avoid blob usage.');
+              return false;
+            }
+          }
+        }
+      },
+      // Prevent drag-and-drop of files
+      drop: (event: DragEvent) => {
+        if (event.dataTransfer?.files.length) {
+          event.preventDefault();
+          alert('Drag and drop of files is disabled to avoid blob URLs.');
+          return false;
+        }
+      },
+    },
   };
 
   useEffect(() => {
@@ -138,7 +156,7 @@ const NewCreation: React.FC = () => {
         Doc_Title_ar: formData.titleAr,
         Com_Id: compId,
         Dept_Id: selectedDepartment,
-        status: "1"
+        status: '1',
       };
 
       const headerResponse = await axiosServices.post(
@@ -151,7 +169,7 @@ const NewCreation: React.FC = () => {
           title: 'خطأ',
           text: 'لم يرجع السيرفر بمعرف Header صالح',
           icon: 'error',
-          confirmButtonText: 'حسناً'
+          confirmButtonText: 'حسناً',
         });
         return;
       }
@@ -226,7 +244,7 @@ const NewCreation: React.FC = () => {
         title: 'تم الإنشاء بنجاح!',
         text: 'تم إنشاء الـ SOP بنجاح',
         icon: 'success',
-        confirmButtonText: 'حسناً'
+        confirmButtonText: 'حسناً',
       }).then((result) => {
         if (result.isConfirmed) {
           navigate(`/SOPFullDocument?headerId=${headerId}`);
@@ -238,7 +256,7 @@ const NewCreation: React.FC = () => {
         title: 'خطأ',
         text: 'حدث خطأ أثناء إنشاء الـ SOP. راجع الـ Console لمعرفة التفاصيل.',
         icon: 'error',
-        confirmButtonText: 'حسناً'
+        confirmButtonText: 'حسناً',
       });
     }
   };
@@ -369,9 +387,7 @@ const NewCreation: React.FC = () => {
                   aria-label="محرر مجال التطبيق بالعربية"
                   value={formData.scopeAr}
                   config={joditConfig}
-                  onBlur={(newContent) =>
-                    setFormData((prev) => ({ ...prev, scopeAr: newContent }))
-                  }
+                  onBlur={(newContent) => setFormData((prev) => ({ ...prev, scopeAr: newContent }))}
                 />
               </Box>
               {/* محرر المسؤولية */}
@@ -546,9 +562,7 @@ const NewCreation: React.FC = () => {
                 Content
               </Typography>
               {/* محرر الغرض */}
-              <Typography variant="subtitle2">
-                Purpose:
-              </Typography>
+              <Typography variant="subtitle2">Purpose:</Typography>
               <Box dir="ltr">
                 <JoditEditor
                   id="purposeEnEditor"
@@ -588,9 +602,7 @@ const NewCreation: React.FC = () => {
                   aria-label="English Scope Editor"
                   value={formData.scopeEn}
                   config={joditConfig}
-                  onBlur={(newContent) =>
-                    setFormData((prev) => ({ ...prev, scopeEn: newContent }))
-                  }
+                  onBlur={(newContent) => setFormData((prev) => ({ ...prev, scopeEn: newContent }))}
                 />
               </Box>
               {/* محرر المسؤولية */}
@@ -672,7 +684,12 @@ const NewCreation: React.FC = () => {
                 <Typography variant="subtitle1" gutterBottom>
                   Attachments:
                 </Typography>
-                <Button variant="outlined" component="label" startIcon={<IconUpload />} sx={{ mb: 2 }}>
+                <Button
+                  variant="outlined"
+                  component="label"
+                  startIcon={<IconUpload />}
+                  sx={{ mb: 2 }}
+                >
                   Upload Files
                   <input
                     type="file"
@@ -690,7 +707,11 @@ const NewCreation: React.FC = () => {
                         secondary={`${(file.size / 1024 / 1024).toFixed(2)} MB`}
                       />
                       <ListItemSecondaryAction>
-                        <IconButton edge="end" onClick={() => handleFileDelete(index)} color="error">
+                        <IconButton
+                          edge="end"
+                          onClick={() => handleFileDelete(index)}
+                          color="error"
+                        >
                           <IconTrash size={20} />
                         </IconButton>
                       </ListItemSecondaryAction>
