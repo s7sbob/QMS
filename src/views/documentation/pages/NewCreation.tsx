@@ -40,9 +40,8 @@ const NewCreation: React.FC = () => {
   const [attachments, setAttachments] = useState<File[]>([]);
 
   // الحصول على بيانات المستخدم من الـ UserContext
-  const user = useContext(UserContext);
+  const compId = useContext(UserContext);
   // نستخرج compId من بيانات المستخدم
-  const compId = user?.compId || '';
 
   // state لتخزين الأقسام بناءً على compId
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -261,13 +260,10 @@ const NewCreation: React.FC = () => {
   };
 
   // إذا لم يتوفر user أو compId بعد، نعرض مؤشر تحميل
-  if (!user || !compId) {
+  if (compId) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
         <CircularProgress />
-        <Typography variant="h6" sx={{ ml: 2 }}>
-          جاري تحميل بيانات المستخدم...
-        </Typography>
       </Box>
     );
   }
