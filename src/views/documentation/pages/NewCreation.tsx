@@ -124,16 +124,16 @@ const NewCreation: React.FC = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      const filesArray = Array.from(event.target.files);
-      setAttachments((prev) => [...prev, ...filesArray]);
-    }
-  };
+  // const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   if (event.target.files) {
+  //     const filesArray = Array.from(event.target.files);
+  //     setAttachments((prev) => [...prev, ...filesArray]);
+  //   }
+  // };
 
-  const handleFileDelete = (index: number) => {
-    setAttachments((prev) => prev.filter((_, i) => i !== index));
-  };
+  // const handleFileDelete = (index: number) => {
+  //   setAttachments((prev) => prev.filter((_, i) => i !== index));
+  // };
 
   const handlePrint = () => {
     window.print();
@@ -436,7 +436,7 @@ const NewCreation: React.FC = () => {
                 label="يتضمن تدريب"
                 sx={{ mt: 2, direction: 'rtl', textAlign: 'right' }}
               />
-              <Box sx={{ direction: 'rtl', textAlign: 'right' }}>
+              {/* <Box sx={{ direction: 'rtl', textAlign: 'right' }}>
                 <Typography variant="subtitle1" gutterBottom dir="rtl">
                   المرفقـــات:
                 </Typography>
@@ -468,7 +468,7 @@ const NewCreation: React.FC = () => {
                     </ListItem>
                   ))}
                 </List>
-              </Box>
+              </Box> */}
             </Grid>
             {/* العمود الإنجليزي */}
             <Grid item xs={12} md={6} sx={{ textAlign: 'left', direction: 'ltr' }}>
@@ -619,7 +619,7 @@ const NewCreation: React.FC = () => {
                 label="Contain Training"
                 sx={{ mt: 2 }}
               />
-              <Box>
+              {/* <Box>
                 <Typography variant="subtitle1" gutterBottom>
                   Attachments:
                 </Typography>
@@ -642,7 +642,7 @@ const NewCreation: React.FC = () => {
                     </ListItem>
                   ))}
                 </List>
-              </Box>
+              </Box> */}
             </Grid>
           </Grid>
           <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2 }}>
