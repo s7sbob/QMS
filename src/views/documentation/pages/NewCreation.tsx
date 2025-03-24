@@ -31,26 +31,15 @@ import JoditEditor from 'jodit-react';
 interface Department {
   Id: string;
   Dept_name: string;
-  // يمكنك إضافة خصائص أخرى إذا احتجت
 }
 
 const NewCreation: React.FC = () => {
-  // State للملفات المرفقة
   const [attachments, setAttachments] = useState<File[]>([]);
-
-  // الحصول على بيانات المستخدم من الـ UserContext
   const user = useContext(UserContext);
-  // نستخرج compId من بيانات المستخدم
   const compId = user?.compId || '';
-
-  // state لتخزين الأقسام بناءً على compId
   const [departments, setDepartments] = useState<Department[]>([]);
   const [selectedDepartment, setSelectedDepartment] = useState<string>('');
-
-  // state للcheckbox "contain training"
   const [containTraining, setContainTraining] = useState<boolean>(false);
-
-  // state للحقول النصية (العناوين والمحتوى)
   const [formData, setFormData] = useState({
     titleAr: '',
     titleEn: '',
@@ -69,24 +58,16 @@ const NewCreation: React.FC = () => {
     procedureEn: '',
     referenceDocumentsEn: '',
   });
-
-  // عرض تاريخ الإنشاء (محسوب من النظام)
   const creationDate = new Date().toISOString().slice(0, 10);
-
-  // حالة مؤشر التحميل
   const [loading, setLoading] = useState<boolean>(false);
-
   const navigate = useNavigate();
 
-  // إعدادات Jodit Editor مع دعم عملية اللصق
   const joditConfig = {
     readonly: false,
     toolbarSticky: true,
-    // تفعيل دعم اللصق بحيث يتم إدخال المحتوى بصيغة HTML كاملة دون تصفية الأنماط
     pasteFilterStyle: false,
   };
 
-  // جلب الأقسام بناءً على compId
   useEffect(() => {
     if (compId) {
       console.log('Using compId:', compId);
@@ -94,7 +75,6 @@ const NewCreation: React.FC = () => {
       axiosServices
         .get(`/api/department/compdepartments/${compId}`)
         .then((res) => {
-          console.log('Response from departments API:', res.data);
           let data = res.data;
           if (!Array.isArray(data)) {
             try {
@@ -104,7 +84,6 @@ const NewCreation: React.FC = () => {
               data = [];
             }
           }
-          console.log('Parsed departments:', data);
           setDepartments(data);
         })
         .catch((err) => {
@@ -140,10 +119,7 @@ const NewCreation: React.FC = () => {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
     try {
-      // إرسال بيانات الـ Header المطلوبة فقط: Doc_Title_en, Doc_Title_ar, Com_Id, Dept_Id
-      // وأضفنا هنا الخاصية status بقيمة "1"
       const headerPayload = {
         Doc_Title_en: formData.titleEn,
         Doc_Title_ar: formData.titleAr,
@@ -167,7 +143,6 @@ const NewCreation: React.FC = () => {
         return;
       }
 
-      // باقي استدعاءات API الخاصة بالمحتوى (مثلاً Definitions, Purpose, ...)
       if (formData.definitionsEn || formData.definitionsAr) {
         const defPayload = {
           Content_en: formData.definitionsEn,
@@ -255,7 +230,6 @@ const NewCreation: React.FC = () => {
     }
   };
 
-  // إذا لم يتوفر user أو compId بعد، نعرض مؤشر تحميل
   if (!user || !compId) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
@@ -269,7 +243,6 @@ const NewCreation: React.FC = () => {
 
   return (
     <Paper sx={{ p: 4, m: 2 }}>
-      {/* Header */}
       <Box component="header" sx={{ textAlign: 'center', mb: 3 }}>
         <Typography variant="h4">CREATION SOP</Typography>
         <Typography variant="subtitle1">Standard Operating Procedure (SOP)</Typography>
@@ -340,12 +313,14 @@ const NewCreation: React.FC = () => {
               <Typography variant="h6" gutterBottom sx={{ mt: 3 }} dir="rtl">
                 المحتوى
               </Typography>
-              {/* استخدام Jodit Editor للمحتوى بالعربية */}
+              {/* استخدام Jodit Editor للمحتوى بالعربية مع إضافة id و aria-label */}
               <Typography variant="subtitle2" sx={{ textAlign: 'right' }}>
                 الغرض:
               </Typography>
               <Box dir="rtl">
                 <JoditEditor
+                  id="purposeArEditor"
+                  aria-label="محرر الغرض بالعربية"
                   value={formData.purposeAr}
                   config={joditConfig}
                   onBlur={(newContent) =>
@@ -358,6 +333,8 @@ const NewCreation: React.FC = () => {
               </Typography>
               <Box dir="rtl">
                 <JoditEditor
+                  id="definitionsArEditor"
+                  aria-label="محرر التعريفات بالعربية"
                   value={formData.definitionsAr}
                   config={joditConfig}
                   onBlur={(newContent) =>
@@ -370,6 +347,8 @@ const NewCreation: React.FC = () => {
               </Typography>
               <Box dir="rtl">
                 <JoditEditor
+                  id="scopeArEditor"
+                  aria-label="محرر مجال التطبيق بالعربية"
                   value={formData.scopeAr}
                   config={joditConfig}
                   onBlur={(newContent) =>
@@ -382,6 +361,8 @@ const NewCreation: React.FC = () => {
               </Typography>
               <Box dir="rtl">
                 <JoditEditor
+                  id="responsibilityArEditor"
+                  aria-label="محرر المسؤولية بالعربية"
                   value={formData.responsibilityAr}
                   config={joditConfig}
                   onBlur={(newContent) =>
@@ -394,6 +375,8 @@ const NewCreation: React.FC = () => {
               </Typography>
               <Box dir="rtl">
                 <JoditEditor
+                  id="safetyConcernsArEditor"
+                  aria-label="محرر اشتراطات السلامة بالعربية"
                   value={formData.safetyConcernsAr}
                   config={joditConfig}
                   onBlur={(newContent) =>
@@ -406,6 +389,8 @@ const NewCreation: React.FC = () => {
               </Typography>
               <Box dir="rtl">
                 <JoditEditor
+                  id="procedureArEditor"
+                  aria-label="محرر الخطوات بالعربية"
                   value={formData.procedureAr}
                   config={joditConfig}
                   onBlur={(newContent) =>
@@ -418,6 +403,8 @@ const NewCreation: React.FC = () => {
               </Typography>
               <Box dir="rtl">
                 <JoditEditor
+                  id="referenceDocumentsArEditor"
+                  aria-label="محرر الوثائق المرجعية بالعربية"
                   value={formData.referenceDocumentsAr}
                   config={joditConfig}
                   onBlur={(newContent) =>
@@ -532,12 +519,14 @@ const NewCreation: React.FC = () => {
               <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
                 Content
               </Typography>
-              {/* استخدام Jodit Editor للمحتوى بالإنجليزية */}
+              {/* استخدام Jodit Editor للمحتوى بالإنجليزية مع إضافة id و aria-label */}
               <Typography variant="subtitle2">
                 Purpose:
               </Typography>
               <Box dir="ltr">
                 <JoditEditor
+                  id="purposeEnEditor"
+                  aria-label="English Purpose Editor"
                   value={formData.purposeEn}
                   config={joditConfig}
                   onBlur={(newContent) =>
@@ -550,6 +539,8 @@ const NewCreation: React.FC = () => {
               </Typography>
               <Box dir="ltr">
                 <JoditEditor
+                  id="definitionsEnEditor"
+                  aria-label="English Definitions Editor"
                   value={formData.definitionsEn}
                   config={joditConfig}
                   onBlur={(newContent) =>
@@ -562,6 +553,8 @@ const NewCreation: React.FC = () => {
               </Typography>
               <Box dir="ltr">
                 <JoditEditor
+                  id="scopeEnEditor"
+                  aria-label="English Scope Editor"
                   value={formData.scopeEn}
                   config={joditConfig}
                   onBlur={(newContent) =>
@@ -574,6 +567,8 @@ const NewCreation: React.FC = () => {
               </Typography>
               <Box dir="ltr">
                 <JoditEditor
+                  id="responsibilityEnEditor"
+                  aria-label="English Responsibility Editor"
                   value={formData.responsibilityEn}
                   config={joditConfig}
                   onBlur={(newContent) =>
@@ -586,6 +581,8 @@ const NewCreation: React.FC = () => {
               </Typography>
               <Box dir="ltr">
                 <JoditEditor
+                  id="safetyConcernsEnEditor"
+                  aria-label="English Safety Concerns Editor"
                   value={formData.safetyConcernsEn}
                   config={joditConfig}
                   onBlur={(newContent) =>
@@ -598,6 +595,8 @@ const NewCreation: React.FC = () => {
               </Typography>
               <Box dir="ltr">
                 <JoditEditor
+                  id="procedureEnEditor"
+                  aria-label="English Procedure Editor"
                   value={formData.procedureEn}
                   config={joditConfig}
                   onBlur={(newContent) =>
@@ -610,6 +609,8 @@ const NewCreation: React.FC = () => {
               </Typography>
               <Box dir="ltr">
                 <JoditEditor
+                  id="referenceDocumentsEnEditor"
+                  aria-label="English Reference Documents Editor"
                   value={formData.referenceDocumentsEn}
                   config={joditConfig}
                   onBlur={(newContent) =>
