@@ -1,5 +1,5 @@
 // src/layouts/full/vertical/auth/authForms/Profile.tsx
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Menu, Avatar, Typography, Divider, Button, IconButton, Stack } from '@mui/material';
 import { IconMail } from '@tabler/icons-react';
@@ -9,7 +9,14 @@ import { UserContext } from 'src/context/UserContext';
 const Profile: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const navigate = useNavigate();
-  const user = useContext(UserContext);
+  
+  // استخدام الـ context مع state محلي لمزامنة التحديثات تلقائيًا
+  const userContext = useContext(UserContext);
+  const [user, setUser] = useState(userContext);
+
+  useEffect(() => {
+    setUser(userContext);
+  }, [userContext]);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -19,8 +26,9 @@ const Profile: React.FC = () => {
     setAnchorEl(null);
   };
 
-  // الآن نستخدم userRole مباشرة من الـ context لعرض المسمى الوظيفي
-  const jobTitle = user?.userRole || 'Job Title';
+  // استخدام userRole مباشرة من الـ context لعرض المسمى الوظيفي
+  const jobTitle =     user?.Users_Departments_Users_Departments_User_IdToUser_Data?.[0]?.job_title || 'Job Title';
+
 
   const handleLogout = () => {
     try {

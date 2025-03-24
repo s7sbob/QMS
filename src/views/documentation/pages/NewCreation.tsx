@@ -34,7 +34,6 @@ interface Department {
   // يمكنك إضافة خصائص أخرى إذا احتجت
 }
 
-
 const NewCreation: React.FC = () => {
   // State للملفات المرفقة
   const [attachments, setAttachments] = useState<File[]>([]);
@@ -79,17 +78,13 @@ const NewCreation: React.FC = () => {
 
   const navigate = useNavigate();
 
-  // إعدادات Jodit Editor
+  // إعدادات Jodit Editor مع دعم عملية اللصق
   const joditConfig = {
     readonly: false,
     toolbarSticky: true,
-    buttons: [
-      'bold', 'italic', 'underline', 'strikethrough', 'superscript', 'subscript', '|',
-      'ul', 'ol', 'outdent', 'indent', '|',
-      'font', 'fontsize', 'brush', 'paragraph', '|',
-      'image', 'video', 'table', 'link', 'unlink', '|',
-      'align', 'undo', 'redo', 'print', 'source', 'fullsize'
-    ],
+    // تفعيل دعم اللصق بحيث يتم إدخال المحتوى بصيغة HTML كاملة دون تصفية الأنماط
+    pasteFilterStyle: false,
+    
   };
 
   // جلب الأقسام بناءً على compId
@@ -149,11 +144,13 @@ const NewCreation: React.FC = () => {
 
     try {
       // إرسال بيانات الـ Header المطلوبة فقط: Doc_Title_en, Doc_Title_ar, Com_Id, Dept_Id
+      // وأضفنا هنا الخاصية status بقيمة 1
       const headerPayload = {
         Doc_Title_en: formData.titleEn,
         Doc_Title_ar: formData.titleAr,
         Com_Id: compId,
         Dept_Id: selectedDepartment,
+        status: "1"
       };
 
       const headerResponse = await axiosServices.post(
@@ -172,7 +169,6 @@ const NewCreation: React.FC = () => {
       }
 
       // باقي استدعاءات API الخاصة بالمحتوى (مثلاً Definitions, Purpose, ...)
-
       if (formData.definitionsEn || formData.definitionsAr) {
         const defPayload = {
           Content_en: formData.definitionsEn,

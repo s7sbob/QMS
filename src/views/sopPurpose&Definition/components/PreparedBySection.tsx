@@ -1,3 +1,4 @@
+// src/components/PreparedBySection.tsx
 import React from 'react';
 
 interface PreparedBySectionProps {
@@ -11,6 +12,10 @@ interface PreparedBySectionProps {
   preparedSignatureUrl?: string; // URL or path to the prepared signature image
   reviewedSignatureUrl?: string; // URL or path to the reviewed signature image
   approvedSignatureUrl?: string; // URL or path to the approved signature image
+  // التواريخ التي نريد عرضها
+  prepared_date?: string;
+  reviewed_date?: string;
+  approved_date?: string;
 }
 
 const PreparedBySection: React.FC<PreparedBySectionProps> = ({
@@ -24,13 +29,19 @@ const PreparedBySection: React.FC<PreparedBySectionProps> = ({
   preparedSignatureUrl,
   reviewedSignatureUrl,
   approvedSignatureUrl,
+  prepared_date,
+  reviewed_date,
+  approved_date,
 }) => {
+  // دالة لتنسيق التاريخ
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString();
+  };
+
   return (
     <div style={{ position: 'relative', width: '100%' }}>
-      {/* 
-        Optional stamp image, semi-transparent overlay 
-        (like "DRAFT COPY"). Adjust styling to your needs.
-      */}
       {stampImageUrl && (
         <img
           src={stampImageUrl}
@@ -41,7 +52,7 @@ const PreparedBySection: React.FC<PreparedBySectionProps> = ({
             left: '1px',
             opacity: 0.4,
             width: '250px',
-            height: '100',
+            height: '100px',
             zIndex: 2,
           }}
         />
@@ -133,6 +144,7 @@ const PreparedBySection: React.FC<PreparedBySectionProps> = ({
           </tr>
         </thead>
         <tbody>
+          {/* الصف الأول: عرض المسمى الوظيفي */}
           <tr>
             <td
               style={{
@@ -185,6 +197,7 @@ const PreparedBySection: React.FC<PreparedBySectionProps> = ({
               {approvedJobTitle}
             </td>
           </tr>
+          {/* الصف الثاني: عرض الأسماء */}
           <tr>
             <td
               style={{
@@ -237,6 +250,7 @@ const PreparedBySection: React.FC<PreparedBySectionProps> = ({
               {approvedName}
             </td>
           </tr>
+          {/* الصف الثالث: عرض التواقيع */}
           <tr>
             <td
               style={{
@@ -264,7 +278,7 @@ const PreparedBySection: React.FC<PreparedBySectionProps> = ({
                 <img
                   src={preparedSignatureUrl}
                   alt="Prepared Signature"
-                  style={{ width: '170px', height: '50px' }} // Adjust size as needed
+                  style={{ width: '170px', height: '50px' }}
                 />
               )}
             </td>
@@ -289,6 +303,7 @@ const PreparedBySection: React.FC<PreparedBySectionProps> = ({
               )}
             </td>
           </tr>
+          {/* الصف الرابع: عرض التواريخ */}
           <tr>
             <td
               style={{
@@ -310,9 +325,18 @@ const PreparedBySection: React.FC<PreparedBySectionProps> = ({
             >
               التاريخ
             </td>
-            <td colSpan={2} style={{ border: '1px solid #000', padding: '8px' }} />
-            <td colSpan={2} style={{ border: '1px solid #000', padding: '8px' }} />
-            <td colSpan={2} style={{ border: '1px solid #000', padding: '8px' }} />
+            {/* Prepared Date */}
+            <td colSpan={2} style={{ border: '1px solid #000', padding: '8px' }}>
+              {formatDate(prepared_date)}
+            </td>
+            {/* Reviewed Date */}
+            <td colSpan={2} style={{ border: '1px solid #000', padding: '8px' }}>
+              {formatDate(reviewed_date)}
+            </td>
+            {/* Approved Date */}
+            <td colSpan={2} style={{ border: '1px solid #000', padding: '8px' }}>
+              {formatDate(approved_date)}
+            </td>
           </tr>
         </tbody>
       </table>

@@ -26,8 +26,7 @@ export const UserContext = createContext<IUser | null>(null);
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<IUser | null>(null);
 
-  useEffect(() => {
-    // نحصل على بيانات المستخدم من الكوكيز (المخزنة بصيغة JSON)
+  const loadUserFromCookie = () => {
     const userStr = Cookies.get('user');
     if (userStr) {
       try {
@@ -36,7 +35,19 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (error) {
         console.error('Error parsing user cookie:', error);
       }
+    } else {
+      setUser(null);
     }
+  };
+
+  useEffect(() => {
+    // تحميل بيانات المستخدم عند التشغيل
+    loadUserFromCookie();
+    // عمل poll لتحديث بيانات المستخدم تلقائيًا كل 2 ثانية
+    const intervalId = setInterval(() => {
+      loadUserFromCookie();
+    }, 2000);
+    return () => clearInterval(intervalId);
   }, []);
 
   return <UserContext.Provider value={user}>{children}</UserContext.Provider>;
