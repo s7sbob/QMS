@@ -26,7 +26,8 @@ import axiosServices from 'src/utils/axiosServices';
 import { UserContext } from 'src/context/UserContext';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
-import JoditEditor from 'jodit-react';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 interface Department {
   Id: string;
@@ -62,27 +63,20 @@ const NewCreation: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
-  // إعدادات Jodit Editor مع تعطيل رفع الملفات (إزالة أزرار image و video)
-  const joditConfig = {
-    readonly: false,
-    toolbarSticky: true,
-    pasteFilterStyle: false,
-    buttons: [
-      'bold', 'italic', 'underline', 'strikethrough', 'superscript', 'subscript', '|',
-      'ul', 'ol', 'outdent', 'indent', '|',
-      'font', 'fontsize', 'brush', 'paragraph', '|',
-      'link', 'unlink', '|',
-      'align', 'undo', 'redo', 'print', 'source', 'fullsize'
+  // إعدادات ReactQuill يمكن تعديلها حسب الحاجة
+  const quillModules = {
+    toolbar: [
+      [{ header: [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ list: 'ordered' }, { list: 'bullet' }],
+      ['link'],
+      ['clean'],
     ],
-    // تعطيل uploader
-    uploader: {
-      url: ''
-    }
   };
 
+  // جلب الأقسام بناءً على compId
   useEffect(() => {
     if (compId) {
-      console.log('Using compId:', compId);
       setLoading(true);
       axiosServices
         .get(`/api/department/compdepartments/${compId}`)
@@ -104,14 +98,17 @@ const NewCreation: React.FC = () => {
         .finally(() => {
           setLoading(false);
         });
-    } else {
-      console.log('compId not available yet');
     }
   }, [compId]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // التعامل مع ReactQuill لكل حقل محتوى
+  const handleQuillChange = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -131,7 +128,6 @@ const NewCreation: React.FC = () => {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
     try {
       const headerPayload = {
         Doc_Title_en: formData.titleEn,
@@ -331,15 +327,12 @@ const NewCreation: React.FC = () => {
                 الغرض:
               </Typography>
               <Box dir="rtl">
-                <JoditEditor
+                <ReactQuill
                   id="purposeArEditor"
-                  name="purposeAr"
                   aria-label="محرر الغرض بالعربية"
                   value={formData.purposeAr}
-                  config={joditConfig}
-                  onBlur={(newContent) =>
-                    setFormData((prev) => ({ ...prev, purposeAr: newContent }))
-                  }
+                  modules={quillModules}
+                  onChange={(content) => handleQuillChange('purposeAr', content)}
                 />
               </Box>
               {/* محرر التعريفات */}
@@ -347,15 +340,12 @@ const NewCreation: React.FC = () => {
                 التعريفات:
               </Typography>
               <Box dir="rtl">
-                <JoditEditor
+                <ReactQuill
                   id="definitionsArEditor"
-                  name="definitionsAr"
                   aria-label="محرر التعريفات بالعربية"
                   value={formData.definitionsAr}
-                  config={joditConfig}
-                  onBlur={(newContent) =>
-                    setFormData((prev) => ({ ...prev, definitionsAr: newContent }))
-                  }
+                  modules={quillModules}
+                  onChange={(content) => handleQuillChange('definitionsAr', content)}
                 />
               </Box>
               {/* محرر مجال التطبيق */}
@@ -363,15 +353,12 @@ const NewCreation: React.FC = () => {
                 مجال التطبيق:
               </Typography>
               <Box dir="rtl">
-                <JoditEditor
+                <ReactQuill
                   id="scopeArEditor"
-                  name="scopeAr"
                   aria-label="محرر مجال التطبيق بالعربية"
                   value={formData.scopeAr}
-                  config={joditConfig}
-                  onBlur={(newContent) =>
-                    setFormData((prev) => ({ ...prev, scopeAr: newContent }))
-                  }
+                  modules={quillModules}
+                  onChange={(content) => handleQuillChange('scopeAr', content)}
                 />
               </Box>
               {/* محرر المسؤولية */}
@@ -379,15 +366,12 @@ const NewCreation: React.FC = () => {
                 المسؤولية:
               </Typography>
               <Box dir="rtl">
-                <JoditEditor
+                <ReactQuill
                   id="responsibilityArEditor"
-                  name="responsibilityAr"
                   aria-label="محرر المسؤولية بالعربية"
                   value={formData.responsibilityAr}
-                  config={joditConfig}
-                  onBlur={(newContent) =>
-                    setFormData((prev) => ({ ...prev, responsibilityAr: newContent }))
-                  }
+                  modules={quillModules}
+                  onChange={(content) => handleQuillChange('responsibilityAr', content)}
                 />
               </Box>
               {/* محرر اشتراطات السلامة */}
@@ -395,15 +379,12 @@ const NewCreation: React.FC = () => {
                 اشتراطات السلامة:
               </Typography>
               <Box dir="rtl">
-                <JoditEditor
+                <ReactQuill
                   id="safetyConcernsArEditor"
-                  name="safetyConcernsAr"
                   aria-label="محرر اشتراطات السلامة بالعربية"
                   value={formData.safetyConcernsAr}
-                  config={joditConfig}
-                  onBlur={(newContent) =>
-                    setFormData((prev) => ({ ...prev, safetyConcernsAr: newContent }))
-                  }
+                  modules={quillModules}
+                  onChange={(content) => handleQuillChange('safetyConcernsAr', content)}
                 />
               </Box>
               {/* محرر الإجراءات */}
@@ -411,15 +392,12 @@ const NewCreation: React.FC = () => {
                 الخطوات:
               </Typography>
               <Box dir="rtl">
-                <JoditEditor
+                <ReactQuill
                   id="procedureArEditor"
-                  name="procedureAr"
                   aria-label="محرر الإجراءات بالعربية"
                   value={formData.procedureAr}
-                  config={joditConfig}
-                  onBlur={(newContent) =>
-                    setFormData((prev) => ({ ...prev, procedureAr: newContent }))
-                  }
+                  modules={quillModules}
+                  onChange={(content) => handleQuillChange('procedureAr', content)}
                 />
               </Box>
               {/* محرر الوثائق المرجعية */}
@@ -427,15 +405,12 @@ const NewCreation: React.FC = () => {
                 الوثائق المرجعية:
               </Typography>
               <Box dir="rtl">
-                <JoditEditor
+                <ReactQuill
                   id="referenceDocumentsArEditor"
-                  name="referenceDocumentsAr"
                   aria-label="محرر الوثائق المرجعية بالعربية"
                   value={formData.referenceDocumentsAr}
-                  config={joditConfig}
-                  onBlur={(newContent) =>
-                    setFormData((prev) => ({ ...prev, referenceDocumentsAr: newContent }))
-                  }
+                  modules={quillModules}
+                  onChange={(content) => handleQuillChange('referenceDocumentsAr', content)}
                 />
               </Box>
               <FormControlLabel
@@ -454,12 +429,7 @@ const NewCreation: React.FC = () => {
                 <Typography variant="subtitle1" gutterBottom dir="rtl">
                   المرفقات:
                 </Typography>
-                <Button
-                  variant="outlined"
-                  component="label"
-                  startIcon={<IconUpload />}
-                  sx={{ mb: 2 }}
-                >
+                <Button variant="outlined" component="label" startIcon={<IconUpload />} sx={{ mb: 2 }}>
                   رفع الملفات
                   <input
                     type="file"
@@ -477,11 +447,7 @@ const NewCreation: React.FC = () => {
                         secondary={`${(file.size / 1024 / 1024).toFixed(2)} MB`}
                       />
                       <ListItemSecondaryAction>
-                        <IconButton
-                          edge="end"
-                          onClick={() => handleFileDelete(index)}
-                          color="error"
-                        >
+                        <IconButton edge="end" onClick={() => handleFileDelete(index)} color="error">
                           <IconTrash size={20} />
                         </IconButton>
                       </ListItemSecondaryAction>
@@ -550,15 +516,12 @@ const NewCreation: React.FC = () => {
                 Purpose:
               </Typography>
               <Box dir="ltr">
-                <JoditEditor
+                <ReactQuill
                   id="purposeEnEditor"
-                  name="purposeEn"
                   aria-label="English Purpose Editor"
                   value={formData.purposeEn}
-                  config={joditConfig}
-                  onBlur={(newContent) =>
-                    setFormData((prev) => ({ ...prev, purposeEn: newContent }))
-                  }
+                  modules={quillModules}
+                  onChange={(content) => handleQuillChange('purposeEn', content)}
                 />
               </Box>
               {/* محرر التعريفات */}
@@ -566,15 +529,12 @@ const NewCreation: React.FC = () => {
                 Definitions:
               </Typography>
               <Box dir="ltr">
-                <JoditEditor
+                <ReactQuill
                   id="definitionsEnEditor"
-                  name="definitionsEn"
                   aria-label="English Definitions Editor"
                   value={formData.definitionsEn}
-                  config={joditConfig}
-                  onBlur={(newContent) =>
-                    setFormData((prev) => ({ ...prev, definitionsEn: newContent }))
-                  }
+                  modules={quillModules}
+                  onChange={(content) => handleQuillChange('definitionsEn', content)}
                 />
               </Box>
               {/* محرر النطاق */}
@@ -582,15 +542,12 @@ const NewCreation: React.FC = () => {
                 Scope:
               </Typography>
               <Box dir="ltr">
-                <JoditEditor
+                <ReactQuill
                   id="scopeEnEditor"
-                  name="scopeEn"
                   aria-label="English Scope Editor"
                   value={formData.scopeEn}
-                  config={joditConfig}
-                  onBlur={(newContent) =>
-                    setFormData((prev) => ({ ...prev, scopeEn: newContent }))
-                  }
+                  modules={quillModules}
+                  onChange={(content) => handleQuillChange('scopeEn', content)}
                 />
               </Box>
               {/* محرر المسؤولية */}
@@ -598,15 +555,12 @@ const NewCreation: React.FC = () => {
                 Responsibility:
               </Typography>
               <Box dir="ltr">
-                <JoditEditor
+                <ReactQuill
                   id="responsibilityEnEditor"
-                  name="responsibilityEn"
                   aria-label="English Responsibility Editor"
                   value={formData.responsibilityEn}
-                  config={joditConfig}
-                  onBlur={(newContent) =>
-                    setFormData((prev) => ({ ...prev, responsibilityEn: newContent }))
-                  }
+                  modules={quillModules}
+                  onChange={(content) => handleQuillChange('responsibilityEn', content)}
                 />
               </Box>
               {/* محرر اشتراطات السلامة */}
@@ -614,15 +568,12 @@ const NewCreation: React.FC = () => {
                 Safety Concerns:
               </Typography>
               <Box dir="ltr">
-                <JoditEditor
+                <ReactQuill
                   id="safetyConcernsEnEditor"
-                  name="safetyConcernsEn"
                   aria-label="English Safety Concerns Editor"
                   value={formData.safetyConcernsEn}
-                  config={joditConfig}
-                  onBlur={(newContent) =>
-                    setFormData((prev) => ({ ...prev, safetyConcernsEn: newContent }))
-                  }
+                  modules={quillModules}
+                  onChange={(content) => handleQuillChange('safetyConcernsEn', content)}
                 />
               </Box>
               {/* محرر الإجراءات */}
@@ -630,15 +581,12 @@ const NewCreation: React.FC = () => {
                 Procedure:
               </Typography>
               <Box dir="ltr">
-                <JoditEditor
+                <ReactQuill
                   id="procedureEnEditor"
-                  name="procedureEn"
                   aria-label="English Procedure Editor"
                   value={formData.procedureEn}
-                  config={joditConfig}
-                  onBlur={(newContent) =>
-                    setFormData((prev) => ({ ...prev, procedureEn: newContent }))
-                  }
+                  modules={quillModules}
+                  onChange={(content) => handleQuillChange('procedureEn', content)}
                 />
               </Box>
               {/* محرر الوثائق المرجعية */}
@@ -646,15 +594,12 @@ const NewCreation: React.FC = () => {
                 Reference Documents:
               </Typography>
               <Box dir="ltr">
-                <JoditEditor
+                <ReactQuill
                   id="referenceDocumentsEnEditor"
-                  name="referenceDocumentsEn"
                   aria-label="English Reference Documents Editor"
                   value={formData.referenceDocumentsEn}
-                  config={joditConfig}
-                  onBlur={(newContent) =>
-                    setFormData((prev) => ({ ...prev, referenceDocumentsEn: newContent }))
-                  }
+                  modules={quillModules}
+                  onChange={(content) => handleQuillChange('referenceDocumentsEn', content)}
                 />
               </Box>
               <FormControlLabel
