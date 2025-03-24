@@ -8,11 +8,11 @@ import {
   TextField,
   Button,
   Typography,
-  // List,
-  // ListItem,
-  // ListItemText,
-  // ListItemSecondaryAction,
-  // IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
+  IconButton,
   MenuItem,
   FormControl,
   InputLabel,
@@ -21,7 +21,7 @@ import {
   FormControlLabel,
   CircularProgress,
 } from '@mui/material';
-// import { IconUpload, IconTrash } from '@tabler/icons-react';
+import { IconUpload, IconTrash } from '@tabler/icons-react';
 import axiosServices from 'src/utils/axiosServices';
 import { UserContext } from 'src/context/UserContext';
 import Swal from 'sweetalert2';
@@ -36,7 +36,7 @@ interface Department {
 
 const NewCreation: React.FC = () => {
   // State للملفات المرفقة
-  // const [attachments, setAttachments] = useState<File[]>([]);
+  const [attachments, setAttachments] = useState<File[]>([]);
 
   // الحصول على بيانات المستخدم من الـ UserContext
   const user = useContext(UserContext);
@@ -84,7 +84,6 @@ const NewCreation: React.FC = () => {
     toolbarSticky: true,
     // تفعيل دعم اللصق بحيث يتم إدخال المحتوى بصيغة HTML كاملة دون تصفية الأنماط
     pasteFilterStyle: false,
-    
   };
 
   // جلب الأقسام بناءً على compId
@@ -124,16 +123,16 @@ const NewCreation: React.FC = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   if (event.target.files) {
-  //     const filesArray = Array.from(event.target.files);
-  //     setAttachments((prev) => [...prev, ...filesArray]);
-  //   }
-  // };
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      const filesArray = Array.from(event.target.files);
+      setAttachments((prev) => [...prev, ...filesArray]);
+    }
+  };
 
-  // const handleFileDelete = (index: number) => {
-  //   setAttachments((prev) => prev.filter((_, i) => i !== index));
-  // };
+  const handleFileDelete = (index: number) => {
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const handlePrint = () => {
     window.print();
@@ -144,7 +143,7 @@ const NewCreation: React.FC = () => {
 
     try {
       // إرسال بيانات الـ Header المطلوبة فقط: Doc_Title_en, Doc_Title_ar, Com_Id, Dept_Id
-      // وأضفنا هنا الخاصية status بقيمة 1
+      // وأضفنا هنا الخاصية status بقيمة "1"
       const headerPayload = {
         Doc_Title_en: formData.titleEn,
         Doc_Title_ar: formData.titleAr,
@@ -315,6 +314,7 @@ const NewCreation: React.FC = () => {
                 <Select
                   labelId="dept-label"
                   id="selectedDepartment"
+                  name="selectedDepartment"
                   value={selectedDepartment}
                   label="القسم"
                   onChange={(e) => setSelectedDepartment(e.target.value)}
@@ -428,6 +428,7 @@ const NewCreation: React.FC = () => {
               <FormControlLabel
                 control={
                   <Checkbox
+                    name="containTraining"
                     checked={containTraining}
                     onChange={(e) => setContainTraining(e.target.checked)}
                     inputProps={{ dir: 'rtl' }}
@@ -436,7 +437,7 @@ const NewCreation: React.FC = () => {
                 label="يتضمن تدريب"
                 sx={{ mt: 2, direction: 'rtl', textAlign: 'right' }}
               />
-              {/* <Box sx={{ direction: 'rtl', textAlign: 'right' }}>
+              <Box sx={{ direction: 'rtl', textAlign: 'right' }}>
                 <Typography variant="subtitle1" gutterBottom dir="rtl">
                   المرفقـــات:
                 </Typography>
@@ -447,7 +448,13 @@ const NewCreation: React.FC = () => {
                   sx={{ mb: 2 }}
                 >
                   رفع الملفات
-                  <input type="file" multiple hidden onChange={handleFileUpload} />
+                  <input
+                    type="file"
+                    name="attachments"
+                    multiple
+                    hidden
+                    onChange={handleFileUpload}
+                  />
                 </Button>
                 <List sx={{ direction: 'rtl', textAlign: 'right' }}>
                   {attachments.map((file, index) => (
@@ -468,7 +475,7 @@ const NewCreation: React.FC = () => {
                     </ListItem>
                   ))}
                 </List>
-              </Box> */}
+              </Box>
             </Grid>
             {/* العمود الإنجليزي */}
             <Grid item xs={12} md={6} sx={{ textAlign: 'left', direction: 'ltr' }}>
@@ -500,6 +507,7 @@ const NewCreation: React.FC = () => {
                 <Select
                   labelId="dept-label-en"
                   id="selectedDepartmentEn"
+                  name="selectedDepartmentEn"
                   value={selectedDepartment}
                   label="Department"
                   onChange={(e) => setSelectedDepartment(e.target.value)}
@@ -612,6 +620,7 @@ const NewCreation: React.FC = () => {
               <FormControlLabel
                 control={
                   <Checkbox
+                    name="containTraining"
                     checked={containTraining}
                     onChange={(e) => setContainTraining(e.target.checked)}
                   />
@@ -619,13 +628,19 @@ const NewCreation: React.FC = () => {
                 label="Contain Training"
                 sx={{ mt: 2 }}
               />
-              {/* <Box>
+              <Box>
                 <Typography variant="subtitle1" gutterBottom>
                   Attachments:
                 </Typography>
                 <Button variant="outlined" component="label" startIcon={<IconUpload />} sx={{ mb: 2 }}>
                   Upload Files
-                  <input type="file" multiple hidden onChange={handleFileUpload} />
+                  <input
+                    type="file"
+                    name="attachments"
+                    multiple
+                    hidden
+                    onChange={handleFileUpload}
+                  />
                 </Button>
                 <List>
                   {attachments.map((file, index) => (
@@ -642,7 +657,7 @@ const NewCreation: React.FC = () => {
                     </ListItem>
                   ))}
                 </List>
-              </Box> */}
+              </Box>
             </Grid>
           </Grid>
           <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2 }}>
