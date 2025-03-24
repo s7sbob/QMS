@@ -44,7 +44,6 @@ interface EditDialogProps {
   onClose: () => void;
 }
 
-
 const EditDialog: React.FC<EditDialogProps> = ({
   open,
   title,
@@ -69,7 +68,15 @@ const EditDialog: React.FC<EditDialogProps> = ({
   const joditConfig = {
     readonly: false,
     toolbarSticky: true,
-    buttons: ["bold", "italic", "underline", "strikethrough", "ul", "ol", "link", "undo", "redo"],
+    buttons: ['bold', 'italic', 'underline', 'strikethrough', 'ul', 'ol', 'link', 'undo', 'redo'],
+    uploader: {
+      insertImageAsBase64URI: false, // ✅ prevent base64/blob URLs
+    },
+    filebrowser: {
+      ajax: {
+        url: '', // disable browsing
+      },
+    },
   };
 
   const handleSave = () => {
@@ -134,10 +141,7 @@ const EditDialog: React.FC<EditDialogProps> = ({
               History (read-only)
             </Typography>
             {historyData.map((record) => (
-              <Box
-                key={record.Id}
-                sx={{ mb: 2, border: '1px solid #eee', p: 1, borderRadius: 1 }}
-              >
+              <Box key={record.Id} sx={{ mb: 2, border: '1px solid #eee', p: 1, borderRadius: 1 }}>
                 <Typography variant="body2">
                   <strong>Content (EN):</strong>
                   <div dangerouslySetInnerHTML={{ __html: record.Content_en }} />
