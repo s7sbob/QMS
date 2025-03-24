@@ -31,26 +31,15 @@ import JoditEditor from 'jodit-react';
 interface Department {
   Id: string;
   Dept_name: string;
-  // يمكنك إضافة خصائص أخرى إذا احتجت
 }
 
 const NewCreation: React.FC = () => {
-  // State للملفات المرفقة
   const [attachments, setAttachments] = useState<File[]>([]);
-
-  // الحصول على بيانات المستخدم من الـ UserContext
   const user = useContext(UserContext);
-  // نستخرج compId من بيانات المستخدم
   const compId = user?.compId || '';
-
-  // state لتخزين الأقسام بناءً على compId
   const [departments, setDepartments] = useState<Department[]>([]);
   const [selectedDepartment, setSelectedDepartment] = useState<string>('');
-
-  // state للcheckbox "contain training"
   const [containTraining, setContainTraining] = useState<boolean>(false);
-
-  // state للحقول النصية (العناوين والمحتوى)
   const [formData, setFormData] = useState({
     titleAr: '',
     titleEn: '',
@@ -69,21 +58,14 @@ const NewCreation: React.FC = () => {
     procedureEn: '',
     referenceDocumentsEn: '',
   });
-
-  // عرض تاريخ الإنشاء (محسوب من النظام)
   const creationDate = new Date().toISOString().slice(0, 10);
-
-  // حالة مؤشر التحميل
   const [loading, setLoading] = useState<boolean>(false);
-
   const navigate = useNavigate();
 
-  // إعدادات Jodit Editor مع تعطيل رفع الملفات
   const joditConfig = {
     readonly: false,
     toolbarSticky: true,
     pasteFilterStyle: false,
-    // إزالة أزرار رفع الصور والفيديو
     buttons: [
       'bold', 'italic', 'underline', 'strikethrough', 'superscript', 'subscript', '|',
       'ul', 'ol', 'outdent', 'indent', '|',
@@ -91,17 +73,11 @@ const NewCreation: React.FC = () => {
       'link', 'unlink', '|',
       'align', 'undo', 'redo', 'print', 'source', 'fullsize'
     ],
-    uploader: {
-      insertImageAsBase64URI: false,
-      // تعطيل uploader عن طريق عدم تهيئة مسار للرفع
-      url: ''
-    }
+    uploader: false // تعطيل رفع الملفات
   };
 
-  // جلب الأقسام بناءً على compId
   useEffect(() => {
     if (compId) {
-      console.log('Using compId:', compId);
       setLoading(true);
       axiosServices
         .get(`/api/department/compdepartments/${compId}`)
@@ -123,8 +99,6 @@ const NewCreation: React.FC = () => {
         .finally(() => {
           setLoading(false);
         });
-    } else {
-      console.log('compId not available yet');
     }
   }, [compId]);
 
@@ -150,10 +124,7 @@ const NewCreation: React.FC = () => {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
     try {
-      // إرسال بيانات الـ Header المطلوبة فقط: Doc_Title_en, Doc_Title_ar, Com_Id, Dept_Id
-      // وأضفنا هنا الخاصية status بقيمة "1"
       const headerPayload = {
         Doc_Title_en: formData.titleEn,
         Doc_Title_ar: formData.titleAr,
@@ -177,7 +148,6 @@ const NewCreation: React.FC = () => {
         return;
       }
 
-      // باقي استدعاءات API الخاصة بالمحتوى (مثلاً Definitions, Purpose, ...)
       if (formData.definitionsEn || formData.definitionsAr) {
         const defPayload = {
           Content_en: formData.definitionsEn,
@@ -278,7 +248,6 @@ const NewCreation: React.FC = () => {
 
   return (
     <Paper sx={{ p: 4, m: 2 }}>
-      {/* Header */}
       <Box component="header" sx={{ textAlign: 'center', mb: 3 }}>
         <Typography variant="h4">CREATION SOP</Typography>
         <Typography variant="subtitle1">Standard Operating Procedure (SOP)</Typography>
@@ -505,6 +474,215 @@ const NewCreation: React.FC = () => {
                           onClick={() => handleFileDelete(index)}
                           color="error"
                         >
+                          <IconTrash size={20} />
+                        </IconButton>
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                  ))}
+                </List>
+              </Box>
+            </Grid>
+            {/* العمود الإنجليزي */}
+            <Grid item xs={12} md={6} sx={{ textAlign: 'left', direction: 'ltr' }}>
+              <Typography variant="h5" gutterBottom>
+                English
+              </Typography>
+              <TextField
+                fullWidth
+                label="Title Name:"
+                id="titleEn"
+                name="titleEn"
+                variant="outlined"
+                margin="normal"
+                value={formData.titleEn}
+                onChange={handleInputChange}
+              />
+              <TextField
+                fullWidth
+                label="Creation Date:"
+                id="creationDateEn"
+                name="creationDateEn"
+                variant="outlined"
+                margin="normal"
+                value={creationDate}
+                disabled
+              />
+              <FormControl fullWidth margin="normal">
+                <InputLabel id="dept-label-en">Department</InputLabel>
+                <Select
+                  labelId="dept-label-en"
+                  id="selectedDepartmentEn"
+                  name="selectedDepartmentEn"
+                  value={selectedDepartment}
+                  label="Department"
+                  onChange={(e) => setSelectedDepartment(e.target.value)}
+                >
+                  {loading ? (
+                    <MenuItem disabled>
+                      <em>جار التحميل...</em>
+                    </MenuItem>
+                  ) : departments.length > 0 ? (
+                    departments.map((dept) => (
+                      <MenuItem key={dept.Id} value={dept.Id}>
+                        {dept.Dept_name}
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem disabled>
+                      <em>لا توجد أقسام</em>
+                    </MenuItem>
+                  )}
+                </Select>
+              </FormControl>
+              <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
+                Content
+              </Typography>
+              {/* محرر الغرض */}
+              <Typography variant="subtitle2">
+                Purpose:
+              </Typography>
+              <Box dir="ltr">
+                <JoditEditor
+                  id="purposeEnEditor"
+                  name="purposeEn"
+                  aria-label="English Purpose Editor"
+                  value={formData.purposeEn}
+                  config={joditConfig}
+                  onBlur={(newContent) =>
+                    setFormData((prev) => ({ ...prev, purposeEn: newContent }))
+                  }
+                />
+              </Box>
+              {/* محرر التعريفات */}
+              <Typography variant="subtitle2" sx={{ mt: 2 }}>
+                Definitions:
+              </Typography>
+              <Box dir="ltr">
+                <JoditEditor
+                  id="definitionsEnEditor"
+                  name="definitionsEn"
+                  aria-label="English Definitions Editor"
+                  value={formData.definitionsEn}
+                  config={joditConfig}
+                  onBlur={(newContent) =>
+                    setFormData((prev) => ({ ...prev, definitionsEn: newContent }))
+                  }
+                />
+              </Box>
+              {/* محرر النطاق */}
+              <Typography variant="subtitle2" sx={{ mt: 2 }}>
+                Scope:
+              </Typography>
+              <Box dir="ltr">
+                <JoditEditor
+                  id="scopeEnEditor"
+                  name="scopeEn"
+                  aria-label="English Scope Editor"
+                  value={formData.scopeEn}
+                  config={joditConfig}
+                  onBlur={(newContent) =>
+                    setFormData((prev) => ({ ...prev, scopeEn: newContent }))
+                  }
+                />
+              </Box>
+              {/* محرر المسؤولية */}
+              <Typography variant="subtitle2" sx={{ mt: 2 }}>
+                Responsibility:
+              </Typography>
+              <Box dir="ltr">
+                <JoditEditor
+                  id="responsibilityEnEditor"
+                  name="responsibilityEn"
+                  aria-label="English Responsibility Editor"
+                  value={formData.responsibilityEn}
+                  config={joditConfig}
+                  onBlur={(newContent) =>
+                    setFormData((prev) => ({ ...prev, responsibilityEn: newContent }))
+                  }
+                />
+              </Box>
+              {/* محرر اشتراطات السلامة */}
+              <Typography variant="subtitle2" sx={{ mt: 2 }}>
+                Safety Concerns:
+              </Typography>
+              <Box dir="ltr">
+                <JoditEditor
+                  id="safetyConcernsEnEditor"
+                  name="safetyConcernsEn"
+                  aria-label="English Safety Concerns Editor"
+                  value={formData.safetyConcernsEn}
+                  config={joditConfig}
+                  onBlur={(newContent) =>
+                    setFormData((prev) => ({ ...prev, safetyConcernsEn: newContent }))
+                  }
+                />
+              </Box>
+              {/* محرر الإجراءات */}
+              <Typography variant="subtitle2" sx={{ mt: 2 }}>
+                Procedure:
+              </Typography>
+              <Box dir="ltr">
+                <JoditEditor
+                  id="procedureEnEditor"
+                  name="procedureEn"
+                  aria-label="English Procedure Editor"
+                  value={formData.procedureEn}
+                  config={joditConfig}
+                  onBlur={(newContent) =>
+                    setFormData((prev) => ({ ...prev, procedureEn: newContent }))
+                  }
+                />
+              </Box>
+              {/* محرر الوثائق المرجعية */}
+              <Typography variant="subtitle2" sx={{ mt: 2 }}>
+                Reference Documents:
+              </Typography>
+              <Box dir="ltr">
+                <JoditEditor
+                  id="referenceDocumentsEnEditor"
+                  name="referenceDocumentsEn"
+                  aria-label="English Reference Documents Editor"
+                  value={formData.referenceDocumentsEn}
+                  config={joditConfig}
+                  onBlur={(newContent) =>
+                    setFormData((prev) => ({ ...prev, referenceDocumentsEn: newContent }))
+                  }
+                />
+              </Box>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    name="containTraining"
+                    checked={containTraining}
+                    onChange={(e) => setContainTraining(e.target.checked)}
+                  />
+                }
+                label="Contain Training"
+                sx={{ mt: 2 }}
+              />
+              <Box>
+                <Typography variant="subtitle1" gutterBottom>
+                  Attachments:
+                </Typography>
+                <Button variant="outlined" component="label" startIcon={<IconUpload />} sx={{ mb: 2 }}>
+                  Upload Files
+                  <input
+                    type="file"
+                    name="attachments"
+                    multiple
+                    hidden
+                    onChange={handleFileUpload}
+                  />
+                </Button>
+                <List>
+                  {attachments.map((file, index) => (
+                    <ListItem key={index}>
+                      <ListItemText
+                        primary={file.name}
+                        secondary={`${(file.size / 1024 / 1024).toFixed(2)} MB`}
+                      />
+                      <ListItemSecondaryAction>
+                        <IconButton edge="end" onClick={() => handleFileDelete(index)} color="error">
                           <IconTrash size={20} />
                         </IconButton>
                       </ListItemSecondaryAction>
