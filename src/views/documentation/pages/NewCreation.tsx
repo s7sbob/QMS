@@ -66,14 +66,6 @@ const NewCreation: React.FC = () => {
     readonly: false,
     toolbarSticky: true,
     pasteFilterStyle: false,
-    buttons: [
-      'bold', 'italic', 'underline', 'strikethrough', 'superscript', 'subscript', '|',
-      'ul', 'ol', 'outdent', 'indent', '|',
-      'font', 'fontsize', 'brush', 'paragraph', '|',
-      'link', 'unlink', '|',
-      'align', 'undo', 'redo', 'print', 'source', 'fullsize'
-    ],
-    uploader: false // تعطيل رفع الملفات
   };
 
   useEffect(() => {
