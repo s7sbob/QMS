@@ -88,6 +88,7 @@ const NewCreation: React.FC = () => {
       'video',
       'paste',
       'aceEditor',
+      'source',
     ],
   };
   useEffect(() => {
