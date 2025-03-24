@@ -62,14 +62,27 @@ const NewCreation: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
+  // إعدادات Jodit Editor مع تعطيل رفع الملفات (إزالة أزرار image و video)
   const joditConfig = {
     readonly: false,
     toolbarSticky: true,
     pasteFilterStyle: false,
+    buttons: [
+      'bold', 'italic', 'underline', 'strikethrough', 'superscript', 'subscript', '|',
+      'ul', 'ol', 'outdent', 'indent', '|',
+      'font', 'fontsize', 'brush', 'paragraph', '|',
+      'link', 'unlink', '|',
+      'align', 'undo', 'redo', 'print', 'source', 'fullsize'
+    ],
+    // تعطيل uploader
+    uploader: {
+      url: ''
+    }
   };
 
   useEffect(() => {
     if (compId) {
+      console.log('Using compId:', compId);
       setLoading(true);
       axiosServices
         .get(`/api/department/compdepartments/${compId}`)
@@ -91,6 +104,8 @@ const NewCreation: React.FC = () => {
         .finally(() => {
           setLoading(false);
         });
+    } else {
+      console.log('compId not available yet');
     }
   }, [compId]);
 
@@ -116,6 +131,7 @@ const NewCreation: React.FC = () => {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
     try {
       const headerPayload = {
         Doc_Title_en: formData.titleEn,
