@@ -26,8 +26,7 @@ import axiosServices from 'src/utils/axiosServices';
 import { UserContext } from 'src/context/UserContext';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
-import JoditEditor from 'jodit-react';
-
+const JoditEditor = React.lazy(() => import('jodit-react'));
 interface Department {
   Id: string;
   Dept_name: string;
@@ -66,8 +65,31 @@ const NewCreation: React.FC = () => {
     readonly: false,
     toolbarSticky: true,
     pasteFilterStyle: false,
+    toolbarInline: true,
+    uploader: {
+      insertImageAsBase64URI: false,
+      url: '', // disables uploading
+    },
+    filebrowser: {
+      ajax: {
+        url: '', // disables file browsing
+      },
+    },
+    disablePlugins: [
+      'about',
+      'speechRecognize',
+      'file',
+      'media',
+      'poweredByJodit',
+      'search',
+      'print',
+      'ace',
+      'iframe',
+      'video',
+      'paste',
+      'aceEditor',
+    ],
   };
-
   useEffect(() => {
     if (compId) {
       setLoading(true);
@@ -99,12 +121,12 @@ const NewCreation: React.FC = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      const filesArray = Array.from(event.target.files);
-      setAttachments((prev) => [...prev, ...filesArray]);
-    }
-  };
+  // const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   if (event.target.files) {
+  //     const filesArray = Array.from(event.target.files);
+  //     setAttachments((prev) => [...prev, ...filesArray]);
+  //   }
+  // };
 
   const handleFileDelete = (index: number) => {
     setAttachments((prev) => prev.filter((_, i) => i !== index));
@@ -448,7 +470,7 @@ const NewCreation: React.FC = () => {
                     name="attachments"
                     multiple
                     hidden
-                    onChange={handleFileUpload}
+                    // onChange={handleFileUpload}
                   />
                 </Button>
                 <List sx={{ direction: 'rtl', textAlign: 'right' }}>
@@ -662,7 +684,7 @@ const NewCreation: React.FC = () => {
                     name="attachments"
                     multiple
                     hidden
-                    onChange={handleFileUpload}
+                    // onChange={handleFileUpload}
                   />
                 </Button>
                 <List>
