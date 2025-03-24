@@ -62,45 +62,14 @@ const NewCreation: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
-  // إعدادات Jodit Editor مع تعطيل رفع الملفات (إزالة أزرار image و video)
   const joditConfig = {
     readonly: false,
     toolbarSticky: true,
-    buttons: ['bold', 'italic', 'underline', 'strikethrough', 'ul', 'ol', 'link', 'undo', 'redo'],
-    uploader: {
-      insertImageAsBase64URI: false,
-    },
-    filebrowser: {
-      ajax: { url: '' },
-    },
-    events: {
-      // Prevent image file pasting
-      beforePaste: (event: ClipboardEvent) => {
-        if (event.clipboardData) {
-          const items = event.clipboardData.items;
-          for (let i = 0; i < items.length; i++) {
-            if (items[i].type.startsWith('image/')) {
-              event.preventDefault();
-              alert('Image pasting is disabled to avoid blob usage.');
-              return false;
-            }
-          }
-        }
-      },
-      // Prevent drag-and-drop of files
-      drop: (event: DragEvent) => {
-        if (event.dataTransfer?.files.length) {
-          event.preventDefault();
-          alert('Drag and drop of files is disabled to avoid blob URLs.');
-          return false;
-        }
-      },
-    },
+    pasteFilterStyle: false,
   };
 
   useEffect(() => {
     if (compId) {
-      console.log('Using compId:', compId);
       setLoading(true);
       axiosServices
         .get(`/api/department/compdepartments/${compId}`)
@@ -122,8 +91,6 @@ const NewCreation: React.FC = () => {
         .finally(() => {
           setLoading(false);
         });
-    } else {
-      console.log('compId not available yet');
     }
   }, [compId]);
 
@@ -149,7 +116,6 @@ const NewCreation: React.FC = () => {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
     try {
       const headerPayload = {
         Doc_Title_en: formData.titleEn,
