@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/components/apps/users/UserDetails.tsx
 
 import React, { useEffect, useState } from 'react';
@@ -80,15 +81,15 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user }) => {
       }
       // Pre-fill department assignments using optional chaining
       if (
-        user["Users_Departments_Users_Departments_User_IdToUser_Data"] &&
-        (user["Users_Departments_Users_Departments_User_IdToUser_Data"] as any[]).length > 0
+        user['Users_Departments_Users_Departments_User_IdToUser_Data'] &&
+        (user['Users_Departments_Users_Departments_User_IdToUser_Data'] as any[]).length > 0
       ) {
-        const assignments = (user["Users_Departments_Users_Departments_User_IdToUser_Data"] as any[]).map(
-          (assignment) => ({
-            departmentId: assignment.Department_Data.Id,
-            roleId: assignment.User_Roles ? assignment.User_Roles.Id : '',
-          })
-        );
+        const assignments = (
+          user['Users_Departments_Users_Departments_User_IdToUser_Data'] as any[]
+        ).map((assignment) => ({
+          departmentId: assignment.Department_Data.Id,
+          roleId: assignment.User_Roles ? assignment.User_Roles.Id : '',
+        }));
         setDepartmentAssignments(assignments);
         extUser.departmentAssignments = assignments;
       } else {
@@ -129,7 +130,9 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user }) => {
     const loadDepartments = async () => {
       if (editedUser && editedUser.companyId) {
         try {
-          const { data } = await axiosServices.get(`/api/department/compdepartments/${editedUser.companyId}`);
+          const { data } = await axiosServices.get(
+            `/api/department/compdepartments/${editedUser.companyId}`,
+          );
           setDepartments(data);
         } catch (error) {
           console.error('Error fetching departments:', error);
@@ -222,7 +225,7 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user }) => {
   const handleDepartmentAssignmentChange = (
     index: number,
     field: 'departmentId' | 'roleId',
-    value: string
+    value: string,
   ) => {
     const newAssignments = [...departmentAssignments];
     newAssignments[index] = { ...newAssignments[index], [field]: value };
@@ -494,7 +497,11 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user }) => {
                         ))}
                       </Select>
                     </FormControl>
-                    <Button variant="outlined" color="error" onClick={() => removeDepartmentAssignment(index)}>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      onClick={() => removeDepartmentAssignment(index)}
+                    >
                       Remove
                     </Button>
                   </Box>
@@ -509,12 +516,14 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user }) => {
                   departmentAssignments.map((assignment, index) => (
                     <Box key={index} mb={1}>
                       <Typography variant="body2">
-                        Department:{" "}
-                        {departments.find((dept) => dept.Id === assignment.departmentId)?.Dept_name ||
-                          assignment.departmentId}
+                        Department:{' '}
+                        {departments.find((dept) => dept.Id === assignment.departmentId)
+                          ?.Dept_name || assignment.departmentId}
                       </Typography>
                       <Typography variant="body2">
-                        Role: {roles.find((role) => role.Id === assignment.roleId)?.Name || assignment.roleId}
+                        Role:{' '}
+                        {roles.find((role) => role.Id === assignment.roleId)?.Name ||
+                          assignment.roleId}
                       </Typography>
                       <Divider />
                     </Box>
