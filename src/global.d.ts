@@ -10,3 +10,12 @@ declare module 'js-cookie' {
   const Cookies: CookiesStatic;
   export default Cookies;
 }
+
+
+export {};
+
+declare global {
+  interface Window {
+    $: any;
+  }
+}

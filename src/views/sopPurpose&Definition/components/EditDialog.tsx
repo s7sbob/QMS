@@ -10,7 +10,8 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import JoditEditor from 'jodit-react';
+import ReactSummernote from 'react-summernote';
+import 'react-summernote/dist/react-summernote.css';
 
 export interface HistoryRecord {
   Id: string;
@@ -60,23 +61,30 @@ const EditDialog: React.FC<EditDialogProps> = ({
   const [reviewerComment, setReviewerComment] = useState(initialReviewerComment);
 
   useEffect(() => {
-    setContentEn(initialContentEn);
-    setContentAr(initialContentAr);
-    setReviewerComment(initialReviewerComment);
-  }, [initialContentEn, initialContentAr, initialReviewerComment]);
+    // عند فتح الـ dialog أو تغيير الـ props، نحدّث القيم
+    if (open) {
+      setContentEn(initialContentEn);
+      setContentAr(initialContentAr);
+      setReviewerComment(initialReviewerComment);
+    }
+  }, [open, initialContentEn, initialContentAr, initialReviewerComment]);
 
-  const joditConfig = {
-    readonly: false,
-    toolbarSticky: true,
-    buttons: ['bold', 'italic', 'underline', 'strikethrough', 'ul', 'ol', 'link', 'undo', 'redo'],
-    uploader: {
-      insertImageAsBase64URI: false, // ✅ prevent base64/blob URLs
-    },
-    filebrowser: {
-      ajax: {
-        url: '', // disable browsing
+  const summernoteOptions = {
+    height: 200,
+    dialogsInBody: true, // لو في مشاكل مع الـ Dialog الخاص بـ MUI
+    toolbar: [
+      ['style', ['style']],
+      ['font', ['bold', 'italic', 'underline', 'clear']],
+      ['para', ['ul', 'ol', 'paragraph']],
+      ['table', ['table']],
+    ],
+    // callbacks لمجرّد التحقق من أنّ الـ content وصل فعلاً
+    callbacks: {
+      onInit: () => {
+        console.log('Summernote initialized');
       },
     },
+    // لو تحتاج لغة عربية: lang: 'ar-AR'
   };
 
   const handleSave = () => {
@@ -93,23 +101,33 @@ const EditDialog: React.FC<EditDialogProps> = ({
         <Box sx={{ mb: 2, border: '1px solid #ccc', p: 2, borderRadius: 1 }}>
           <Stack spacing={2}>
             <Typography variant="body2">English Content</Typography>
-            <JoditEditor
+            <ReactSummernote
+              // نجعل المكوّن متحكّم فيه عبر value
               value={contentEn}
-              config={joditConfig}
-              onBlur={(newContent) => setContentEn(newContent)}
+              options={summernoteOptions}
+              onChange={(content: string) => {
+                setContentEn(content);
+              }}
             />
+
             <Typography variant="body2">Arabic Content</Typography>
-            <JoditEditor
+            <ReactSummernote
               value={contentAr}
-              config={{ ...joditConfig, language: 'ar' }}
-              onBlur={(newContent) => setContentAr(newContent)}
+              options={{ ...summernoteOptions, lang: 'ar' }}
+              onChange={(content: string) => {
+                setContentAr(content);
+              }}
             />
+
             <Typography variant="body2">Reviewer Comment</Typography>
-            <JoditEditor
+            <ReactSummernote
               value={reviewerComment}
-              config={joditConfig}
-              onBlur={(newContent) => setReviewerComment(newContent)}
+              options={summernoteOptions}
+              onChange={(content: string) => {
+                setReviewerComment(content);
+              }}
             />
+
             {additionalInfo && (
               <>
                 {additionalInfo.version !== undefined && (
@@ -135,6 +153,7 @@ const EditDialog: React.FC<EditDialogProps> = ({
             )}
           </Stack>
         </Box>
+
         {historyData && historyData.length > 0 && (
           <>
             <Typography variant="h6" gutterBottom>
