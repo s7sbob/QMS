@@ -1,5 +1,5 @@
 // src/components/EditDialog.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Button,
@@ -60,8 +60,8 @@ const EditDialog: React.FC<EditDialogProps> = ({
   const [contentAr, setContentAr] = useState(initialContentAr);
   const [reviewerComment, setReviewerComment] = useState(initialReviewerComment);
 
+  // Update state whenever the dialog is opened or props change
   useEffect(() => {
-    // عند فتح الـ dialog أو تغيير الـ props، نحدّث القيم
     if (open) {
       setContentEn(initialContentEn);
       setContentAr(initialContentAr);
@@ -69,24 +69,35 @@ const EditDialog: React.FC<EditDialogProps> = ({
     }
   }, [open, initialContentEn, initialContentAr, initialReviewerComment]);
 
-  const summernoteOptions = {
-    height: 200,
-    dialogsInBody: true, // لو في مشاكل مع الـ Dialog الخاص بـ MUI
-    toolbar: [
-      ['style', ['style']],
-      ['font', ['bold', 'italic', 'underline', 'clear']],
-      ['para', ['ul', 'ol', 'paragraph']],
-      ['table', ['table']],
-    ],
-    // callbacks لمجرّد التحقق من أنّ الـ content وصل فعلاً
-    callbacks: {
-      onInit: () => {
-        console.log('Summernote initialized');
+  // Base options for Summernote
+  const baseSummernoteOptions = useMemo(
+    () => ({
+      height: 200,
+      dialogsInBody: true, // Helps avoid issues with MUI's Dialog
+      toolbar: [
+        ['style', ['style']],
+        ['font', ['bold', 'italic', 'underline', 'clear']],
+        ['para', ['ul', 'ol', 'paragraph']],
+        ['table', ['table']],
+      ],
+      callbacks: {
+        onInit: () => console.log('Summernote initialized'),
       },
-    },
-    // لو تحتاج لغة عربية: lang: 'ar-AR'
-  };
+    }),
+    [],
+  );
 
+  // Separate options for each editor instance
+  const englishOptions = baseSummernoteOptions;
+  const arabicOptions = useMemo(
+    () => ({
+      ...baseSummernoteOptions,
+      lang: 'ar', // Setting language for Arabic content
+    }),
+    [baseSummernoteOptions],
+  );
+  const temptext_En = contentEn;
+  const temptext_Ar = contentAr;
   const handleSave = () => {
     onSave(contentEn, contentAr, reviewerComment);
   };
@@ -102,30 +113,27 @@ const EditDialog: React.FC<EditDialogProps> = ({
           <Stack spacing={2}>
             <Typography variant="body2">English Content</Typography>
             <ReactSummernote
-              // نجعل المكوّن متحكّم فيه عبر value
-              value={contentEn}
-              options={summernoteOptions}
-              onChange={(content: string) => {
-                setContentEn(content);
-              }}
+              // value={ contentEn}
+              value={temptext_En}
+              options={englishOptions}
+              onChange={(content: string) => setContentEn(content)}
+              key={`en-${open}`} // reinitialize when dialog opens
             />
 
             <Typography variant="body2">Arabic Content</Typography>
             <ReactSummernote
-              value={contentAr}
-              options={{ ...summernoteOptions, lang: 'ar' }}
-              onChange={(content: string) => {
-                setContentAr(content);
-              }}
+              value={temptext_Ar}
+              options={arabicOptions}
+              onChange={(content: string) => setContentAr(content)}
+              key={`ar-${open}`}
             />
 
             <Typography variant="body2">Reviewer Comment</Typography>
             <ReactSummernote
               value={reviewerComment}
-              options={summernoteOptions}
-              onChange={(content: string) => {
-                setReviewerComment(content);
-              }}
+              options={englishOptions}
+              onChange={(content: string) => setReviewerComment(content)}
+              key={`rc-${open}`}
             />
 
             {additionalInfo && (
