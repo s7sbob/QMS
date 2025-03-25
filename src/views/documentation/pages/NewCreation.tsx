@@ -41,8 +41,6 @@ const summernoteOptionsAr = {
     ['font', ['bold', 'italic', 'underline', 'clear']],
     ['para', ['ul', 'ol', 'paragraph']],
     ['table', ['table']],
-    ['insert', ['link', 'picture', 'video']],
-    ['view', ['fullscreen', 'codeview']],
   ],
 };
 
@@ -53,8 +51,7 @@ const summernoteOptionsEn = {
     ['font', ['bold', 'italic', 'underline', 'clear']],
     ['para', ['ul', 'ol', 'paragraph']],
     ['table', ['table']],
-    ['insert', ['link', 'picture', 'video']],
-    ['view', ['fullscreen', 'codeview']],
+
   ],
 };
 
