@@ -43,6 +43,7 @@
     "apexcharts": "3.48.0",
     "axios": "1.6.8",
     "axios-mock-adapter": "1.22.0",
+    "bootstrap": "^4.6.2",
     "chance": "1.1.11",
     "ckeditor5": "^44.3.0",
     "ckeditor5-premium-features": "^44.3.0",
@@ -54,6 +55,7 @@
     "fslightbox-react": "1.7.6",
     "i18next": "22.0.6",
     "jodit-react": "^5.2.18",
+    "jquery": "^3.7.1",
     "js-cookie": "^3.0.5",
     "jwt-decode": "^4.0.0",
     "lodash": "4.17.21",
@@ -74,6 +76,7 @@
     "react-router-dom": "6.3.0",
     "react-slick": "0.29.0",
     "react-spring": "9.5.5",
+    "react-summernote": "^2.0.2",
     "react-syntax-highlighter": "15.5.0",
     "redux": "4.2.1",
     "simplebar": "6.2.5",
@@ -104,6 +107,7 @@
     "eslint": "8.45.0",
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-react-refresh": "0.4.3",
+    "husky": "^9.1.7",
     "typescript": "5.0.2",
     "vite": "4.4.5"
   }

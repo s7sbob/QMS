@@ -26,11 +26,37 @@ import axiosServices from 'src/utils/axiosServices';
 import { UserContext } from 'src/context/UserContext';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
-const JoditEditor = React.lazy(() => import('jodit-react'));
+import ReactSummernote from 'react-summernote';
+import 'react-summernote/dist/react-summernote.css';
+
 interface Department {
   Id: string;
   Dept_name: string;
 }
+
+const summernoteOptionsAr = {
+  height: 200,
+  toolbar: [
+    ['style', ['style']],
+    ['font', ['bold', 'italic', 'underline', 'clear']],
+    ['para', ['ul', 'ol', 'paragraph']],
+    ['table', ['table']],
+    ['insert', ['link', 'picture', 'video']],
+    ['view', ['fullscreen', 'codeview']],
+  ],
+};
+
+const summernoteOptionsEn = {
+  height: 200,
+  toolbar: [
+    ['style', ['style']],
+    ['font', ['bold', 'italic', 'underline', 'clear']],
+    ['para', ['ul', 'ol', 'paragraph']],
+    ['table', ['table']],
+    ['insert', ['link', 'picture', 'video']],
+    ['view', ['fullscreen', 'codeview']],
+  ],
+};
 
 const NewCreation: React.FC = () => {
   const [attachments, setAttachments] = useState<File[]>([]);
@@ -61,36 +87,6 @@ const NewCreation: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
-  const joditConfig = {
-    readonly: false,
-    toolbarSticky: true,
-    pasteFilterStyle: false,
-    toolbarInline: true,
-    uploader: {
-      insertImageAsBase64URI: false,
-      url: '', // disables uploading
-    },
-    filebrowser: {
-      ajax: {
-        url: '', // disables file browsing
-      },
-    },
-    disablePlugins: [
-      'about',
-      'speechRecognize',
-      'file',
-      'media',
-      'poweredByJodit',
-      'search',
-      'print',
-      'ace',
-      'iframe',
-      'video',
-      'paste',
-      'aceEditor',
-      'source',
-    ],
-  };
   useEffect(() => {
     if (compId) {
       setLoading(true);
@@ -338,14 +334,11 @@ const NewCreation: React.FC = () => {
                 الغرض:
               </Typography>
               <Box dir="rtl">
-                <JoditEditor
-                  id="purposeArEditor"
-                  name="purposeAr"
-                  aria-label="محرر الغرض بالعربية"
+                <ReactSummernote
                   value={formData.purposeAr}
-                  config={joditConfig}
-                  onBlur={(newContent) =>
-                    setFormData((prev) => ({ ...prev, purposeAr: newContent }))
+                  options={summernoteOptionsAr}
+                  onChange={(content: string) =>
+                    setFormData((prev) => ({ ...prev, purposeAr: content }))
                   }
                 />
               </Box>
@@ -354,14 +347,11 @@ const NewCreation: React.FC = () => {
                 التعريفات:
               </Typography>
               <Box dir="rtl">
-                <JoditEditor
-                  id="definitionsArEditor"
-                  name="definitionsAr"
-                  aria-label="محرر التعريفات بالعربية"
+                <ReactSummernote
                   value={formData.definitionsAr}
-                  config={joditConfig}
-                  onBlur={(newContent) =>
-                    setFormData((prev) => ({ ...prev, definitionsAr: newContent }))
+                  options={summernoteOptionsAr}
+                  onChange={(content: string) =>
+                    setFormData((prev) => ({ ...prev, definitionsAr: content }))
                   }
                 />
               </Box>
@@ -370,13 +360,12 @@ const NewCreation: React.FC = () => {
                 مجال التطبيق:
               </Typography>
               <Box dir="rtl">
-                <JoditEditor
-                  id="scopeArEditor"
-                  name="scopeAr"
-                  aria-label="محرر مجال التطبيق بالعربية"
+                <ReactSummernote
                   value={formData.scopeAr}
-                  config={joditConfig}
-                  onBlur={(newContent) => setFormData((prev) => ({ ...prev, scopeAr: newContent }))}
+                  options={summernoteOptionsAr}
+                  onChange={(content: string) =>
+                    setFormData((prev) => ({ ...prev, scopeAr: content }))
+                  }
                 />
               </Box>
               {/* محرر المسؤولية */}
@@ -384,14 +373,11 @@ const NewCreation: React.FC = () => {
                 المسؤولية:
               </Typography>
               <Box dir="rtl">
-                <JoditEditor
-                  id="responsibilityArEditor"
-                  name="responsibilityAr"
-                  aria-label="محرر المسؤولية بالعربية"
+                <ReactSummernote
                   value={formData.responsibilityAr}
-                  config={joditConfig}
-                  onBlur={(newContent) =>
-                    setFormData((prev) => ({ ...prev, responsibilityAr: newContent }))
+                  options={summernoteOptionsAr}
+                  onChange={(content: string) =>
+                    setFormData((prev) => ({ ...prev, responsibilityAr: content }))
                   }
                 />
               </Box>
@@ -400,14 +386,11 @@ const NewCreation: React.FC = () => {
                 اشتراطات السلامة:
               </Typography>
               <Box dir="rtl">
-                <JoditEditor
-                  id="safetyConcernsArEditor"
-                  name="safetyConcernsAr"
-                  aria-label="محرر اشتراطات السلامة بالعربية"
+                <ReactSummernote
                   value={formData.safetyConcernsAr}
-                  config={joditConfig}
-                  onBlur={(newContent) =>
-                    setFormData((prev) => ({ ...prev, safetyConcernsAr: newContent }))
+                  options={summernoteOptionsAr}
+                  onChange={(content: string) =>
+                    setFormData((prev) => ({ ...prev, safetyConcernsAr: content }))
                   }
                 />
               </Box>
@@ -416,14 +399,11 @@ const NewCreation: React.FC = () => {
                 الخطوات:
               </Typography>
               <Box dir="rtl">
-                <JoditEditor
-                  id="procedureArEditor"
-                  name="procedureAr"
-                  aria-label="محرر الإجراءات بالعربية"
+                <ReactSummernote
                   value={formData.procedureAr}
-                  config={joditConfig}
-                  onBlur={(newContent) =>
-                    setFormData((prev) => ({ ...prev, procedureAr: newContent }))
+                  options={summernoteOptionsAr}
+                  onChange={(content: string) =>
+                    setFormData((prev) => ({ ...prev, procedureAr: content }))
                   }
                 />
               </Box>
@@ -432,14 +412,11 @@ const NewCreation: React.FC = () => {
                 الوثائق المرجعية:
               </Typography>
               <Box dir="rtl">
-                <JoditEditor
-                  id="referenceDocumentsArEditor"
-                  name="referenceDocumentsAr"
-                  aria-label="محرر الوثائق المرجعية بالعربية"
+                <ReactSummernote
                   value={formData.referenceDocumentsAr}
-                  config={joditConfig}
-                  onBlur={(newContent) =>
-                    setFormData((prev) => ({ ...prev, referenceDocumentsAr: newContent }))
+                  options={summernoteOptionsAr}
+                  onChange={(content: string) =>
+                    setFormData((prev) => ({ ...prev, referenceDocumentsAr: content }))
                   }
                 />
               </Box>
@@ -553,14 +530,11 @@ const NewCreation: React.FC = () => {
               {/* محرر الغرض */}
               <Typography variant="subtitle2">Purpose:</Typography>
               <Box dir="ltr">
-                <JoditEditor
-                  id="purposeEnEditor"
-                  name="purposeEn"
-                  aria-label="English Purpose Editor"
+                <ReactSummernote
                   value={formData.purposeEn}
-                  config={joditConfig}
-                  onBlur={(newContent) =>
-                    setFormData((prev) => ({ ...prev, purposeEn: newContent }))
+                  options={summernoteOptionsEn}
+                  onChange={(content: string) =>
+                    setFormData((prev) => ({ ...prev, purposeEn: content }))
                   }
                 />
               </Box>
@@ -569,14 +543,11 @@ const NewCreation: React.FC = () => {
                 Definitions:
               </Typography>
               <Box dir="ltr">
-                <JoditEditor
-                  id="definitionsEnEditor"
-                  name="definitionsEn"
-                  aria-label="English Definitions Editor"
+                <ReactSummernote
                   value={formData.definitionsEn}
-                  config={joditConfig}
-                  onBlur={(newContent) =>
-                    setFormData((prev) => ({ ...prev, definitionsEn: newContent }))
+                  options={summernoteOptionsEn}
+                  onChange={(content: string) =>
+                    setFormData((prev) => ({ ...prev, definitionsEn: content }))
                   }
                 />
               </Box>
@@ -585,13 +556,12 @@ const NewCreation: React.FC = () => {
                 Scope:
               </Typography>
               <Box dir="ltr">
-                <JoditEditor
-                  id="scopeEnEditor"
-                  name="scopeEn"
-                  aria-label="English Scope Editor"
+                <ReactSummernote
                   value={formData.scopeEn}
-                  config={joditConfig}
-                  onBlur={(newContent) => setFormData((prev) => ({ ...prev, scopeEn: newContent }))}
+                  options={summernoteOptionsEn}
+                  onChange={(content: string) =>
+                    setFormData((prev) => ({ ...prev, scopeEn: content }))
+                  }
                 />
               </Box>
               {/* محرر المسؤولية */}
@@ -599,14 +569,11 @@ const NewCreation: React.FC = () => {
                 Responsibility:
               </Typography>
               <Box dir="ltr">
-                <JoditEditor
-                  id="responsibilityEnEditor"
-                  name="responsibilityEn"
-                  aria-label="English Responsibility Editor"
+                <ReactSummernote
                   value={formData.responsibilityEn}
-                  config={joditConfig}
-                  onBlur={(newContent) =>
-                    setFormData((prev) => ({ ...prev, responsibilityEn: newContent }))
+                  options={summernoteOptionsEn}
+                  onChange={(content: string) =>
+                    setFormData((prev) => ({ ...prev, responsibilityEn: content }))
                   }
                 />
               </Box>
@@ -615,14 +582,11 @@ const NewCreation: React.FC = () => {
                 Safety Concerns:
               </Typography>
               <Box dir="ltr">
-                <JoditEditor
-                  id="safetyConcernsEnEditor"
-                  name="safetyConcernsEn"
-                  aria-label="English Safety Concerns Editor"
+                <ReactSummernote
                   value={formData.safetyConcernsEn}
-                  config={joditConfig}
-                  onBlur={(newContent) =>
-                    setFormData((prev) => ({ ...prev, safetyConcernsEn: newContent }))
+                  options={summernoteOptionsEn}
+                  onChange={(content: string) =>
+                    setFormData((prev) => ({ ...prev, safetyConcernsEn: content }))
                   }
                 />
               </Box>
@@ -631,14 +595,11 @@ const NewCreation: React.FC = () => {
                 Procedure:
               </Typography>
               <Box dir="ltr">
-                <JoditEditor
-                  id="procedureEnEditor"
-                  name="procedureEn"
-                  aria-label="English Procedure Editor"
+                <ReactSummernote
                   value={formData.procedureEn}
-                  config={joditConfig}
-                  onBlur={(newContent) =>
-                    setFormData((prev) => ({ ...prev, procedureEn: newContent }))
+                  options={summernoteOptionsEn}
+                  onChange={(content: string) =>
+                    setFormData((prev) => ({ ...prev, procedureEn: content }))
                   }
                 />
               </Box>
@@ -647,14 +608,11 @@ const NewCreation: React.FC = () => {
                 Reference Documents:
               </Typography>
               <Box dir="ltr">
-                <JoditEditor
-                  id="referenceDocumentsEnEditor"
-                  name="referenceDocumentsEn"
-                  aria-label="English Reference Documents Editor"
+                <ReactSummernote
                   value={formData.referenceDocumentsEn}
-                  config={joditConfig}
-                  onBlur={(newContent) =>
-                    setFormData((prev) => ({ ...prev, referenceDocumentsEn: newContent }))
+                  options={summernoteOptionsEn}
+                  onChange={(content: string) =>
+                    setFormData((prev) => ({ ...prev, referenceDocumentsEn: content }))
                   }
                 />
               </Box>

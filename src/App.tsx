@@ -6,7 +6,11 @@ import RTL from './layouts/full/shared/customizer/RTL';
 import ScrollToTop from './components/shared/ScrollToTop';
 import Router from './routes/Router';
 import { AppState } from './store/Store';
-import 'react-quill/dist/quill.snow.css';
+import 'jquery';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'react-summernote/dist/react-summernote.css';
+
 
 
 function App() {
