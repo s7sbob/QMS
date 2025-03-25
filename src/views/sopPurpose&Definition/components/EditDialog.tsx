@@ -1,5 +1,5 @@
-// src/components/EditDialog.tsx
-import React, { useState, useEffect, useMemo } from 'react';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Box,
   Button,
@@ -35,7 +35,7 @@ export interface AdditionalInfo {
 
 interface EditDialogProps {
   open: boolean;
-  title: string; // مثلاً "تفاصيل التعريف"
+  title: string;
   initialContentEn: string;
   initialContentAr: string;
   initialReviewerComment: string;
@@ -60,20 +60,38 @@ const EditDialog: React.FC<EditDialogProps> = ({
   const [contentAr, setContentAr] = useState(initialContentAr);
   const [reviewerComment, setReviewerComment] = useState(initialReviewerComment);
 
-  // Update state whenever the dialog is opened or props change
+  // Create refs for each editor instance
+  const englishEditorRef = useRef<any>(null);
+  const arabicEditorRef = useRef<any>(null);
+  const reviewerEditorRef = useRef<any>(null);
+
+  // Update local state and force-update the underlying Summernote editors when dialog opens
   useEffect(() => {
     if (open) {
       setContentEn(initialContentEn);
       setContentAr(initialContentAr);
       setReviewerComment(initialReviewerComment);
+
+      // Force-update the editor content via the underlying Summernote API if the ref is set
+      setTimeout(() => {
+        if (englishEditorRef.current) {
+          englishEditorRef.current.editor.summernote('code', initialContentEn);
+        }
+        if (arabicEditorRef.current) {
+          arabicEditorRef.current.editor.summernote('code', initialContentAr);
+        }
+        if (reviewerEditorRef.current) {
+          reviewerEditorRef.current.editor.summernote('code', initialReviewerComment);
+        }
+      }, 100);
     }
   }, [open, initialContentEn, initialContentAr, initialReviewerComment]);
 
-  // Base options for Summernote
+  // Base Summernote options
   const baseSummernoteOptions = useMemo(
     () => ({
       height: 200,
-      dialogsInBody: true, // Helps avoid issues with MUI's Dialog
+      dialogsInBody: true,
       toolbar: [
         ['style', ['style']],
         ['font', ['bold', 'italic', 'underline', 'clear']],
@@ -87,17 +105,15 @@ const EditDialog: React.FC<EditDialogProps> = ({
     [],
   );
 
-  // Separate options for each editor instance
   const englishOptions = baseSummernoteOptions;
   const arabicOptions = useMemo(
     () => ({
       ...baseSummernoteOptions,
-      lang: 'ar', // Setting language for Arabic content
+      lang: 'ar',
     }),
     [baseSummernoteOptions],
   );
-  const temptext_En = contentEn;
-  const temptext_Ar = contentAr;
+
   const handleSave = () => {
     onSave(contentEn, contentAr, reviewerComment);
   };
@@ -113,27 +129,26 @@ const EditDialog: React.FC<EditDialogProps> = ({
           <Stack spacing={2}>
             <Typography variant="body2">English Content</Typography>
             <ReactSummernote
-              // value={ contentEn}
-              value={temptext_En}
+              ref={englishEditorRef}
+              defaultValue={initialContentEn}
               options={englishOptions}
               onChange={(content: string) => setContentEn(content)}
-              key={`en-${open}`} // reinitialize when dialog opens
             />
 
             <Typography variant="body2">Arabic Content</Typography>
             <ReactSummernote
-              value={temptext_Ar}
+              ref={arabicEditorRef}
+              defaultValue={initialContentAr}
               options={arabicOptions}
               onChange={(content: string) => setContentAr(content)}
-              key={`ar-${open}`}
             />
 
             <Typography variant="body2">Reviewer Comment</Typography>
             <ReactSummernote
-              value={reviewerComment}
+              ref={reviewerEditorRef}
+              defaultValue={initialReviewerComment}
               options={englishOptions}
               onChange={(content: string) => setReviewerComment(content)}
-              key={`rc-${open}`}
             />
 
             {additionalInfo && (

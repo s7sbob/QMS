@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/components/ProceduresSection.tsx
-import React, { useEffect, useState } from "react";
-import axiosServices from "src/utils/axiosServices";
+import React, { useEffect, useState } from 'react';
+import axiosServices from 'src/utils/axiosServices';
 import {
   Box,
   Table,
@@ -11,8 +12,8 @@ import {
   TableRow,
   Paper,
   Typography,
-} from "@mui/material";
-import EditDialog from "./EditDialog";
+} from '@mui/material';
+import EditDialog from './EditDialog';
 
 export interface Procedure {
   Id: string;
@@ -54,14 +55,18 @@ const ProceduresSection: React.FC<ProceduresSectionProps> = ({ initialData }) =>
         setHistoryData(activeRecords);
         setOpenDialog(true);
       })
-      .catch((error) => console.error("Error fetching historical procedures:", error));
+      .catch((error) => console.error('Error fetching historical procedures:', error));
   };
 
-  const handleDialogSave = (newContentEn: string, newContentAr: string, newReviewerComment: string) => {
+  const handleDialogSave = (
+    newContentEn: string,
+    newContentAr: string,
+    newReviewerComment: string,
+  ) => {
     if (!procedure) return;
     if (newContentEn !== procedure.Content_en || newContentAr !== procedure.Content_ar) {
       axiosServices
-        .post("/api/soprocedures/addSop-Procedure", {
+        .post('/api/soprocedures/addSop-Procedure', {
           Content_en: newContentEn,
           Content_ar: newContentAr,
           reviewer_Comment: newReviewerComment,
@@ -71,7 +76,7 @@ const ProceduresSection: React.FC<ProceduresSectionProps> = ({ initialData }) =>
           setProcedure(res.data);
           setOpenDialog(false);
         })
-        .catch((error) => console.error("Error inserting procedure:", error));
+        .catch((error) => console.error('Error inserting procedure:', error));
     } else {
       axiosServices
         .post(`/api/soprocedures/updateSop-Procedure/${procedure.Id}`, {
@@ -83,14 +88,21 @@ const ProceduresSection: React.FC<ProceduresSectionProps> = ({ initialData }) =>
           setProcedure(res.data);
           setOpenDialog(false);
         })
-        .catch((error) => console.error("Error updating procedure:", error));
+        .catch((error) => console.error('Error updating procedure:', error));
     }
   };
 
   return (
     <Box sx={{ mt: 2 }}>
-      <Typography variant="h6" gutterBottom sx={{ display: "flex", justifyContent: "space-between",     color: procedure && procedure.reviewer_Comment ? "red" : "inherit", // الشرط هنا لتلوين العنوان بالاحمر عند وجود تعليق
- }}>
+      <Typography
+        variant="h6"
+        gutterBottom
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          color: procedure && procedure.reviewer_Comment ? 'red' : 'inherit', // الشرط هنا لتلوين العنوان بالاحمر عند وجود تعليق
+        }}
+      >
         <span>4. Procedures:</span>
         <span dir="rtl">4. الإجراءات</span>
       </Typography>
@@ -98,19 +110,19 @@ const ProceduresSection: React.FC<ProceduresSectionProps> = ({ initialData }) =>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: "bold", width: "50%" }}>English Content</TableCell>
-              <TableCell sx={{ fontWeight: "bold", width: "50%" }} align="right">
+              <TableCell sx={{ fontWeight: 'bold', width: '50%' }}>English Content</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', width: '50%' }} align="right">
                 المحتوى العربي
               </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {procedure && (
-              <TableRow onDoubleClick={handleDoubleClick} hover sx={{ cursor: "pointer" }}>
+              <TableRow onDoubleClick={handleDoubleClick} hover sx={{ cursor: 'pointer' }}>
                 <TableCell>
                   <div dangerouslySetInnerHTML={{ __html: procedure.Content_en }} />
                 </TableCell>
-                <TableCell align="right" style={{ direction: "rtl" }}>
+                <TableCell align="right" style={{ direction: 'rtl' }}>
                   <div dangerouslySetInnerHTML={{ __html: procedure.Content_ar }} />
                 </TableCell>
               </TableRow>
@@ -124,7 +136,7 @@ const ProceduresSection: React.FC<ProceduresSectionProps> = ({ initialData }) =>
           title="تفاصيل الإجراءات"
           initialContentEn={procedure.Content_en}
           initialContentAr={procedure.Content_ar}
-          initialReviewerComment={procedure.reviewer_Comment || ""}
+          initialReviewerComment={procedure.reviewer_Comment || ''}
           additionalInfo={{
             version: procedure.Version,
             crtDate: procedure.Crt_Date,
