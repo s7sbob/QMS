@@ -13,7 +13,6 @@ import ResponsibilitiesSection from '../components/ResponsibilitiesSection';
 import SafetyConcernsSection from '../components/SafetyConcernsSection';
 import { Button, Box } from '@mui/material';
 
-// واجهة الداتا الخاصة بتتبع الـ SOP مع إضافة خاصية status
 export interface SopDetailTracking {
   Id: string;
   Sop_HeaderId: string;
@@ -35,7 +34,6 @@ const SOPFullDocument: React.FC = () => {
   const headerId = searchParams.get('headerId');
   const user = useContext(UserContext);
 
-  // دالة لإعادة جلب بيانات الـ SOP لتحديث التوقيعات والأسماء تلقائيًا
   const refreshSopDetail = () => {
     let url = '';
     if (headerId) {
@@ -72,17 +70,13 @@ const SOPFullDocument: React.FC = () => {
       .catch((error) => console.error('Error fetching sop detail tracking data:', error));
   }, [headerId]);
 
-  // مكون جديد لإدارة الحالة (StatusControl)
   const StatusControl: React.FC<{
     sopDetail: SopDetailTracking;
     setSopDetail: React.Dispatch<React.SetStateAction<SopDetailTracking | null>>;
   }> = ({ sopDetail }) => {
-    // تحديد دور المستخدم من بيانات الـ UserContext
     const userRole =
       user?.Users_Departments_Users_Departments_User_IdToUser_Data?.[0]?.User_Roles?.Name || '';
-    console.log(userRole);
 
-    // دالة لتحديث الحالة باستخدام الروت الصحيح بناءً على دور المستخدم
     const updateStatus = (newStatus: string, additionalData: any = {}) => {
       let endpoint = '';
       if (userRole === 'QA Associate') {
@@ -92,7 +86,6 @@ const SOPFullDocument: React.FC = () => {
       } else if (userRole === 'QA Manager') {
         endpoint = `/api/sopheader/updateSopStatusByManager/${sopDetail.Sop_header.Id}`;
       }
-      // إرسال payload بالشكل المطلوب من الـ backend
       const payload = {
         status: { newStatus },
         ...additionalData
@@ -100,27 +93,23 @@ const SOPFullDocument: React.FC = () => {
       axiosServices
         .patch(endpoint, payload)
         .then(() => {
-          // بعد نجاح التحديث، نقوم بإعادة جلب البيانات لتحديث التوقيعات والأسماء تلقائيًا
           refreshSopDetail();
         })
         .catch((err) => console.error('Error updating status', err));
     };
 
-    // بالنسبة للـ QA Supervisor: عند فتح الصفحة إذا كانت الحالة 2 نقوم بالتحديث تلقائيًا إلى 3
     useEffect(() => {
       if (userRole === 'QA Supervisor' && sopDetail.Sop_header.status === "2") {
         updateStatus("3");
       }
     }, [userRole, sopDetail.Sop_header.status]);
 
-    // بالنسبة للـ QA Manager: مثال على تحديث تلقائي من حالة 4 إلى 5 (حسب متطلبات المشروع)
     useEffect(() => {
       if (userRole === 'QA Manager' && sopDetail.Sop_header.status === "4") {
         updateStatus("5");
       }
     }, [userRole, sopDetail.Sop_header.status]);
 
-    // عرض الأزرار بناءً على دور المستخدم والحالة الحالية (باستخدام Sop_header.status)
     if (userRole === 'QA Associate' && sopDetail.Sop_header.status === "1") {
       return (
         <Box sx={{ mt: 2, textAlign: 'center' }}>

@@ -1,4 +1,3 @@
-// src/components/SOPTemplate.tsx
 import React, { useMemo } from 'react';
 import Header from './Header';
 import PreparedBySection from './PreparedBySection';
