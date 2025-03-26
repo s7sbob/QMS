@@ -1,0 +1,65 @@
+/* ملف CSS لتنسيق صفحات الـ SOP عند استخدام PaginatedSOPContent.tsx */
+
+/* عنصر مخفي لقياس ارتفاع كل عقدة قبل توزيعها على الصفحات */
+.measure-hidden {
+  position: absolute;
+  visibility: hidden;
+  top: 0;
+  left: -9999px;
+  width: 500px; /* يمكنك التعديل حسب حاجتك */
+  height: auto; 
+  /* الهدف أن يكون العنصر خارج نطاق العرض لقياس المحتوى دون ظهوره */
+}
+
+/* الحاوية العامة لكل صفحة */
+.page {
+  position: relative;
+  margin: 20px auto;       /* لجعل الصفحة في المنتصف أفقياً */
+  border: 1px solid #000;  /* خط حول الصفحة لتوضيح الحدود في العرض العادي */
+  box-sizing: border-box;
+  background-color: #fff;
+
+  /* عند الطباعة، كل .page تعتبر صفحة مستقلة */
+  page-break-after: always;
+}
+
+/* الهيدر الثابت أعلى الصفحة */
+.page-header {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  /* يمكن إضافة لون خلفية أو إطار إن رغبت */
+  /* border-bottom: 1px solid #000; */
+  box-sizing: border-box;
+}
+
+/* المحتوى الذي يتمدد بين الهيدر والفوتر */
+.page-content {
+  position: absolute;
+  left: 0;
+  right: 0;
+  /* يتم ضبط top و bottom في الكود الخاص بـ PaginatedSOPContent.tsx */
+  /* إذا أردت سحب سكرول للمحتوى الزائد داخل الصفحة (بدل قصّه) يمكنك استخدام overflow: auto */
+  overflow: visible;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+/* الفوتر الثابت أسفل الصفحة */
+.page-footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  /* border-top: 1px solid #000; */
+  box-sizing: border-box;
+}
+
+/* تحسين مظهر الطباعة (اختياري) */
+@media print {
+  .page {
+    /* عند الطباعة يمكنك إزالة الهوامش الخارجية */
+    margin: 0 auto; 
+    /* يمكنك أيضاً إخفاء الحدود */
+    border: none;
+  }
+}

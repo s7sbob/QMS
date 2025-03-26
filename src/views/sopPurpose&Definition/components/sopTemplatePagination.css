@@ -1,0 +1,41 @@
+/* حاوية تحتوي عدة جداول (كل جدول = صفحة) */
+.multi-page-container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px; /* مسافة بين الجداول أثناء العرض في الشاشة */
+    margin: 0 auto;
+    width: 100%;
+    max-width: 900px; /* لكي لا تتمدد أكثر من اللازم في الشاشة */
+    background-color: #fff;
+  }
+  
+  /* كل جدول = صفحة */
+  .one-page {
+    border: 1px solid #000;
+    border-collapse: collapse;
+    page-break-after: always; /* عند الطباعة، اجعل كل جدول = صفحة مستقلة */
+    background-color: #fff;
+  }
+  
+  /* العنصر المخفي لقياس الارتفاع */
+  .template-measure-hidden {
+    position: absolute;
+    visibility: hidden;
+    top: 0;
+    left: -9999px;
+    height: auto;
+    pointer-events: none;
+    /* لا تنسَ ضبط العرض ديناميكيًا في الإنلاين ستايل (width: pageWidth) */
+  }
+  
+  /* تحسين الطباعة */
+  @media print {
+    .multi-page-container {
+      margin: 0; /* إزالة المساحات في الطباعة */
+    }
+    .one-page {
+      border: none;
+      page-break-after: always;
+    }
+  }
+  

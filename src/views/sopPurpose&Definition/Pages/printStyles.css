@@ -1,0 +1,66 @@
+/* الحجم الافتراضي للصفحة في الطباعة */
+@page {
+  size: A4;
+  margin: 15mm; /* عدّل الهوامش كما تريد */
+}
+
+/* في وضع الطباعة، كرّر الـthead والtfoot في كل صفحة */
+thead {
+  display: table-header-group;
+}
+tfoot {
+  display: table-footer-group;
+}
+
+/* يمنع المتصفّح من تكرار رأس الجدول افتراضيًا؛
+   لهذا نجعله بهذا الشكل كي نضمن تكراره. */
+
+/* لتنسيق الحاوية العامة */
+.print-container {
+  width: 210mm; 
+  margin: 0 auto;
+  background: #fff;
+}
+
+/* الجدول الذي سيحتوي على الهيدر والفوتر والمحتوى */
+.print-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* في الوضع العادي (على الشاشة)، قد تريد إظهار حدود أو تباعد */
+.print-table td, .print-table th {
+  vertical-align: top;
+  /* border: 1px solid #ccc;  // إن أحببت إظهار خطوط */
+  padding: 0;
+}
+
+/* تنسيق اختياري لمنطقة الهيدر */
+.header-area {
+  text-align: center;
+  padding: 8px;
+  border-bottom: 1px solid #999;
+  /* أي تنسيقات إضافية */
+}
+
+/* تنسيق اختياري لمنطقة الفوتر */
+.footer-area {
+  text-align: center;
+  padding: 8px;
+  border-top: 1px solid #999;
+  /* أي تنسيقات إضافية */
+}
+
+/* بإمكانك إستخدام الـCSS Counters لرقم الصفحة مثلاً */
+@media print {
+  .page-number:after {
+    content: "Page " counter(page) " of " counter(pages);
+  }
+}
+
+/* منطقة المحتوى */
+.content-area {
+  padding: 10px;
+  /* أي تنسيقات إضافية */
+}
+

@@ -4,6 +4,7 @@ import axiosServices from 'src/utils/axiosServices';
 import { useSearchParams } from 'react-router-dom';
 import { UserContext } from 'src/context/UserContext';
 
+// نفس الاستيرادات
 import SOPTemplate from '../components/SOPTemplate';
 import PurposeSection from '../components/PurposeSection';
 import DefinitionsSection from '../components/DefinitionsSection';
@@ -70,6 +71,7 @@ const SOPFullDocument: React.FC = () => {
       .catch((error) => console.error('Error fetching sop detail tracking data:', error));
   }, [headerId]);
 
+  // نفس StatusControl دون تغيير:
   const StatusControl: React.FC<{
     sopDetail: SopDetailTracking;
     setSopDetail: React.Dispatch<React.SetStateAction<SopDetailTracking | null>>;
@@ -98,18 +100,21 @@ const SOPFullDocument: React.FC = () => {
         .catch((err) => console.error('Error updating status', err));
     };
 
+    // إشراف
     useEffect(() => {
       if (userRole === 'QA Supervisor' && sopDetail.Sop_header.status === "2") {
         updateStatus("3");
       }
     }, [userRole, sopDetail.Sop_header.status]);
 
+    // إدارة
     useEffect(() => {
       if (userRole === 'QA Manager' && sopDetail.Sop_header.status === "4") {
         updateStatus("5");
       }
     }, [userRole, sopDetail.Sop_header.status]);
 
+    // أزرار
     if (userRole === 'QA Associate' && sopDetail.Sop_header.status === "1") {
       return (
         <Box sx={{ mt: 2, textAlign: 'center' }}>
@@ -183,6 +188,10 @@ const SOPFullDocument: React.FC = () => {
 
   return (
     <>
+      {/**
+       * لاحظ أننا فقط نستعمل SOPTemplate
+       * ونمرر أقسام الـSOP كـchildren
+       */}
       <SOPTemplate headerData={sopDetail ? sopDetail.Sop_header : null}>
         <PurposeSection initialData={sopDetail ? sopDetail.sop_purpose : null} />
         <DefinitionsSection initialData={sopDetail ? sopDetail.Sop_Definitions : null} />
@@ -191,6 +200,8 @@ const SOPFullDocument: React.FC = () => {
         <ResponsibilitiesSection initialData={sopDetail ? sopDetail.Sop_Res : null} />
         <SafetyConcernsSection initialData={sopDetail ? sopDetail.Sop_SafetyConcerns : null} />
       </SOPTemplate>
+
+      {/* أزرار التحكم بالحالة */}
       {sopDetail && <StatusControl sopDetail={sopDetail} setSopDetail={setSopDetail} />}
     </>
   );
