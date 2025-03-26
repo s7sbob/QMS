@@ -1,49 +1,36 @@
-/* src/components/sopDocument.css */
-.sop-document {
-  font-family: Arial, sans-serif;
-  width: 100%;
-  max-width: 210mm; /* A4 width */
-  margin: 0 auto;
-  box-sizing: border-box;
-}
+/* يمكنك تسميته كما تشاء مثلاً sopDocument.css */
 
-.page {
+/* حاوية عامة للجدول */
+.sop-wrapper {
   width: 210mm;
-  min-height: 297mm; /* A4 height */
   margin: 0 auto;
-  padding: 0;
-  background: white;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-  position: relative;
+}
+
+/* الجدول نفسه */
+.sop-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  /* لتعطيل أي هوامش في الطباعة */
   page-break-after: always;
-  overflow: hidden;
 }
 
-.header {
-  height: 120px; /* Fixed header height */
-  width: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
+/* تأكد من تكرار الهيدر في كل صفحة مطبوعة */
+.sop-table thead {
+  display: table-header-group;
 }
 
-.content {
-  padding: 15mm 20mm;
-  margin-top: 120px; /* Same as header height */
-  margin-bottom: 80px; /* Space for footer */
-  min-height: calc(297mm - 120px - 80px); /* Page - header - footer */
-  overflow: hidden;
+/* تأكد من تكرار الفوتر في كل صفحة مطبوعة */
+.sop-table tfoot {
+  display: table-footer-group;
 }
 
-.footer {
-  height: 80px; /* Fixed footer height */
-  width: 100%;
-  position: absolute;
-  bottom: 0;
-  left: 0;
+/* تصغير المسافات الفارغة */
+.sop-table th, .sop-table td {
+  vertical-align: top;
 }
 
-/* For printing */
+/* إعدادات للـ A4 في وضع الطباعة */
 @media print {
   body, html {
     width: 210mm;
@@ -51,22 +38,11 @@
     margin: 0;
     padding: 0;
   }
-  
-  .sop-document {
+  .sop-wrapper {
     width: 210mm;
-    height: 297mm;
-    margin: 0;
-    padding: 0;
+    margin: 0 auto;
   }
-  
-  .page {
+  .sop-table {
     page-break-after: always;
-    margin: 0;
-    box-shadow: none;
-  }
-  
-  /* Ensure each section breaks properly */
-  .section {
-    page-break-inside: avoid;
   }
 }

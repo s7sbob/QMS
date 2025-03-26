@@ -4,18 +4,15 @@ import Header from './Header';
 import PreparedBySection from './PreparedBySection';
 import Footer from './Footer';
 import { SopHeader } from '../types/SopHeader';
-import './sopDocument.css'; // سنضع CSS هنا
+import './sopDocument.css'; // هنا ملف الستايل
 
 interface SOPTemplateProps {
-  children: ReactNode;          // أقسام الـSOP
+  children: ReactNode; // أقسام الـSOP
   headerData?: SopHeader | null;
 }
 
 const SOPTemplate: React.FC<SOPTemplateProps> = ({ children, headerData }) => {
-  // نسكب الـchildren في مصفوفة فعلية
-  const arrayChildren = React.Children.toArray(children);
-
-  // جهّز الهيدر
+  // تحضير بيانات الهيدر
   const headerComponent = useMemo(() => {
     if (!headerData) return <div>No Header Data</div>;
     return (
@@ -25,12 +22,12 @@ const SOPTemplate: React.FC<SOPTemplateProps> = ({ children, headerData }) => {
         revisionDate={headerData.Revision_Date || ''}
         codeNumber={headerData.Doc_Code || ''}
         versionNumber={headerData.Version || ''}
-        pageNumber={headerData.Page_Number || '1'}
+        pageNumber={headerData.Page_Number || '1'} 
       />
     );
   }, [headerData]);
 
-  // جهّز الفوتر
+  // تحضير الفوتر (يشمل PreparedBySection إن وجد)
   const footerComponent = useMemo(() => {
     if (!headerData) return null;
     const preparedSignatureUrl = headerData?.prepared_by_sign || '';
@@ -69,49 +66,35 @@ const SOPTemplate: React.FC<SOPTemplateProps> = ({ children, headerData }) => {
     );
   }, [headerData]);
 
-  // الآن نقسّم الـchildren على صفحات متتالية (صفحة = جدول)
-  // مثلاً صفحة لكل قسم (يمكنك الجمع بين قسمين في صفحة واحدة إن شئت).
-  // لاحظ أننا لا نحسب الارتفاع الفعلي؛ بل نقول قسم واحد = صفحة واحدة:
-  const pages = arrayChildren.map((child) => [child]);
-
-  // لو أردت ضم أكثر من قسم في الصفحة الواحدة، يمكنك تعديل هذا التقسيم.
-
   return (
-    <div className="multi-page-container">
-      {pages.map((pageSections, pageIndex) => (
-        <table className="one-page" key={pageIndex}>
-          <thead>
-            <tr>
-              <th>
-                {/* نفس الهيدر في كل صفحة */}
-                {headerComponent}
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr>
-              <td>
-                {/* الأقسام الخاصة بهذه الصفحة */}
-                {pageSections.map((section, i) => (
-                  <div key={i} style={{ marginBottom: '20px' }}>
-                    {section}
-                  </div>
-                ))}
-              </td>
-            </tr>
-          </tbody>
-
-          <tfoot>
-            <tr>
-              <td>
-                {/* نفس الفوتر في كل صفحة */}
-                {footerComponent}
-              </td>
-            </tr>
-          </tfoot>
-        </table>
-      ))}
+    <div className="sop-wrapper">
+      <table className="sop-table">
+        <thead>
+          <tr>
+            <th>
+              {headerComponent}
+            </th>
+          </tr>
+        </thead>
+        <tfoot>
+          <tr>
+            <td>
+              {footerComponent}
+            </td>
+          </tr>
+        </tfoot>
+        <tbody>
+          <tr>
+            <td>
+              {/* هنا سيوضع كل المحتوى (الأقسام) في نفس الـtbody 
+                  وأي محتوى أطول من صفحة A4 سيتم تلقائياً قطعه إلى صفحة جديدة 
+                  مع تكرار الهيدر والفوتر (في الطباعة أو عند استخدام معاينة الطباعة).
+              */}
+              {children}
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   );
 };

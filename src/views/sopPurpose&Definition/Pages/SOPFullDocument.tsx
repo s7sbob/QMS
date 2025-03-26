@@ -22,7 +22,7 @@ export interface SopDetailTracking {
   Sop_Scope: any;
   Sop_Procedures: any;
   Sop_Res: any;
-  Sop_SafetyConcerns?: any;
+  Sop_Safety_Concerns?: any;
   Is_Active: number;
   crt_date: string;
   Sop_header: any;
@@ -198,7 +198,7 @@ const SOPFullDocument: React.FC = () => {
         <ScopeSection initialData={sopDetail ? sopDetail.Sop_Scope : null} />
         <ProceduresSection initialData={sopDetail ? sopDetail.Sop_Procedures : null} />
         <ResponsibilitiesSection initialData={sopDetail ? sopDetail.Sop_Res : null} />
-        <SafetyConcernsSection initialData={sopDetail ? sopDetail.Sop_SafetyConcerns : null} />
+        <SafetyConcernsSection initialData={sopDetail ? sopDetail.Sop_Safety_Concerns : null} />
       </SOPTemplate>
 
       {/* أزرار التحكم بالحالة */}
