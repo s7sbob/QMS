@@ -1,5 +1,6 @@
 // src/pages/CancellationForm.tsx
-import React, { useState } from 'react';
+
+import React, { useState, useEffect, useContext } from 'react';
 import {
   Container,
   Paper,
@@ -11,11 +12,19 @@ import {
   FormControlLabel,
   FormGroup,
   Box,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  SelectChangeEvent,
 } from '@mui/material';
+
+import axiosServices from 'src/utils/axiosServices';
+import { UserContext } from 'src/context/UserContext';
 
 interface FormData {
   date: string;
-  requestedSection: string;
+  requestedSection: string; // سيُخزَّن فيها departmentId
   documentTitle: string;
   documentCode: string;
   revision: string;
@@ -45,6 +54,7 @@ const initialData: FormData = {
   qualityManagerDecision: '',
 };
 
+// المصفوفة الخاصة بخانات الـCheckbox
 const reasonsOptions = [
   'Periodic review',
   'Updating of procedure',
@@ -55,10 +65,40 @@ const reasonsOptions = [
   'Other',
 ];
 
+// نوع بيانات القسم المراد عرضه في القائمة المنسدلة
+interface IDepartment {
+  Id: string;
+  Dept_name: string;
+}
+
 const CancellationForm: React.FC = () => {
+  // جلب بيانات المستخدم من الـContext
+  const user = useContext(UserContext);
+
+  // بيانات النموذج
   const [formData, setFormData] = useState<FormData>(initialData);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  // الأقسام الخاصة بالمستخدم (بدلًا من استدعاء API)
+  const [departments, setDepartments] = useState<IDepartment[]>([]);
+
+  // عند تغيّر بيانات user، نستخرج الأقسام من الحقل Users_Departments_Users_Departments_User_IdToUser_Data
+  useEffect(() => {
+    if (user?.Users_Departments_Users_Departments_User_IdToUser_Data) {
+      // نفترض أن الحقل Department_Data يحوي { Id, Dept_name }
+      const userDepartments = user.Users_Departments_Users_Departments_User_IdToUser_Data.map(
+        (ud: any) => ({
+          Id: ud.Department_Data?.Id,
+          Dept_name: ud.Department_Data?.Dept_name,
+        })
+      );
+      setDepartments(userDepartments);
+    }
+  }, [user]);
+
+  // التعديل على الحقول النصية
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -66,26 +106,43 @@ const CancellationForm: React.FC = () => {
     }));
   };
 
+  // التعديل على خانات الـCheckbox
   const handleCheckboxChange = (reason: string) => {
     setFormData((prev) => {
       const currentReasons = prev.reasons;
       if (currentReasons.includes(reason)) {
-        return { ...prev, reasons: currentReasons.filter((r) => r !== reason) };
+        return {
+          ...prev,
+          reasons: currentReasons.filter((r) => r !== reason),
+        };
       } else {
         return { ...prev, reasons: [...currentReasons, reason] };
       }
     });
   };
 
+  // عند اختيار قسم من الـSelect
+  const handleSelectDepartment = (event: SelectChangeEvent<string>) => {
+    setFormData((prev) => ({
+      ...prev,
+      requestedSection: event.target.value,
+    }));
+  };
+
+  // إرسال البيانات إلى الباك إند
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      // Endpoint وهمي
-      // await axiosServices.post('/api/cancellation-request', formData);
-      console.log('Cancellation Form Data:', formData);
-      alert('تم إرسال طلب التغيير/الإلغاء بنجاح (مثال وهمي)!');
+      const response = await axiosServices.post(
+        '/api/cancelForm/addEditCancel-form',
+        formData
+      );
+      console.log('تم الإرسال بنجاح:', response.data);
+      alert('تم إرسال طلب التغيير/الإلغاء بنجاح!');
+      setFormData(initialData);
     } catch (error) {
-      console.error(error);
+      console.error('خطأ أثناء الإرسال:', error);
+      alert('حدث خطأ أثناء إرسال الطلب.');
     }
   };
 
@@ -112,16 +169,29 @@ const CancellationForm: React.FC = () => {
                 onChange={handleChange}
               />
             </Grid>
+
+            {/* جعل Requested Section قائمة منسدلة */}
             <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                required
-                label="Requested Section"
-                name="requestedSection"
-                value={formData.requestedSection}
-                onChange={handleChange}
-              />
+              <FormControl fullWidth required>
+                <InputLabel id="department-label">Requested Section</InputLabel>
+                <Select
+                  labelId="department-label"
+                  id="department-select"
+                  name="requestedSection"
+                  value={formData.requestedSection}
+                  label="Requested Section"
+                  onChange={handleSelectDepartment}
+                >
+                  {departments.map((dept) => (
+                    <MenuItem key={dept.Id} value={dept.Id}>
+                      {dept.Dept_name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </Grid>
+
+            {/* باقي الحقول */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -164,6 +234,7 @@ const CancellationForm: React.FC = () => {
                 onChange={handleChange}
               />
             </Grid>
+
             <Grid item xs={12}>
               <Typography variant="subtitle1" gutterBottom>
                 Reason for Change/Cancellation:
@@ -185,6 +256,7 @@ const CancellationForm: React.FC = () => {
                 ))}
               </FormGroup>
             </Grid>
+
             <Grid item xs={12}>
               <TextField
                 fullWidth
