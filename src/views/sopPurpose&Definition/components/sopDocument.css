@@ -1,48 +1,72 @@
+/* src/components/sopDocument.css */
 .sop-document {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: #f8f8f8;
-  padding: 20px;
+  font-family: Arial, sans-serif;
+  width: 100%;
+  max-width: 210mm; /* A4 width */
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
-/* كل صفحة بأبعاد A4 تقريبية (210mm × 297mm ~= 794px × 1123px عند 96dpi) */
 .page {
-  width: 794px;  /* يمكنك استخدام 210mm أيضاً، لكن بالبكسل أكثر استقراراً على الشاشة */
-  height: 1123px;
-  border: 1px solid #000;
-  margin-bottom: 20px;
+  width: 210mm;
+  min-height: 297mm; /* A4 height */
+  margin: 0 auto;
+  padding: 0;
+  background: white;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
   position: relative;
-  background: #fff;
-  display: flex;
-  flex-direction: column;
+  page-break-after: always;
+  overflow: hidden;
 }
 
-/* الهيدر مثبت أعلى الصفحة */
-.page .header {
-  flex-shrink: 0;
+.header {
+  height: 120px; /* Fixed header height */
   width: 100%;
-  min-height: 100px; /* يمكنك تعديله */
-  border-bottom: 1px solid #ccc;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
-/* الفوتر مثبت أسفل الصفحة */
-.page .footer {
-  flex-shrink: 0;
+.content {
+  padding: 15mm 20mm;
+  margin-top: 120px; /* Same as header height */
+  margin-bottom: 80px; /* Space for footer */
+  min-height: calc(297mm - 120px - 80px); /* Page - header - footer */
+  overflow: hidden;
+}
+
+.footer {
+  height: 80px; /* Fixed footer height */
   width: 100%;
-  min-height: 80px; /* يمكنك تعديله */
-  border-top: 1px solid #ccc;
-  margin-top: auto; /* يلتصق بأسفل الصفحة */
+  position: absolute;
+  bottom: 0;
+  left: 0;
 }
 
-/* المحتوى في المنتصف بين الهيدر والفوتر */
-.page .content {
-  flex-grow: 1;
-  overflow: hidden; /* أو scroll حسب الحاجة */
-  padding: 10px;
-}
-
-.section {
-  margin-bottom: 10px;
-  /* كل قسم */
+/* For printing */
+@media print {
+  body, html {
+    width: 210mm;
+    height: 297mm;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .sop-document {
+    width: 210mm;
+    height: 297mm;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .page {
+    page-break-after: always;
+    margin: 0;
+    box-shadow: none;
+  }
+  
+  /* Ensure each section breaks properly */
+  .section {
+    page-break-inside: avoid;
+  }
 }
