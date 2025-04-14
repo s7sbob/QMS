@@ -14,6 +14,7 @@ const BlankLayout = Loadable(lazy(() => import('../layouts/blank/BlankLayout')))
 /* *** Guards (الحارس) *** */
 import AuthGuard from 'src/guards/AuthGuard'; // <--  تأكد من المسار الصحيح
 import SOPFullDocument from 'src/views/sopPurpose&Definition/Pages/SOPFullDocument';
+import AllNotifications from 'src/layouts/full/vertical/header/AllNotifications';
 
 /* ****Pages***** */
 const Documentation_Control = Loadable(lazy(() => import('../views/documentation/DocumentationControl')));
@@ -78,7 +79,10 @@ const Router = [
       { path: '/documentation-control/distribution_form', element: <Distribution_form /> },
       { path: '/ITManagementPage', element: <ITManagementPage /> },
       { path: '/SOPFullDocument', element: <SOPFullDocument /> },
-
+      {
+        path: '/all-notifications',
+        element: <AllNotifications />,
+      },
       
       // لو كتب أي شيء مش معروف نوجهه لصفحة 404
       { path: '*', element: <Navigate to="/auth/404" /> },

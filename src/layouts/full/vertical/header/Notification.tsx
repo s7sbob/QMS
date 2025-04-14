@@ -51,7 +51,7 @@ const Notifications: React.FC = () => {
   };
 
   useEffect(() => {
-    // استخدام الـ socket الموجود من ملف socket.ts
+    // استخدام socket للاستماع لحدث notification
     socket.on("notification", (notif: NotificationItem) => {
       setNotifications((prev) => [notif, ...prev]);
     });
@@ -63,10 +63,12 @@ const Notifications: React.FC = () => {
     };
   }, []);
 
-  const unreadCount = notifications.length; // يمكنك تعديل هذا ليحسب الإشعارات غير المقروءة فقط
+  // حساب عدد الإشعارات غير المقروءة فقط
+  const unreadCount = notifications.filter(notification => !notification.isRead).length;
 
   const handleNotificationClick = (notification: NotificationItem) => {
     handleClose();
+    // هنا يمكنك إجراء عملية تحديث حالة الإشعار إلى "مقروء" عبر API إذا لزم الأمر
     if (notification.data?.sopHeaderId) {
       navigate(`/SOPFullDocument?headerId=${notification.data.sopHeaderId}`);
     }
@@ -112,25 +114,34 @@ const Notifications: React.FC = () => {
               <MenuItem
                 key={notification.id}
                 onClick={() => handleNotificationClick(notification)}
-                sx={{ py: 2, px: 4 }}
+                sx={{ 
+                  py: 2, 
+                  px: 4,
+                  // تمييز الإشعارات غير المقروءة بخلفية مميزة
+                  backgroundColor: !notification.isRead ? "rgba(0, 0, 0, 0.08)" : "inherit" 
+                }}
               >
-                <Stack direction="row" spacing={2}>
-                  <Avatar sx={{ width: 48, height: 48 }} />
-                  <Box>
-                    <Typography
-                      variant="subtitle2"
-                      color="textPrimary"
-                      fontWeight={600}
-                      noWrap
-                      sx={{ width: "240px" }}
-                    >
-                      {notification.message}
-                    </Typography>
-                    <Typography variant="caption" color="textDisabled">
-                      {new Date(notification.createdAt).toLocaleString()}
-                    </Typography>
-                  </Box>
-                </Stack>
+<Stack direction="row" spacing={2}>
+  <Avatar sx={{ width: 48, height: 48 }} />
+  <Box>
+    <Typography
+      variant="subtitle2"
+      color="textPrimary"
+      fontWeight={600}
+      // احذف noWrap وأضف أو عدّل الأسطر التالية حسب رغبتك
+      sx={{
+        // width: '240px', // إذا أردت تحديد العرض
+        whiteSpace: 'normal',
+        wordWrap: 'break-word',
+      }}
+    >
+      {notification.message}
+    </Typography>
+    <Typography variant="caption" color="textDisabled">
+      {new Date(notification.createdAt).toLocaleString()}
+    </Typography>
+  </Box>
+</Stack>
               </MenuItem>
             ))
           )}

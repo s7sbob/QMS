@@ -196,9 +196,9 @@ const SOPFullDocument: React.FC = () => {
         <PurposeSection initialData={sopDetail ? sopDetail.sop_purpose : null} />
         <DefinitionsSection initialData={sopDetail ? sopDetail.Sop_Definitions : null} />
         <ScopeSection initialData={sopDetail ? sopDetail.Sop_Scope : null} />
-        <ProceduresSection initialData={sopDetail ? sopDetail.Sop_Procedures : null} />
         <ResponsibilitiesSection initialData={sopDetail ? sopDetail.Sop_Res : null} />
         <SafetyConcernsSection initialData={sopDetail ? sopDetail.Sop_Safety_Concerns : null} />
+        <ProceduresSection initialData={sopDetail ? sopDetail.Sop_Procedures : null} />
       </SOPTemplate>
 
       {/* أزرار التحكم بالحالة */}

@@ -6,15 +6,28 @@ import {
   Button,
   Stack,
   TextField,
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { loginApi } from 'src/services/authService';
 import Cookies from 'js-cookie';
 
 const AuthLogin: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+
+  const handleClickShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+
+  // لمنع تغيير التركيز عند الضغط على الأيقونة
+  const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -49,11 +62,25 @@ const AuthLogin: React.FC = () => {
         <TextField
           required
           label="Password"
-          type="password"
+          type={showPassword ? 'text' : 'password'}
           variant="outlined"
           fullWidth
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={handleClickShowPassword}
+                  onMouseDown={handleMouseDownPassword}
+                  edge="end"
+                  aria-label="toggle password visibility"
+                >
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
         />
         <Box display="flex" justifyContent="flex-end">
           <Typography

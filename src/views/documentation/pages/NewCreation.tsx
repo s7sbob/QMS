@@ -51,7 +51,6 @@ const summernoteOptionsEn = {
     ['font', ['bold', 'italic', 'underline', 'clear']],
     ['para', ['ul', 'ol', 'paragraph']],
     ['table', ['table']],
-
   ],
 };
 
@@ -115,12 +114,13 @@ const NewCreation: React.FC = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   if (event.target.files) {
-  //     const filesArray = Array.from(event.target.files);
-  //     setAttachments((prev) => [...prev, ...filesArray]);
-  //   }
-  // };
+  // دالة رفع الملفات
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      const filesArray = Array.from(event.target.files);
+      setAttachments((prev) => [...prev, ...filesArray]);
+    }
+  };
 
   const handleFileDelete = (index: number) => {
     setAttachments((prev) => prev.filter((_, i) => i !== index));
@@ -404,7 +404,6 @@ const NewCreation: React.FC = () => {
                   }
                 />
               </Box>
-              {/* محرر الوثائق المرجعية */}
               <Typography variant="subtitle2" sx={{ mt: 2, textAlign: 'right' }}>
                 الوثائق المرجعية:
               </Typography>
@@ -417,6 +416,38 @@ const NewCreation: React.FC = () => {
                   }
                 />
               </Box>
+              {/* قسم المرفقات */}
+              <Box sx={{ direction: 'rtl', textAlign: 'right', mt: 2 }}>
+                <Typography variant="subtitle1" gutterBottom dir="rtl">
+                  المرفقات:
+                </Typography>
+                <Button variant="outlined" component="label" startIcon={<IconUpload />} sx={{ mb: 2 }}>
+                  رفع الملفات
+                  <input
+                    type="file"
+                    name="attachments"
+                    multiple
+                    hidden
+                    onChange={handleFileUpload}
+                  />
+                </Button>
+                <List sx={{ direction: 'rtl', textAlign: 'right' }}>
+                  {attachments.map((file, index) => (
+                    <ListItem key={index}>
+                      <ListItemText
+                        primary={file.name}
+                        secondary={`${(file.size / 1024 / 1024).toFixed(2)} MB`}
+                      />
+                      <ListItemSecondaryAction>
+                        <IconButton edge="end" onClick={() => handleFileDelete(index)} color="error">
+                          <IconTrash size={20} />
+                        </IconButton>
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                  ))}
+                </List>
+              </Box>
+
               <FormControlLabel
                 control={
                   <Checkbox
@@ -429,45 +460,6 @@ const NewCreation: React.FC = () => {
                 label="يتضمن تدريب"
                 sx={{ mt: 2, direction: 'rtl', textAlign: 'right' }}
               />
-              <Box sx={{ direction: 'rtl', textAlign: 'right' }}>
-                <Typography variant="subtitle1" gutterBottom dir="rtl">
-                  المرفقات:
-                </Typography>
-                <Button
-                  variant="outlined"
-                  component="label"
-                  startIcon={<IconUpload />}
-                  sx={{ mb: 2 }}
-                >
-                  رفع الملفات
-                  <input
-                    type="file"
-                    name="attachments"
-                    multiple
-                    hidden
-                    // onChange={handleFileUpload}
-                  />
-                </Button>
-                <List sx={{ direction: 'rtl', textAlign: 'right' }}>
-                  {attachments.map((file, index) => (
-                    <ListItem key={index}>
-                      <ListItemText
-                        primary={file.name}
-                        secondary={`${(file.size / 1024 / 1024).toFixed(2)} MB`}
-                      />
-                      <ListItemSecondaryAction>
-                        <IconButton
-                          edge="end"
-                          onClick={() => handleFileDelete(index)}
-                          color="error"
-                        >
-                          <IconTrash size={20} />
-                        </IconButton>
-                      </ListItemSecondaryAction>
-                    </ListItem>
-                  ))}
-                </List>
-              </Box>
             </Grid>
             {/* العمود الإنجليزي */}
             <Grid item xs={12} md={6} sx={{ textAlign: 'left', direction: 'ltr' }}>
@@ -600,8 +592,8 @@ const NewCreation: React.FC = () => {
                   }
                 />
               </Box>
-              {/* محرر الوثائق المرجعية */}
-              <Typography variant="subtitle2" sx={{ mt: 2 }}>
+                            {/* محرر الوثائق المرجعية */}
+                            <Typography variant="subtitle2" sx={{ mt: 2 }}>
                 Reference Documents:
               </Typography>
               <Box dir="ltr">
@@ -613,34 +605,19 @@ const NewCreation: React.FC = () => {
                   }
                 />
               </Box>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    name="containTraining"
-                    checked={containTraining}
-                    onChange={(e) => setContainTraining(e.target.checked)}
-                  />
-                }
-                label="Contain Training"
-                sx={{ mt: 2 }}
-              />
-              <Box>
+              {/* قسم المرفقات */}
+              <Box sx={{ mt: 2 }}>
                 <Typography variant="subtitle1" gutterBottom>
                   Attachments:
                 </Typography>
-                <Button
-                  variant="outlined"
-                  component="label"
-                  startIcon={<IconUpload />}
-                  sx={{ mb: 2 }}
-                >
+                <Button variant="outlined" component="label" startIcon={<IconUpload />} sx={{ mb: 2 }}>
                   Upload Files
                   <input
                     type="file"
                     name="attachments"
                     multiple
                     hidden
-                    // onChange={handleFileUpload}
+                    onChange={handleFileUpload}
                   />
                 </Button>
                 <List>
@@ -663,6 +640,18 @@ const NewCreation: React.FC = () => {
                   ))}
                 </List>
               </Box>
+
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    name="containTraining"
+                    checked={containTraining}
+                    onChange={(e) => setContainTraining(e.target.checked)}
+                  />
+                }
+                label="Contain Training"
+                sx={{ mt: 2 }}
+              />
             </Grid>
           </Grid>
           <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2 }}>

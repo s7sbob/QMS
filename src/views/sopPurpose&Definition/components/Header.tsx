@@ -88,7 +88,7 @@ const Header: React.FC<HeaderProps> = ({
         </table>
       </div>
 
-      {/* المساحة الوسطى لاسم الشركة */}
+      {/* المساحة الوسطى للوغو الشركة */}
       <div
         style={{
           width: "50%",
@@ -98,11 +98,11 @@ const Header: React.FC<HeaderProps> = ({
           borderRight: "1px solid #000",
         }}
       >
-        <h3 style={{ textAlign: "center", margin: 0 }}>
-          Cigalah Healthcare Company
-          <br />
-          Healthcare Division
-        </h3>
+        <img
+          src="/logo.png" // تأكد من تغيير اسم الملف حسب تسميته في مجلد public
+          alt="Cigalah Healthcare Company - Healthcare Division"
+          style={{ maxWidth: "100%", height: "auto" }}
+        />
       </div>
 
       {/* الجدول الثاني (يمين) */}
