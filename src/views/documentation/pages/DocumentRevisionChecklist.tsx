@@ -1,5 +1,5 @@
 // src/pages/DocumentRevisionChecklist.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   Container,
   Paper,
@@ -18,6 +18,9 @@ import {
   Grid,
   Box,
 } from '@mui/material';
+import { SelectChangeEvent } from '@mui/material';
+import axiosServices from 'src/utils/axiosServices';
+import { UserContext } from 'src/context/UserContext';
 
 interface ChecklistItem {
   id: number;
@@ -26,7 +29,6 @@ interface ChecklistItem {
   comment: string;
 }
 
-// القائمة المحدثة لكافة الأسئلة بالترتيب المطلوب
 const initialChecklist: ChecklistItem[] = [
   { id: 1, item: 'Document template and font format', comply: 'Yes', comment: '' },
   { id: 2, item: 'Does the document contain all items?', comply: 'Yes', comment: '' },
@@ -55,6 +57,7 @@ const initialChecklist: ChecklistItem[] = [
 ];
 
 interface FormData {
+  documentId: string;
   documentName: string;
   documentVersion: string;
   revisionDate: string;
@@ -63,8 +66,21 @@ interface FormData {
   approvedBy: string;
 }
 
+interface Department {
+  Id: string;
+  Dept_name: string;
+}
+
+interface ISopHeader {
+  Id: string;
+  Dept_Id: string;
+  Doc_Code: string;
+  Doc_Title_en: string;
+}
+
 const DocumentRevisionChecklist: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
+    documentId: '',
     documentName: '',
     documentVersion: '',
     revisionDate: '',
@@ -72,30 +88,81 @@ const DocumentRevisionChecklist: React.FC = () => {
     revisedBy: '',
     approvedBy: '',
   });
-
   const [checklist, setChecklist] = useState<ChecklistItem[]>(initialChecklist);
 
+  // لحفظ بيانات الأقسام والـ SOPs
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [allSopHeaders, setAllSopHeaders] = useState<ISopHeader[]>([]);
+  const [filteredSopHeaders, setFilteredSopHeaders] = useState<ISopHeader[]>([]);
+
+  const user = useContext(UserContext);
+
+  // استيراد أقسام المستخدم من الـ UserContext إذا كانت موجودة
+  useEffect(() => {
+    if (user?.Users_Departments_Users_Departments_User_IdToUser_Data) {
+      const userDepartments: Department[] = user.Users_Departments_Users_Departments_User_IdToUser_Data.map(
+        (ud: any) => ({
+          Id: ud.Department_Data?.Id,
+          Dept_name: ud.Department_Data?.Dept_name,
+        })
+      );
+      setDepartments(userDepartments);
+    }
+  }, [user]);
+
+  // جلب جميع الـ SOP headers
+  useEffect(() => {
+    axiosServices
+      .get('/api/sopheader/getAllSopHeaders')
+      .then((res) => {
+        setAllSopHeaders(res.data);
+      })
+      .catch((error) => console.error("Error fetching SOP headers:", error));
+  }, []);
+
+  // دالة تحديث بيانات الحقول العامة
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // دالة تحديث بيانات الـ Checklist
   const handleChecklistChange = (id: number, field: 'comply' | 'comment', value: string) => {
     setChecklist((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)),
+      prev.map((item) => (item.id === id ? { ...item, [field]: value } : item))
     );
+  };
+
+  // عند اختيار القسم
+  const handleSelectDepartment = (e: SelectChangeEvent<string>) => {
+    const selectedDeptId = e.target.value;
+    setFormData((prev) => ({
+      ...prev,
+      department: selectedDeptId,
+      documentId: '',
+      documentName: '',
+      documentVersion: '',
+    }));
+    const filtered = allSopHeaders.filter((sop) => sop.Dept_Id === selectedDeptId);
+    setFilteredSopHeaders(filtered);
+  };
+
+  // عند اختيار الـ SOP (Document Title)
+  const handleSelectSop = (e: SelectChangeEvent<string>) => {
+    const selectedSopId = e.target.value;
+    const selectedSop = filteredSopHeaders.find((sop) => sop.Id === selectedSopId);
+    setFormData((prev) => ({
+      ...prev,
+      documentId: selectedSopId,
+      documentName: selectedSop ? selectedSop.Doc_Title_en : '',
+      documentVersion: selectedSop ? selectedSop.Doc_Code : '',
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      // أرسل البيانات إلى Endpoint وهمي مثلاً
-      // await axiosServices.post('/api/documentRevisionChecklist', {
-      //   ...formData,
-      //   checklist
-      // });
+      // إرسال البيانات للمثال (أو API المناسب)
       console.log('Data submitted:', { ...formData, checklist });
       alert('تم إرسال النموذج بنجاح (هذا مثال توضيحي)!');
     } catch (error) {
@@ -115,17 +182,46 @@ const DocumentRevisionChecklist: React.FC = () => {
       <Paper sx={{ p: 3 }}>
         <form id="revisionChecklist" onSubmit={handleSubmit}>
           <Grid container spacing={2}>
+            {/* قسم اختيار Department */}
             <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                required
-                label="Document Name"
-                name="documentName"
-                value={formData.documentName}
-                onChange={handleFormChange}
-                margin="normal"
-              />
+              <FormControl fullWidth required>
+                <InputLabel id="department-label">Department</InputLabel>
+                <Select
+                  labelId="department-label"
+                  id="department-select"
+                  value={formData.department}
+                  label="Department"
+                  onChange={handleSelectDepartment}
+                >
+                  {departments.map((dept) => (
+                    <MenuItem key={dept.Id} value={dept.Id}>
+                      {dept.Dept_name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </Grid>
+            {/* قسم اختيار Document Title */}
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth required>
+                <InputLabel id="sop-label">Document Title</InputLabel>
+                <Select
+                  labelId="sop-label"
+                  id="sop-select"
+                  value={formData.documentId}
+                  label="Document Title"
+                  onChange={handleSelectSop}
+                  disabled={!formData.department}
+                >
+                  {filteredSopHeaders.map((sop) => (
+                    <MenuItem key={sop.Id} value={sop.Id}>
+                      {sop.Doc_Title_en}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            {/* عرض Document Version في حقل معطل */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -133,10 +229,11 @@ const DocumentRevisionChecklist: React.FC = () => {
                 label="Document Version"
                 name="documentVersion"
                 value={formData.documentVersion}
-                onChange={handleFormChange}
+                InputProps={{ readOnly: true }}
                 margin="normal"
               />
             </Grid>
+            {/* Revision Date */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -150,19 +247,9 @@ const DocumentRevisionChecklist: React.FC = () => {
                 margin="normal"
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                required
-                label="Department"
-                name="department"
-                value={formData.department}
-                onChange={handleFormChange}
-                margin="normal"
-              />
-            </Grid>
           </Grid>
 
+          {/* جدول الـ Checklist */}
           <Box sx={{ mt: 3, overflowX: 'auto' }}>
             <Table>
               <TableHead>
@@ -206,6 +293,7 @@ const DocumentRevisionChecklist: React.FC = () => {
             </Table>
           </Box>
 
+          {/* Revised By and Approved By fields */}
           <Grid container spacing={2} sx={{ mt: 3 }}>
             <Grid item xs={12} sm={6}>
               <TextField
