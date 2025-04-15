@@ -90,14 +90,14 @@ const DocumentRevisionChecklist: React.FC = () => {
   });
   const [checklist, setChecklist] = useState<ChecklistItem[]>(initialChecklist);
 
-  // لحفظ بيانات الأقسام والـ SOPs
+  // لتخزين بيانات الأقسام والـ SOPs
   const [departments, setDepartments] = useState<Department[]>([]);
   const [allSopHeaders, setAllSopHeaders] = useState<ISopHeader[]>([]);
   const [filteredSopHeaders, setFilteredSopHeaders] = useState<ISopHeader[]>([]);
 
   const user = useContext(UserContext);
 
-  // استيراد أقسام المستخدم من الـ UserContext إذا كانت موجودة
+  // استيراد الأقسام من الـ UserContext (إذا كانت موجودة)
   useEffect(() => {
     if (user?.Users_Departments_Users_Departments_User_IdToUser_Data) {
       const userDepartments: Department[] = user.Users_Departments_Users_Departments_User_IdToUser_Data.map(
@@ -120,13 +120,13 @@ const DocumentRevisionChecklist: React.FC = () => {
       .catch((error) => console.error("Error fetching SOP headers:", error));
   }, []);
 
-  // دالة تحديث بيانات الحقول العامة
+  // تحديث بيانات الحقول العامة
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // دالة تحديث بيانات الـ Checklist
+  // تحديث بيانات الـ Checklist
   const handleChecklistChange = (id: number, field: 'comply' | 'comment', value: string) => {
     setChecklist((prev) =>
       prev.map((item) => (item.id === id ? { ...item, [field]: value } : item))
@@ -159,17 +159,31 @@ const DocumentRevisionChecklist: React.FC = () => {
     }));
   };
 
+  // عند الإرسال، يتم إرسال بيانات Revision Form إلى الـ API الخاص بها
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      // إرسال البيانات للمثال (أو API المناسب)
-      console.log('Data submitted:', { ...formData, checklist });
+      // استخدام معرف المستخدم من الـ UserContext لحقل revision_requestedBy
+      const payload = {
+        Sop_HeaderId: formData.documentId,
+        revision_date: new Date(formData.revisionDate),
+        revision_requestedBy: user?.Id, // استخدام المعرف بدل الاسم
+        revision_ApprovedBy: user?.Id, // أو ممكن يكون حقل منفصل حسب من المفروض يبقى المسؤول (وهنا مثال)
+        RevisionForm_Code: formData.documentVersion,
+      };
+      const response = await axiosServices.post(
+        '/api/Revisionform/addEditrevision-form',
+        payload
+      );
+      console.log('Revision Form submitted:', response.data);
       alert('تم إرسال النموذج بنجاح (هذا مثال توضيحي)!');
     } catch (error) {
       console.error(error);
       alert('فشل الإرسال، راجع الـ Console لمعرفة التفاصيل.');
     }
   };
+  
+  
 
   return (
     <Container sx={{ py: 4 }}>
@@ -254,14 +268,16 @@ const DocumentRevisionChecklist: React.FC = () => {
             <Table>
               <TableHead>
                 <TableRow>
+                  <TableCell>No.</TableCell>
                   <TableCell>Item To Be Checked</TableCell>
                   <TableCell>Comply</TableCell>
                   <TableCell>Comment</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {checklist.map((row) => (
+                {checklist.map((row, index) => (
                   <TableRow key={row.id}>
+                    <TableCell>{index + 1}</TableCell>
                     <TableCell>{row.item}</TableCell>
                     <TableCell>
                       <FormControl fullWidth size="small">
