@@ -1,3 +1,4 @@
+// src/layouts/full/FullLayout.tsx
 import { FC } from 'react';
 import { styled, Container, Box, useTheme } from '@mui/material';
 import { useSelector } from 'src/store/Store';
@@ -27,18 +28,12 @@ const PageWrapper = styled('div')(() => ({
 
 const FullLayout: FC = () => {
   const customizer = useSelector((state: AppState) => state.customizer);
-
   const theme = useTheme();
 
   return (
     <MainWrapper className={customizer.activeMode === 'dark' ? 'darkbg mainwrapper' : 'mainwrapper'}>
-      {/* ------------------------------------------- */}
-      {/* Sidebar */}
-      {/* ------------------------------------------- */}
-      {customizer.isHorizontal ? '' : <Sidebar />}
-      {/* ------------------------------------------- */}
-      {/* Main Wrapper */}
-      {/* ------------------------------------------- */}
+      {/* نغلف Sidebar داخل Box لتطبيق فئة no-print */}
+      {customizer.isHorizontal ? '' : <Box className="no-print"><Sidebar /></Box>}
       <PageWrapper
         className="page-wrapper"
         sx={{
@@ -47,31 +42,25 @@ const FullLayout: FC = () => {
           }),
         }}
       >
-        {/* ------------------------------------------- */}
-        {/* Header */}
-        {/* ------------------------------------------- */}
-        {customizer.isHorizontal ? <HorizontalHeader /> : <Header />}
-        {/* PageContent */}
-        {customizer.isHorizontal ? <Navigation /> : ''}
+        {/* نغلف Header/HorizontalHeader و Navigation داخل Box مع فئة no-print */}
+        {customizer.isHorizontal ? (
+          <Box className="no-print"><HorizontalHeader /></Box>
+        ) : (
+          <Box className="no-print"><Header /></Box>
+        )}
+        {customizer.isHorizontal ? <Box className="no-print"><Navigation /></Box> : null}
         <Container
           sx={{
             pt: '30px',
             maxWidth: customizer.isLayout === 'boxed' ? 'lg' : '100%!important',
           }}
         >
-          {/* ------------------------------------------- */}
-          {/* PageContent */}
-          {/* ------------------------------------------- */}
-
-          <Box sx={{ minHeight: 'calc(100vh - 170px)' }}>
+          {/* المحتوى الذي تريد طباعته */}
+          <Box id="printable" sx={{ minHeight: 'calc(100vh - 170px)' }}>
             <Outlet />
           </Box>
-
-          {/* ------------------------------------------- */}
-          {/* End Page */}
-          {/* ------------------------------------------- */}
         </Container>
-        <Customizer />
+        <Box className="no-print"><Customizer /></Box>
       </PageWrapper>
     </MainWrapper>
   );

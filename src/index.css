@@ -67,3 +67,22 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+
+@media print {
+  /* إخفاء العناصر التي تحتوي على class no-print */
+  .no-print {
+    display: none !important;
+  }
+  /* إظهار المحتوى داخل العنصر القابل للطباعة */
+  #printable, #printable * {
+    visibility: visible;
+  }
+  /* لجعل المحتوى يُطبع بشكل صحيح */
+  #printable {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+}

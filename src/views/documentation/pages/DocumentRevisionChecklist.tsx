@@ -90,22 +90,22 @@ const DocumentRevisionChecklist: React.FC = () => {
   });
   const [checklist, setChecklist] = useState<ChecklistItem[]>(initialChecklist);
 
-  // لتخزين بيانات الأقسام والـ SOPs
+  // تخزين بيانات الأقسام والـ SOPs
   const [departments, setDepartments] = useState<Department[]>([]);
   const [allSopHeaders, setAllSopHeaders] = useState<ISopHeader[]>([]);
   const [filteredSopHeaders, setFilteredSopHeaders] = useState<ISopHeader[]>([]);
 
   const user = useContext(UserContext);
 
-  // استيراد الأقسام من الـ UserContext (إذا كانت موجودة)
   useEffect(() => {
     if (user?.Users_Departments_Users_Departments_User_IdToUser_Data) {
-      const userDepartments: Department[] = user.Users_Departments_Users_Departments_User_IdToUser_Data.map(
-        (ud: any) => ({
-          Id: ud.Department_Data?.Id,
-          Dept_name: ud.Department_Data?.Dept_name,
-        })
-      );
+      const userDepartments: Department[] =
+        user.Users_Departments_Users_Departments_User_IdToUser_Data.map(
+          (ud: any) => ({
+            Id: ud.Department_Data?.Id,
+            Dept_name: ud.Department_Data?.Dept_name,
+          })
+        );
       setDepartments(userDepartments);
     }
   }, [user]);
@@ -120,20 +120,17 @@ const DocumentRevisionChecklist: React.FC = () => {
       .catch((error) => console.error("Error fetching SOP headers:", error));
   }, []);
 
-  // تحديث بيانات الحقول العامة
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // تحديث بيانات الـ Checklist
   const handleChecklistChange = (id: number, field: 'comply' | 'comment', value: string) => {
     setChecklist((prev) =>
       prev.map((item) => (item.id === id ? { ...item, [field]: value } : item))
     );
   };
 
-  // عند اختيار القسم
   const handleSelectDepartment = (e: SelectChangeEvent<string>) => {
     const selectedDeptId = e.target.value;
     setFormData((prev) => ({
@@ -147,7 +144,6 @@ const DocumentRevisionChecklist: React.FC = () => {
     setFilteredSopHeaders(filtered);
   };
 
-  // عند اختيار الـ SOP (Document Title)
   const handleSelectSop = (e: SelectChangeEvent<string>) => {
     const selectedSopId = e.target.value;
     const selectedSop = filteredSopHeaders.find((sop) => sop.Id === selectedSopId);
@@ -159,16 +155,20 @@ const DocumentRevisionChecklist: React.FC = () => {
     }));
   };
 
-  // عند الإرسال، يتم إرسال بيانات Revision Form إلى الـ API الخاص بها
+  // زر الطباعة يستدعي window.print() فقط
+  const handlePrint = () => {
+    window.print();
+  };
+
+  // عند الإرسال إلى الـ API
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      // استخدام معرف المستخدم من الـ UserContext لحقل revision_requestedBy
       const payload = {
         Sop_HeaderId: formData.documentId,
         revision_date: new Date(formData.revisionDate),
-        revision_requestedBy: user?.Id, // استخدام المعرف بدل الاسم
-        revision_ApprovedBy: user?.Id, // أو ممكن يكون حقل منفصل حسب من المفروض يبقى المسؤول (وهنا مثال)
+        revision_requestedBy: user?.Id,
+        revision_ApprovedBy: user?.Id,
         RevisionForm_Code: formData.documentVersion,
       };
       const response = await axiosServices.post(
@@ -182,8 +182,6 @@ const DocumentRevisionChecklist: React.FC = () => {
       alert('فشل الإرسال، راجع الـ Console لمعرفة التفاصيل.');
     }
   };
-  
-  
 
   return (
     <Container sx={{ py: 4 }}>
@@ -194,156 +192,164 @@ const DocumentRevisionChecklist: React.FC = () => {
       </Box>
 
       <Paper sx={{ p: 3 }}>
-        <form id="revisionChecklist" onSubmit={handleSubmit}>
-          <Grid container spacing={2}>
-            {/* قسم اختيار Department */}
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth required>
-                <InputLabel id="department-label">Department</InputLabel>
-                <Select
-                  labelId="department-label"
-                  id="department-select"
-                  value={formData.department}
-                  label="Department"
-                  onChange={handleSelectDepartment}
-                >
-                  {departments.map((dept) => (
-                    <MenuItem key={dept.Id} value={dept.Id}>
-                      {dept.Dept_name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+        {/* المحتوى الذي تريد طباعته بالكامل */}
+        <div id="printable">
+          <form id="revisionChecklist" onSubmit={handleSubmit}>
+            <Grid container spacing={2}>
+              {/* قسم اختيار Department */}
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth required>
+                  <InputLabel id="department-label">Department</InputLabel>
+                  <Select
+                    labelId="department-label"
+                    id="department-select"
+                    value={formData.department}
+                    label="Department"
+                    onChange={handleSelectDepartment}
+                  >
+                    {departments.map((dept) => (
+                      <MenuItem key={dept.Id} value={dept.Id}>
+                        {dept.Dept_name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              {/* قسم اختيار Document Title */}
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth required>
+                  <InputLabel id="sop-label">Document Title</InputLabel>
+                  <Select
+                    labelId="sop-label"
+                    id="sop-select"
+                    value={formData.documentId}
+                    label="Document Title"
+                    onChange={handleSelectSop}
+                    disabled={!formData.department}
+                  >
+                    {filteredSopHeaders.map((sop) => (
+                      <MenuItem key={sop.Id} value={sop.Id}>
+                        {sop.Doc_Title_en}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              {/* عرض Document Version في حقل معطل */}
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  required
+                  label="Document Version"
+                  name="documentVersion"
+                  value={formData.documentVersion}
+                  InputProps={{ readOnly: true }}
+                  margin="normal"
+                />
+              </Grid>
+              {/* Revision Date */}
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  required
+                  type="date"
+                  label="Revision Date"
+                  name="revisionDate"
+                  value={formData.revisionDate}
+                  onChange={handleFormChange}
+                  InputLabelProps={{ shrink: true }}
+                  margin="normal"
+                />
+              </Grid>
             </Grid>
-            {/* قسم اختيار Document Title */}
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth required>
-                <InputLabel id="sop-label">Document Title</InputLabel>
-                <Select
-                  labelId="sop-label"
-                  id="sop-select"
-                  value={formData.documentId}
-                  label="Document Title"
-                  onChange={handleSelectSop}
-                  disabled={!formData.department}
-                >
-                  {filteredSopHeaders.map((sop) => (
-                    <MenuItem key={sop.Id} value={sop.Id}>
-                      {sop.Doc_Title_en}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            {/* عرض Document Version في حقل معطل */}
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                required
-                label="Document Version"
-                name="documentVersion"
-                value={formData.documentVersion}
-                InputProps={{ readOnly: true }}
-                margin="normal"
-              />
-            </Grid>
-            {/* Revision Date */}
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                required
-                type="date"
-                label="Revision Date"
-                name="revisionDate"
-                value={formData.revisionDate}
-                onChange={handleFormChange}
-                InputLabelProps={{ shrink: true }}
-                margin="normal"
-              />
-            </Grid>
-          </Grid>
 
-          {/* جدول الـ Checklist */}
-          <Box sx={{ mt: 3, overflowX: 'auto' }}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>No.</TableCell>
-                  <TableCell>Item To Be Checked</TableCell>
-                  <TableCell>Comply</TableCell>
-                  <TableCell>Comment</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {checklist.map((row, index) => (
-                  <TableRow key={row.id}>
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell>{row.item}</TableCell>
-                    <TableCell>
-                      <FormControl fullWidth size="small">
-                        <InputLabel id={`select-label-${row.id}`}>Select</InputLabel>
-                        <Select
-                          labelId={`select-label-${row.id}`}
-                          value={row.comply}
-                          label="Select"
-                          onChange={(e) => handleChecklistChange(row.id, 'comply', e.target.value)}
-                        >
-                          <MenuItem value="Yes">Yes</MenuItem>
-                          <MenuItem value="No">No</MenuItem>
-                          <MenuItem value="NA">N/A</MenuItem>
-                        </Select>
-                      </FormControl>
-                    </TableCell>
-                    <TableCell>
-                      <TextField
-                        fullWidth
-                        placeholder="Comment"
-                        value={row.comment}
-                        onChange={(e) => handleChecklistChange(row.id, 'comment', e.target.value)}
-                        size="small"
-                      />
-                    </TableCell>
+            {/* جدول الـ Checklist */}
+            <Box sx={{ mt: 3, overflowX: 'auto' }}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>No.</TableCell>
+                    <TableCell>Item To Be Checked</TableCell>
+                    <TableCell>Comply</TableCell>
+                    <TableCell>Comment</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Box>
+                </TableHead>
+                <TableBody>
+                  {checklist.map((row, index) => (
+                    <TableRow key={row.id}>
+                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>{row.item}</TableCell>
+                      <TableCell>
+                        <FormControl fullWidth size="small">
+                          <InputLabel id={`select-label-${row.id}`}>Select</InputLabel>
+                          <Select
+                            labelId={`select-label-${row.id}`}
+                            value={row.comply}
+                            label="Select"
+                            onChange={(e) =>
+                              handleChecklistChange(row.id, 'comply', e.target.value)
+                            }
+                          >
+                            <MenuItem value="Yes">Yes</MenuItem>
+                            <MenuItem value="No">No</MenuItem>
+                            <MenuItem value="NA">N/A</MenuItem>
+                          </Select>
+                        </FormControl>
+                      </TableCell>
+                      <TableCell>
+                        <TextField
+                          fullWidth
+                          placeholder="Comment"
+                          value={row.comment}
+                          onChange={(e) =>
+                            handleChecklistChange(row.id, 'comment', e.target.value)
+                          }
+                          size="small"
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Box>
 
-          {/* Revised By and Approved By fields */}
-          <Grid container spacing={2} sx={{ mt: 3 }}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                required
-                label="Revised By"
-                name="revisedBy"
-                value={formData.revisedBy}
-                onChange={handleFormChange}
-                margin="normal"
-              />
+            {/* Revised By and Approved By fields */}
+            <Grid container spacing={2} sx={{ mt: 3 }}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  required
+                  label="Revised By"
+                  name="revisedBy"
+                  value={formData.revisedBy}
+                  onChange={handleFormChange}
+                  margin="normal"
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  required
+                  label="Approved By QA Manager"
+                  name="approvedBy"
+                  value={formData.approvedBy}
+                  onChange={handleFormChange}
+                  margin="normal"
+                />
+              </Grid>
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                required
-                label="Approved By QA Manager"
-                name="approvedBy"
-                value={formData.approvedBy}
-                onChange={handleFormChange}
-                margin="normal"
-              />
-            </Grid>
-          </Grid>
 
-          <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2 }}>
-            <Button variant="outlined" onClick={() => window.print()}>
-              Print
-            </Button>
-            <Button variant="contained" type="submit">
-              Submit
-            </Button>
-          </Box>
-        </form>
+            <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2 }}>
+              {/* زر الطباعة يستدعي window.print() */}
+              <Button variant="outlined" onClick={handlePrint}>
+                Print
+              </Button>
+              <Button variant="contained" type="submit">
+                Submit
+              </Button>
+            </Box>
+          </form>
+        </div>
       </Paper>
     </Container>
   );
