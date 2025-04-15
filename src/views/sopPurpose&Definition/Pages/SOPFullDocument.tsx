@@ -185,7 +185,7 @@ const SOPFullDocument: React.FC = () => {
               navigate('/documentation-control');
             }}
           >
-            Reject (إرجاع الحالة إلى 4)
+            Return For Revision (إرجاع الحالة إلى 4)
           </Button>
         </Box>
       );
