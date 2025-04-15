@@ -4,6 +4,7 @@ import PageContainer from 'src/components/container/PageContainer';
 import SOPCard, { SopHeader } from './SOPCard';
 import SOPFilter, { FilterValues, StatusOption, DepartmentOption } from './SOPFilter';
 import axiosServices from 'src/utils/axiosServices';
+import { useLocation } from 'react-router-dom';
 
 const DocumentationControl: React.FC = () => {
   const [sopHeaders, setSopHeaders] = useState<SopHeader[]>([]);
@@ -13,7 +14,9 @@ const DocumentationControl: React.FC = () => {
     departments: [],
   });
 
-  // Fetch data from the API
+  const location = useLocation();
+
+  // Fetch data from the API في كل مرة يتغير فيها الموقع
   useEffect(() => {
     const fetchSOPHeaders = async () => {
       try {
@@ -27,7 +30,7 @@ const DocumentationControl: React.FC = () => {
     };
 
     fetchSOPHeaders();
-  }, []);
+  }, [location]); // عند تغيير الـ location يتم إعادة جلب البيانات
 
   // Apply filtering when filter values or the SOP list changes
   useEffect(() => {
@@ -45,10 +48,20 @@ const DocumentationControl: React.FC = () => {
 
   // Extract unique status options and department options from the data
   const statusOptions: StatusOption[] = Array.from(
-    new Map(sopHeaders.map((doc) => [doc.Sop_Status.Id, { id: doc.Sop_Status.Id, name_en: doc.Sop_Status.Name_en }])).values()
+    new Map(
+      sopHeaders.map((doc) => [
+        doc.Sop_Status.Id,
+        { id: doc.Sop_Status.Id, name_en: doc.Sop_Status.Name_en },
+      ])
+    ).values()
   );
   const departmentOptions: DepartmentOption[] = Array.from(
-    new Map(sopHeaders.map((doc) => [doc.Department_Data.Id, { id: doc.Department_Data.Id, dept_name: doc.Department_Data.Dept_name }])).values()
+    new Map(
+      sopHeaders.map((doc) => [
+        doc.Department_Data.Id,
+        { id: doc.Department_Data.Id, dept_name: doc.Department_Data.Dept_name },
+      ])
+    ).values()
   );
 
   return (
@@ -66,10 +79,14 @@ const DocumentationControl: React.FC = () => {
           <SOPFilter
             statusOptions={statusOptions}
             selectedStatuses={filterValues.statuses}
-            onStatusChange={(selected) => setFilterValues((prev) => ({ ...prev, statuses: selected }))}
+            onStatusChange={(selected) =>
+              setFilterValues((prev) => ({ ...prev, statuses: selected }))
+            }
             departmentOptions={departmentOptions}
             selectedDepartments={filterValues.departments}
-            onDepartmentChange={(selected) => setFilterValues((prev) => ({ ...prev, departments: selected }))}
+            onDepartmentChange={(selected) =>
+              setFilterValues((prev) => ({ ...prev, departments: selected }))
+            }
           />
         </Box>
 

@@ -1,10 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// src/pages/SOPFullDocument.tsx
 import React, { useEffect, useState, useContext } from 'react';
 import axiosServices from 'src/utils/axiosServices';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { UserContext } from 'src/context/UserContext';
-
-// نفس الاستيرادات
 import SOPTemplate from '../components/SOPTemplate';
 import PurposeSection from '../components/PurposeSection';
 import DefinitionsSection from '../components/DefinitionsSection';
@@ -45,12 +43,16 @@ const SOPFullDocument: React.FC = () => {
     axiosServices
       .get(url)
       .then((res) => {
-        const activeRecords = res.data.filter((item: SopDetailTracking) => item.Is_Active === 1);
+        const activeRecords = res.data.filter(
+          (item: SopDetailTracking) => item.Is_Active === 1
+        );
         if (activeRecords.length > 0) {
           setSopDetail(activeRecords[0]);
         }
       })
-      .catch((error) => console.error('Error refreshing sop detail tracking data:', error));
+      .catch((error) =>
+        console.error('Error refreshing sop detail tracking data:', error)
+      );
   };
 
   useEffect(() => {
@@ -63,21 +65,27 @@ const SOPFullDocument: React.FC = () => {
     axiosServices
       .get(url)
       .then((res) => {
-        const activeRecords = res.data.filter((item: SopDetailTracking) => item.Is_Active === 1);
+        const activeRecords = res.data.filter(
+          (item: SopDetailTracking) => item.Is_Active === 1
+        );
         if (activeRecords.length > 0) {
           setSopDetail(activeRecords[0]);
         }
       })
-      .catch((error) => console.error('Error fetching sop detail tracking data:', error));
+      .catch((error) =>
+        console.error('Error fetching sop detail tracking data:', error)
+      );
   }, [headerId]);
 
-  // نفس StatusControl دون تغيير:
+  // مكون التحكم بالحالة (StatusControl)
   const StatusControl: React.FC<{
     sopDetail: SopDetailTracking;
     setSopDetail: React.Dispatch<React.SetStateAction<SopDetailTracking | null>>;
   }> = ({ sopDetail }) => {
+    const navigate = useNavigate();
     const userRole =
-      user?.Users_Departments_Users_Departments_User_IdToUser_Data?.[0]?.User_Roles?.Name || '';
+      user?.Users_Departments_Users_Departments_User_IdToUser_Data?.[0]?.User_Roles
+        ?.Name || '';
 
     const updateStatus = (newStatus: string, additionalData: any = {}) => {
       let endpoint = '';
@@ -90,7 +98,7 @@ const SOPFullDocument: React.FC = () => {
       }
       const payload = {
         status: { newStatus },
-        ...additionalData
+        ...additionalData,
       };
       axiosServices
         .patch(endpoint, payload)
@@ -100,29 +108,25 @@ const SOPFullDocument: React.FC = () => {
         .catch((err) => console.error('Error updating status', err));
     };
 
-    // إشراف
+    // تلقائيًا تحديث الحالة للـ QA Supervisor والـ QA Manager حسب الحالة الحالية
     useEffect(() => {
-      if (userRole === 'QA Supervisor' && sopDetail.Sop_header.status === "2") {
-        updateStatus("3");
+      if (userRole === 'QA Supervisor' && sopDetail.Sop_header.status === '2') {
+        updateStatus('3');
       }
     }, [userRole, sopDetail.Sop_header.status]);
 
-    // إدارة
     useEffect(() => {
-      if (userRole === 'QA Manager' && sopDetail.Sop_header.status === "4") {
-        updateStatus("5");
+      if (userRole === 'QA Manager' && sopDetail.Sop_header.status === '4') {
+        updateStatus('5');
       }
     }, [userRole, sopDetail.Sop_header.status]);
 
-    // أزرار
-    if (userRole === 'QA Associate' && sopDetail.Sop_header.status === "1") {
+    if (userRole === 'QA Associate' && sopDetail.Sop_header.status === '1') {
       return (
         <Box sx={{ mt: 2, textAlign: 'center' }}>
           <Button
             variant="contained"
-            onClick={() =>
-              updateStatus("2", { signedBy: user?.signUrl })
-            }
+            onClick={() => updateStatus('2', { signedBy: user?.signUrl })}
           >
             Save and Submit (تحديث الحالة إلى 2)
           </Button>
@@ -130,26 +134,24 @@ const SOPFullDocument: React.FC = () => {
       );
     }
     if (userRole === 'QA Supervisor') {
-      if (sopDetail.Sop_header.status === "3") {
+      if (sopDetail.Sop_header.status === '3') {
         return (
           <Box sx={{ mt: 2, textAlign: 'center' }}>
             <Button
               variant="contained"
-              onClick={() =>
-                updateStatus("4", { signedBy: user?.signUrl })
-              }
+              onClick={() => updateStatus('4', { signedBy: user?.signUrl })}
             >
               Approve as Supervisor (تحديث الحالة إلى 4)
             </Button>
           </Box>
         );
       }
-      if (sopDetail.Sop_header.status === "4") {
+      if (sopDetail.Sop_header.status === '4') {
         return (
           <Box sx={{ mt: 2, textAlign: 'center' }}>
             <Button
               variant="contained"
-              onClick={() => updateStatus("5")}
+              onClick={() => updateStatus('5')}
             >
               Confirm Approval (تحديث الحالة إلى 5)
             </Button>
@@ -157,7 +159,7 @@ const SOPFullDocument: React.FC = () => {
         );
       }
     }
-    if (userRole === 'QA Manager' && sopDetail.Sop_header.status === "5") {
+    if (userRole === 'QA Manager' && sopDetail.Sop_header.status === '5') {
       return (
         <Box
           sx={{
@@ -171,13 +173,18 @@ const SOPFullDocument: React.FC = () => {
           <Button
             variant="contained"
             color="success"
-            onClick={() =>
-              updateStatus("6", { signedBy: user?.signUrl })
-            }
+            onClick={() => updateStatus('6', { signedBy: user?.signUrl })}
           >
             Approve as Manager (تحديث الحالة إلى 6)
           </Button>
-          <Button variant="contained" color="error" onClick={() => updateStatus("4")}>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => {
+              updateStatus('3', { signedBy: user?.signUrl, action: 'reject' });
+              navigate('/documentation-control');
+            }}
+          >
             Reject (إرجاع الحالة إلى 4)
           </Button>
         </Box>
@@ -188,10 +195,6 @@ const SOPFullDocument: React.FC = () => {
 
   return (
     <>
-      {/**
-       * لاحظ أننا فقط نستعمل SOPTemplate
-       * ونمرر أقسام الـSOP كـchildren
-       */}
       <SOPTemplate headerData={sopDetail ? sopDetail.Sop_header : null}>
         <PurposeSection initialData={sopDetail ? sopDetail.sop_purpose : null} />
         <DefinitionsSection initialData={sopDetail ? sopDetail.Sop_Definitions : null} />
@@ -200,8 +203,6 @@ const SOPFullDocument: React.FC = () => {
         <SafetyConcernsSection initialData={sopDetail ? sopDetail.Sop_Safety_Concerns : null} />
         <ProceduresSection initialData={sopDetail ? sopDetail.Sop_Procedures : null} />
       </SOPTemplate>
-
-      {/* أزرار التحكم بالحالة */}
       {sopDetail && <StatusControl sopDetail={sopDetail} setSopDetail={setSopDetail} />}
     </>
   );
