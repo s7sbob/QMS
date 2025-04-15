@@ -246,7 +246,7 @@ const AuthRegister: React.FC = () => {
         {/* رفع التوقيع */}
         <Box>
           <Typography variant="body1" sx={{ mb: 1 }}>
-            Upload Signature (optional)
+            Upload Signature 
           </Typography>
           <Button variant="outlined" component="label">
             Select Signature
