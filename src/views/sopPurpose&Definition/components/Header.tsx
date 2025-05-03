@@ -57,7 +57,7 @@ const Header: React.FC<HeaderProps> = ({
                 Effective Date
               </th>
               <th style={{ border: "1px solid #000", padding: "5px", textAlign: "right" }}>
-                :تاريخ النفاذ
+                :تاريخ الفاعلية 
               </th>
             </tr>
             <tr>

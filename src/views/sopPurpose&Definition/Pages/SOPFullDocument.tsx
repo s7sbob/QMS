@@ -11,6 +11,8 @@ import ProceduresSection from '../components/ProceduresSection';
 import ResponsibilitiesSection from '../components/ResponsibilitiesSection';
 import SafetyConcernsSection from '../components/SafetyConcernsSection';
 import { Button, Box } from '@mui/material';
+import ReferenceDocumentsSection from '../components/ReferenceDocumentsSection';
+import AttachmentsSection from '../components/AttachmentsSection';
 
 export interface SopDetailTracking {
   Id: string;
@@ -21,6 +23,7 @@ export interface SopDetailTracking {
   Sop_Procedures: any;
   Sop_Res: any;
   Sop_Safety_Concerns?: any;
+  Sop_References?: any;
   Is_Active: number;
   crt_date: string;
   Sop_header: any;
@@ -34,26 +37,19 @@ const SOPFullDocument: React.FC = () => {
   const user = useContext(UserContext);
 
   const refreshSopDetail = () => {
-    let url = '';
-    if (headerId) {
-      url = `/api/sopDetailTracking/getSop?headerId=${headerId}`;
-    } else {
-      url = `/api/sopDetailTracking/getSop?isCurrent=true`;
-    }
+    const url = headerId
+      ? `/api/sopDetailTracking/getSop?headerId=${headerId}`
+      : `/api/sopDetailTracking/getSop?isCurrent=true`;
     axiosServices
       .get(url)
       .then((res) => {
-        const activeRecords = res.data.filter(
-          (item: SopDetailTracking) => item.Is_Active === 1
-        );
-        if (activeRecords.length > 0) {
-          setSopDetail(activeRecords[0]);
-        }
+        const active = res.data.find((x: SopDetailTracking) => x.Is_Active === 1);
+        if (active) setSopDetail(active);
       })
-      .catch((error) =>
-        console.error('Error refreshing sop detail tracking data:', error)
-      );
+      .catch((err) => console.error('Error refreshing sop detail:', err));
   };
+
+  useEffect(refreshSopDetail, [headerId]);
 
   useEffect(() => {
     let url = '';
@@ -195,17 +191,21 @@ const SOPFullDocument: React.FC = () => {
 
   return (
     <>
-      <SOPTemplate headerData={sopDetail ? sopDetail.Sop_header : null}>
-        <PurposeSection initialData={sopDetail ? sopDetail.sop_purpose : null} />
-        <DefinitionsSection initialData={sopDetail ? sopDetail.Sop_Definitions : null} />
-        <ScopeSection initialData={sopDetail ? sopDetail.Sop_Scope : null} />
-        <ResponsibilitiesSection initialData={sopDetail ? sopDetail.Sop_Res : null} />
-        <SafetyConcernsSection initialData={sopDetail ? sopDetail.Sop_Safety_Concerns : null} />
-        <ProceduresSection initialData={sopDetail ? sopDetail.Sop_Procedures : null} />
+      <SOPTemplate headerData={sopDetail?.Sop_header || null}>
+        <PurposeSection initialData={sopDetail?.sop_purpose || null} />
+        <DefinitionsSection initialData={sopDetail?.Sop_Definitions || null} />
+        <ScopeSection initialData={sopDetail?.Sop_Scope || null} />
+        <ProceduresSection initialData={sopDetail?.Sop_Procedures || null} />
+        <ResponsibilitiesSection initialData={sopDetail?.Sop_Res || null} />
+        <SafetyConcernsSection initialData={sopDetail?.Sop_Safety_Concerns || null} />
+        {/* ⭐ NEW – قسم References */}
+        <ReferenceDocumentsSection initialData={sopDetail?.Sop_References || null} />
+        {/* ⭐ NEW – المرفقات */}
+        {headerId && <AttachmentsSection headerId={headerId} />}
       </SOPTemplate>
+
       {sopDetail && <StatusControl sopDetail={sopDetail} setSopDetail={setSopDetail} />}
     </>
   );
 };
-
 export default SOPFullDocument;
