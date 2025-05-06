@@ -24,6 +24,7 @@ export interface SopDetailTracking {
   Sop_Res: any;
   Sop_Safety_Concerns?: any;
   Sop_References?: any;
+  Sop_Refrences?: any;
   Is_Active: number;
   crt_date: string;
   Sop_header: any;
@@ -199,8 +200,13 @@ const SOPFullDocument: React.FC = () => {
         <ResponsibilitiesSection initialData={sopDetail?.Sop_Res || null} />
         <SafetyConcernsSection initialData={sopDetail?.Sop_Safety_Concerns || null} />
         {/* ⭐ NEW – قسم References */}
-        <ReferenceDocumentsSection initialData={sopDetail?.Sop_References || null} />
-        {/* ⭐ NEW – المرفقات */}
+        <ReferenceDocumentsSection
+  initialData={
+    (sopDetail?.Sop_References as any) ||
+    (sopDetail?.Sop_Refrences as any) ||
+    null
+  }
+/>        {/* ⭐ NEW – المرفقات */}
         {headerId && <AttachmentsSection headerId={headerId} />}
       </SOPTemplate>
 

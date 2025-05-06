@@ -1,0 +1,2094 @@
+// File: DefinitionsSection.tsx
+// src/components/DefinitionsSection.tsx
+import React, { useEffect, useState } from "react";
+import axiosServices from "src/utils/axiosServices";
+import {
+  Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Typography,
+} from "@mui/material";
+import EditDialog from "./EditDialog";
+
+export interface Definition {
+  Id: string;
+  Content_en: string;
+  Content_ar: string;
+  Version: number | null;
+  Is_Current: number;
+  Crt_Date: string;
+  Crt_by: string | null;
+  Modified_Date: string | null;
+  Modified_by: string | null;
+  Sop_HeaderId: string;
+  Is_Active: number;
+  modificationLog?: { date: string; change: string }[];
+  reviewer_Comment?: string | null;
+}
+
+interface DefinitionsSectionProps {
+  initialData: Definition | null;
+}
+
+const DefinitionsSection: React.FC<DefinitionsSectionProps> = ({ initialData }) => {
+  const [definition, setDefinition] = useState<Definition | null>(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [historyData, setHistoryData] = useState<Definition[]>([]);
+
+  useEffect(() => {
+    if (initialData) {
+      setDefinition(initialData);
+    }
+  }, [initialData]);
+
+  const handleDoubleClick = () => {
+    if (!definition) return;
+    axiosServices
+      .get(`/api/sopDefinition/getAllHistory/${definition.Sop_HeaderId}`)
+      .then((res) => {
+        const activeRecords = res.data.filter((item: any) => item.Is_Active === 0);
+        setHistoryData(activeRecords);
+        setOpenDialog(true);
+      })
+      .catch((error) => console.error("Error fetching historical definitions:", error));
+  };
+
+  const handleDialogSave = (
+    newContentEn: string,
+    newContentAr: string,
+    newReviewerComment: string
+  ) => {
+    if (!definition) return;
+    if (newContentEn !== definition.Content_en || newContentAr !== definition.Content_ar) {
+      axiosServices
+        .post("/api/sopDefinition/addSop-Definition", {
+          Content_en: newContentEn,
+          Content_ar: newContentAr,
+          reviewer_Comment: newReviewerComment,
+          Sop_HeaderId: definition.Sop_HeaderId,
+        })
+        .then((res) => {
+          setDefinition(res.data);
+          setOpenDialog(false);
+        })
+        .catch((error) => console.error("Error inserting definition:", error));
+    } else {
+      axiosServices
+        .post(`/api/sopDefinition/updateSop-Definition/${definition.Id}`, {
+          Content_en: newContentEn,
+          Content_ar: newContentAr,
+          reviewer_Comment: newReviewerComment,
+        })
+        .then((res) => {
+          setDefinition(res.data);
+          setOpenDialog(false);
+        })
+        .catch((error) => console.error("Error updating definition:", error));
+    }
+  };
+
+  return (
+    <Box sx={{ mt: 2 }}>
+      <Typography
+        variant="h6"
+        gutterBottom
+        sx={{ display: "flex", justifyContent: "space-between",     color: definition && definition.reviewer_Comment ? "red" : "inherit", // الشرط هنا لتلوين العنوان بالاحمر عند وجود تعليق
+        }}
+      >
+        <span>2. Definitions:</span>
+        <span dir="rtl">2. التعاريف</span>
+      </Typography>
+      <TableContainer component={Paper} sx={{ mt: 1 }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{ fontWeight: "bold", width: "50%" }}>
+                English Content
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", width: "50%" }} align="right">
+                المحتوى العربي
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {definition && (
+              <TableRow onDoubleClick={handleDoubleClick} hover sx={{ cursor: "pointer" }}>
+                <TableCell>
+                  <div dangerouslySetInnerHTML={{ __html: definition.Content_en }} />
+                </TableCell>
+                <TableCell align="right" style={{ direction: "rtl" }}>
+                  <div dangerouslySetInnerHTML={{ __html: definition.Content_ar }} />
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      {definition && (
+        <EditDialog
+          open={openDialog}
+          title="تفاصيل التعريف"
+          initialContentEn={definition.Content_en}
+          initialContentAr={definition.Content_ar}
+          initialReviewerComment={definition.reviewer_Comment || ""}
+          additionalInfo={{
+            version: definition.Version,
+            crtDate: definition.Crt_Date,
+            modifiedDate: definition.Modified_Date,
+            crtBy: definition.Crt_by,
+            modifiedBy: definition.Modified_by,
+          }}
+          historyData={historyData}
+          onSave={handleDialogSave}
+          onClose={() => setOpenDialog(false)}
+        />
+      )}
+    </Box>
+  );
+};
+
+export default DefinitionsSection;
+
+
+// File: EditDialog.tsx
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Stack,
+  Typography,
+} from '@mui/material';
+import ReactSummernote from 'react-summernote';
+import 'react-summernote/dist/react-summernote.css';
+
+export interface HistoryRecord {
+  Id: string;
+  Content_en: string;
+  Content_ar: string;
+  Version: number | null;
+  Crt_Date: string;
+  Modified_Date: string | null;
+  Crt_by: string | null;
+  Modified_by: string | null;
+  reviewer_Comment?: string | null;
+}
+
+export interface AdditionalInfo {
+  version?: number | null;
+  crtDate?: string;
+  modifiedDate?: string | null;
+  crtBy?: string | null;
+  modifiedBy?: string | null;
+}
+
+interface EditDialogProps {
+  open: boolean;
+  title: string;
+  initialContentEn: string;
+  initialContentAr: string;
+  initialReviewerComment: string;
+  additionalInfo?: AdditionalInfo;
+  historyData?: HistoryRecord[];
+  onSave: (newContentEn: string, newContentAr: string, newReviewerComment: string) => void;
+  onClose: () => void;
+}
+
+const EditDialog: React.FC<EditDialogProps> = ({
+  open,
+  title,
+  initialContentEn,
+  initialContentAr,
+  initialReviewerComment,
+  additionalInfo,
+  historyData,
+  onSave,
+  onClose,
+}) => {
+  const [contentEn, setContentEn] = useState(initialContentEn);
+  const [contentAr, setContentAr] = useState(initialContentAr);
+  const [reviewerComment, setReviewerComment] = useState(initialReviewerComment);
+
+  // Create refs for each editor instance
+  const englishEditorRef = useRef<any>(null);
+  const arabicEditorRef = useRef<any>(null);
+  const reviewerEditorRef = useRef<any>(null);
+
+  // Update local state and force-update the underlying Summernote editors when dialog opens
+  useEffect(() => {
+    if (open) {
+      setContentEn(initialContentEn);
+      setContentAr(initialContentAr);
+      setReviewerComment(initialReviewerComment);
+
+      // Force-update the editor content via the underlying Summernote API if the ref is set
+      setTimeout(() => {
+        if (englishEditorRef.current) {
+          englishEditorRef.current.editor.summernote('code', initialContentEn);
+        }
+        if (arabicEditorRef.current) {
+          arabicEditorRef.current.editor.summernote('code', initialContentAr);
+        }
+        if (reviewerEditorRef.current) {
+          reviewerEditorRef.current.editor.summernote('code', initialReviewerComment);
+        }
+      }, 100);
+    }
+  }, [open, initialContentEn, initialContentAr, initialReviewerComment]);
+
+  // Base Summernote options
+  const baseSummernoteOptions = useMemo(
+    () => ({
+      height: 200,
+      dialogsInBody: true,
+      toolbar: [
+        ['style', ['style']],
+        ['font', ['bold', 'italic', 'underline', 'clear']],
+        ['para', ['ul', 'ol', 'paragraph']],
+        ['table', ['table']],
+      ],
+      callbacks: {
+        onInit: () => console.log('Summernote initialized'),
+      },
+    }),
+    [],
+  );
+
+  const englishOptions = baseSummernoteOptions;
+  const arabicOptions = useMemo(
+    () => ({
+      ...baseSummernoteOptions,
+      lang: 'ar',
+    }),
+    [baseSummernoteOptions],
+  );
+
+  const handleSave = () => {
+    onSave(contentEn, contentAr, reviewerComment);
+  };
+
+  return (
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
+      <DialogTitle>{title}</DialogTitle>
+      <DialogContent dividers>
+        <Typography variant="h6" gutterBottom>
+          Current Record
+        </Typography>
+        <Box sx={{ mb: 2, border: '1px solid #ccc', p: 2, borderRadius: 1 }}>
+          <Stack spacing={2}>
+            <Typography variant="body2">English Content</Typography>
+            <ReactSummernote
+              ref={englishEditorRef}
+              defaultValue={initialContentEn}
+              options={englishOptions}
+              onChange={(content: string) => setContentEn(content)}
+            />
+
+            <Typography variant="body2">Arabic Content</Typography>
+            <ReactSummernote
+              ref={arabicEditorRef}
+              defaultValue={initialContentAr}
+              options={arabicOptions}
+              onChange={(content: string) => setContentAr(content)}
+            />
+
+            <Typography variant="body2">Reviewer Comment</Typography>
+            <ReactSummernote
+              ref={reviewerEditorRef}
+              defaultValue={initialReviewerComment}
+              options={englishOptions}
+              onChange={(content: string) => setReviewerComment(content)}
+            />
+
+            {additionalInfo && (
+              <>
+                {additionalInfo.version !== undefined && (
+                  <Typography variant="body2">
+                    <strong>Version:</strong> {additionalInfo.version}
+                  </Typography>
+                )}
+                {additionalInfo.crtDate && (
+                  <Typography variant="body2">
+                    <strong>Crt_Date:</strong> {additionalInfo.crtDate}
+                  </Typography>
+                )}
+                <Typography variant="body2">
+                  <strong>Modified_Date:</strong> {additionalInfo.modifiedDate || 'N/A'}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Crt_by:</strong> {additionalInfo.crtBy}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Modified_by:</strong> {additionalInfo.modifiedBy || 'N/A'}
+                </Typography>
+              </>
+            )}
+          </Stack>
+        </Box>
+
+        {historyData && historyData.length > 0 && (
+          <>
+            <Typography variant="h6" gutterBottom>
+              History (read-only)
+            </Typography>
+            {historyData.map((record) => (
+              <Box key={record.Id} sx={{ mb: 2, border: '1px solid #eee', p: 1, borderRadius: 1 }}>
+                <Typography variant="body2">
+                  <strong>Content (EN):</strong>
+                  <div dangerouslySetInnerHTML={{ __html: record.Content_en }} />
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Content (AR):</strong>
+                  <div
+                    style={{ direction: 'rtl' }}
+                    dangerouslySetInnerHTML={{ __html: record.Content_ar }}
+                  />
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Version:</strong> {record.Version}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Crt_Date:</strong> {record.Crt_Date}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Modified_Date:</strong> {record.Modified_Date || 'N/A'}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Crt_by:</strong> {record.Crt_by}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Modified_by:</strong> {record.Modified_by || 'N/A'}
+                </Typography>
+                {record.reviewer_Comment && (
+                  <Typography variant="body2" sx={{ color: 'red' }}>
+                    <strong>Reviewer Comment:</strong> {record.reviewer_Comment}
+                  </Typography>
+                )}
+              </Box>
+            ))}
+          </>
+        )}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} color="inherit">
+          Cancel
+        </Button>
+        <Button onClick={handleSave} variant="contained" color="primary">
+          Save Current Record
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+export default EditDialog;
+
+
+// File: Footer.tsx
+// src/components/Footer.tsx
+import React from "react";
+
+const Footer: React.FC = () => {
+  return (
+    <div style={{ textAlign: "center", marginTop: "20px" }}>
+      <p style={{ margin: 0 }}>Unauthorized duplication is prohibited</p>
+      <p style={{ margin: 0 }}>يمنع إعادة الطباعة لغير المختصين</p>
+    </div>
+  );
+};
+
+export default Footer;
+
+
+// File: Header.tsx
+// src/components/Header.tsx
+import React from "react";
+
+interface HeaderProps {
+  issueDate: string;
+  effectiveDate: string;
+  revisionDate: string;
+  codeNumber: string;
+  versionNumber: string;
+  pageNumber: string;
+}
+
+const Header: React.FC<HeaderProps> = ({
+  issueDate,
+  effectiveDate,
+  revisionDate,
+  codeNumber,
+  versionNumber,
+  pageNumber,
+}) => {
+  return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        marginBottom: "10px",
+        border: "1px solid #000",
+      }}
+    >
+      {/* الجدول الأول (يسار) */}
+      <div
+        style={{
+          width: "25%",
+          borderRight: "1px solid #000",
+        }}
+      >
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr>
+              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "left" }}>
+                Issue Date
+              </th>
+              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "right" }}>
+                :تاريخ الإصدار
+              </th>
+            </tr>
+            <tr>
+              <td
+                colSpan={2}
+                style={{ border: "1px solid #000", padding: "5px", textAlign: "center" }}
+              >
+                {issueDate}
+              </td>
+            </tr>
+            <tr>
+              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "left" }}>
+                Effective Date
+              </th>
+              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "right" }}>
+                :تاريخ النفاذ
+              </th>
+            </tr>
+            <tr>
+              <td
+                colSpan={2}
+                style={{ border: "1px solid #000", padding: "5px", textAlign: "center" }}
+              >
+                {effectiveDate}
+              </td>
+            </tr>
+            <tr>
+              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "left" }}>
+                Revision Date
+              </th>
+              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "right" }}>
+                :تاريخ المراجعة
+              </th>
+            </tr>
+            <tr>
+              <td
+                colSpan={2}
+                style={{ border: "1px solid #000", padding: "5px", textAlign: "center" }}
+              >
+                {revisionDate}
+              </td>
+            </tr>
+          </thead>
+        </table>
+      </div>
+
+      {/* المساحة الوسطى للوغو الشركة */}
+      <div
+        style={{
+          width: "50%",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          borderRight: "1px solid #000",
+        }}
+      >
+        <img
+          src="/logo.png" // تأكد من تغيير اسم الملف حسب تسميته في مجلد public
+          alt="Cigalah Healthcare Company - Healthcare Division"
+          style={{ maxWidth: "100%", height: "auto" }}
+        />
+      </div>
+
+      {/* الجدول الثاني (يمين) */}
+      <div
+        style={{
+          width: "25%",
+          borderRight: "1px solid #000",
+        }}
+      >
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr>
+              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "left" }}>
+                Code #:
+              </th>
+              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "right" }}>
+                :كود الوثيقة
+              </th>
+            </tr>
+            <tr>
+              <td
+                colSpan={2}
+                style={{ border: "1px solid #000", padding: "5px", textAlign: "center" }}
+              >
+                {codeNumber}
+              </td>
+            </tr>
+            <tr>
+              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "left" }}>
+                Version #:
+              </th>
+              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "right" }}>
+                :رقم الإصدار
+              </th>
+            </tr>
+            <tr>
+              <td
+                colSpan={2}
+                style={{ border: "1px solid #000", padding: "5px", textAlign: "center" }}
+              >
+                {versionNumber}
+              </td>
+            </tr>
+            <tr>
+              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "left" }}>
+                Page #:
+              </th>
+              <th style={{ border: "1px solid #000", padding: "5px", textAlign: "right" }}>
+                :رقم الصفحة
+              </th>
+            </tr>
+            <tr>
+              <td
+                colSpan={2}
+                style={{ border: "1px solid #000", padding: "5px", textAlign: "center" }}
+              >
+                {pageNumber}
+              </td>
+            </tr>
+          </thead>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+export default Header;
+
+
+// File: PaginatedSOPContent.tsx
+import React from "react";
+
+interface PaginatedSOPContentProps {
+  sections: React.ReactNode[];
+  header: React.ReactNode;
+  footer: React.ReactNode;
+  sectionHeight?: number; // تقديري لكل قسم
+  pageHeight?: number;    // ارتفاع المحتوى لكل صفحة
+}
+
+const PaginatedSOPContent: React.FC<PaginatedSOPContentProps> = ({
+  sections,
+  header,
+  footer,
+  sectionHeight = 300,
+  pageHeight = 1122,
+}) => {
+  const pages: React.ReactNode[][] = [];
+  let currentPage: React.ReactNode[] = [];
+  let currentHeight = 0;
+
+  sections.forEach((section) => {
+    currentHeight += sectionHeight;
+    if (currentHeight > pageHeight) {
+      pages.push(currentPage);
+      currentPage = [];
+      currentHeight = sectionHeight;
+    }
+    currentPage.push(section);
+  });
+  if (currentPage.length > 0) {
+    pages.push(currentPage);
+  }
+
+  return (
+    <>
+      {pages.map((pageSections, i) => (
+        <div
+          key={i}
+          className="page"
+          style={{
+            width: "210mm",
+            height: "297mm",
+            margin: "0 auto 20px auto",
+            border: "1px solid #000",
+            position: "relative",
+            boxSizing: "border-box",
+            display: "flex",
+            flexDirection: "column",
+            background: "#fff",
+          }}
+        >
+          <div className="header" style={{ flexShrink: 0 }}>
+            {header}
+          </div>
+          <div className="content" style={{ flexGrow: 1, overflow: "hidden", padding: "10px" }}>
+            {pageSections.map((section, j) => (
+              <div key={j} className="section" style={{ marginBottom: "10px" }}>
+                {section}
+              </div>
+            ))}
+          </div>
+          <div className="footer" style={{ flexShrink: 0 }}>
+            {footer}
+          </div>
+        </div>
+      ))}
+    </>
+  );
+};
+
+export default PaginatedSOPContent;
+
+
+// File: paginatedView.css
+/* ملف CSS لتنسيق صفحات الـ SOP عند استخدام PaginatedSOPContent.tsx */
+
+/* عنصر مخفي لقياس ارتفاع كل عقدة قبل توزيعها على الصفحات */
+.measure-hidden {
+  position: absolute;
+  visibility: hidden;
+  top: 0;
+  left: -9999px;
+  width: 500px; /* يمكنك التعديل حسب حاجتك */
+  height: auto; 
+  /* الهدف أن يكون العنصر خارج نطاق العرض لقياس المحتوى دون ظهوره */
+}
+
+/* الحاوية العامة لكل صفحة */
+.page {
+  position: relative;
+  margin: 20px auto;       /* لجعل الصفحة في المنتصف أفقياً */
+  border: 1px solid #000;  /* خط حول الصفحة لتوضيح الحدود في العرض العادي */
+  box-sizing: border-box;
+  background-color: #fff;
+
+  /* عند الطباعة، كل .page تعتبر صفحة مستقلة */
+  page-break-after: always;
+}
+
+/* الهيدر الثابت أعلى الصفحة */
+.page-header {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  /* يمكن إضافة لون خلفية أو إطار إن رغبت */
+  /* border-bottom: 1px solid #000; */
+  box-sizing: border-box;
+}
+
+/* المحتوى الذي يتمدد بين الهيدر والفوتر */
+.page-content {
+  position: absolute;
+  left: 0;
+  right: 0;
+  /* يتم ضبط top و bottom في الكود الخاص بـ PaginatedSOPContent.tsx */
+  /* إذا أردت سحب سكرول للمحتوى الزائد داخل الصفحة (بدل قصّه) يمكنك استخدام overflow: auto */
+  overflow: visible;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+/* الفوتر الثابت أسفل الصفحة */
+.page-footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  /* border-top: 1px solid #000; */
+  box-sizing: border-box;
+}
+
+/* تحسين مظهر الطباعة (اختياري) */
+@media print {
+  .page {
+    /* عند الطباعة يمكنك إزالة الهوامش الخارجية */
+    margin: 0 auto; 
+    /* يمكنك أيضاً إخفاء الحدود */
+    border: none;
+  }
+}
+
+
+// File: PreparedBySection.tsx
+// src/components/PreparedBySection.tsx
+import React from 'react';
+
+interface PreparedBySectionProps {
+  preparedJobTitle: string;
+  reviewedJobTitle: string;
+  approvedJobTitle: string;
+  preparedName: string;
+  reviewedName: string;
+  approvedName: string;
+  stampImageUrl?: string; // URL or path to your "DRAFT COPY" stamp image
+  preparedSignatureUrl?: string; // URL or path to the prepared signature image
+  reviewedSignatureUrl?: string; // URL or path to the reviewed signature image
+  approvedSignatureUrl?: string; // URL or path to the approved signature image
+  // التواريخ التي نريد عرضها
+  prepared_date?: string;
+  reviewed_date?: string;
+  approved_date?: string;
+}
+
+const PreparedBySection: React.FC<PreparedBySectionProps> = ({
+  preparedJobTitle,
+  reviewedJobTitle,
+  approvedJobTitle,
+  preparedName,
+  reviewedName,
+  approvedName,
+  stampImageUrl,
+  preparedSignatureUrl,
+  reviewedSignatureUrl,
+  approvedSignatureUrl,
+  prepared_date,
+  reviewed_date,
+  approved_date,
+}) => {
+  // دالة لتنسيق التاريخ
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString();
+  };
+
+  return (
+    <div style={{ position: 'relative', width: '100%' }}>
+      {stampImageUrl && (
+        <img
+          src={stampImageUrl}
+          alt="Draft Stamp"
+          style={{
+            position: 'absolute',
+            top: '10px',
+            left: '1px',
+            opacity: 0.4,
+            width: '250px',
+            height: '100px',
+            zIndex: 2,
+          }}
+        />
+      )}
+
+      <table
+        style={{
+          width: '100%',
+          tableLayout: 'fixed',
+          borderCollapse: 'collapse',
+          marginTop: '20px',
+          fontFamily: 'Arial, sans-serif',
+          backgroundColor: '#fff',
+          position: 'relative',
+          zIndex: 1,
+        }}
+      >
+        <thead>
+          <tr>
+            <th
+              style={{
+                border: '1px solid #000',
+                padding: '8px',
+                textAlign: 'center',
+                width: '25%',
+              }}
+              colSpan={2}
+            ></th>
+            <th
+              style={{
+                border: '1px solid #000',
+                padding: '4px',
+                textAlign: 'center',
+                width: '12.5%',
+              }}
+            >
+              Prepared by
+            </th>
+            <th
+              style={{
+                border: '1px solid #000',
+                padding: '8px',
+                textAlign: 'center',
+                width: '12.5%',
+              }}
+            >
+              الإعداد
+            </th>
+            <th
+              style={{
+                border: '1px solid #000',
+                padding: '2px',
+                textAlign: 'center',
+                width: '12.5%',
+              }}
+            >
+              Reviewed by
+            </th>
+            <th
+              style={{
+                border: '1px solid #000',
+                padding: '8px',
+                textAlign: 'center',
+                width: '12.5%',
+              }}
+            >
+              المراجعة
+            </th>
+            <th
+              style={{
+                border: '1px solid #000',
+                padding: '2px',
+                textAlign: 'center',
+                width: '12.5%',
+              }}
+            >
+              Approved by
+            </th>
+            <th
+              style={{
+                border: '1px solid #000',
+                padding: '8px',
+                textAlign: 'center',
+                width: '12.5%',
+              }}
+            >
+              الاعتماد
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {/* الصف الأول: عرض المسمى الوظيفي */}
+          <tr>
+            <td
+              style={{
+                border: '1px solid #000',
+                padding: '8px',
+                textAlign: 'center',
+                fontWeight: 'bold',
+              }}
+            >
+              Job Title
+            </td>
+            <td
+              style={{
+                border: '1px solid #000',
+                padding: '8px',
+                textAlign: 'center',
+                fontWeight: 'bold',
+              }}
+            >
+              المسمى الوظيفي
+            </td>
+            <td
+              colSpan={2}
+              style={{
+                border: '1px solid #000',
+                padding: '8px',
+                textAlign: 'center',
+              }}
+            >
+              {preparedJobTitle}
+            </td>
+            <td
+              colSpan={2}
+              style={{
+                border: '1px solid #000',
+                padding: '8px',
+                textAlign: 'center',
+              }}
+            >
+              {reviewedJobTitle}
+            </td>
+            <td
+              colSpan={2}
+              style={{
+                border: '1px solid #000',
+                padding: '8px',
+                textAlign: 'center',
+              }}
+            >
+              {approvedJobTitle}
+            </td>
+          </tr>
+          {/* الصف الثاني: عرض الأسماء */}
+          <tr>
+            <td
+              style={{
+                border: '1px solid #000',
+                padding: '8px',
+                textAlign: 'center',
+                fontWeight: 'bold',
+              }}
+            >
+              Name
+            </td>
+            <td
+              style={{
+                border: '1px solid #000',
+                padding: '8px',
+                textAlign: 'center',
+                fontWeight: 'bold',
+              }}
+            >
+              الاسم
+            </td>
+            <td
+              colSpan={2}
+              style={{
+                border: '1px solid #000',
+                padding: '8px',
+                textAlign: 'center',
+              }}
+            >
+              {preparedName}
+            </td>
+            <td
+              colSpan={2}
+              style={{
+                border: '1px solid #000',
+                padding: '8px',
+                textAlign: 'center',
+              }}
+            >
+              {reviewedName}
+            </td>
+            <td
+              colSpan={2}
+              style={{
+                border: '1px solid #000',
+                padding: '8px',
+                textAlign: 'center',
+              }}
+            >
+              {approvedName}
+            </td>
+          </tr>
+          {/* الصف الثالث: عرض التواقيع */}
+          <tr>
+            <td
+              style={{
+                border: '1px solid #000',
+                padding: '8px',
+                textAlign: 'center',
+                fontWeight: 'bold',
+              }}
+            >
+              Signature
+            </td>
+            <td
+              style={{
+                border: '1px solid #000',
+                padding: '8px',
+                textAlign: 'center',
+                fontWeight: 'bold',
+              }}
+            >
+              التوقيع
+            </td>
+            {/* Prepared Signature Cell */}
+            <td colSpan={2} style={{ border: '1px solid #000', padding: '1px' }}>
+              {preparedSignatureUrl && (
+                <img
+                  src={preparedSignatureUrl}
+                  alt="Prepared Signature"
+                  style={{ width: '170px', height: '50px' }}
+                />
+              )}
+            </td>
+            {/* Reviewed Signature Cell */}
+            <td colSpan={2} style={{ border: '1px solid #000', padding: '1px' }}>
+              {reviewedSignatureUrl && (
+                <img
+                  src={reviewedSignatureUrl}
+                  alt="Reviewed Signature"
+                  style={{ width: '170px', height: '40px' }}
+                />
+              )}
+            </td>
+            {/* Approved Signature Cell */}
+            <td colSpan={2} style={{ border: '1px solid #000', padding: '1px' }}>
+              {approvedSignatureUrl && (
+                <img
+                  src={approvedSignatureUrl}
+                  alt="Approved Signature"
+                  style={{ width: '170px', height: '40px' }}
+                />
+              )}
+            </td>
+          </tr>
+          {/* الصف الرابع: عرض التواريخ */}
+          <tr>
+            <td
+              style={{
+                border: '1px solid #000',
+                padding: '8px',
+                textAlign: 'center',
+                fontWeight: 'bold',
+              }}
+            >
+              Date
+            </td>
+            <td
+              style={{
+                border: '1px solid #000',
+                padding: '8px',
+                textAlign: 'center',
+                fontWeight: 'bold',
+              }}
+            >
+              التاريخ
+            </td>
+            {/* Prepared Date */}
+            <td colSpan={2} style={{ border: '1px solid #000', padding: '8px' }}>
+              {formatDate(prepared_date)}
+            </td>
+            {/* Reviewed Date */}
+            <td colSpan={2} style={{ border: '1px solid #000', padding: '8px' }}>
+              {formatDate(reviewed_date)}
+            </td>
+            {/* Approved Date */}
+            <td colSpan={2} style={{ border: '1px solid #000', padding: '8px' }}>
+              {formatDate(approved_date)}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+export default PreparedBySection;
+
+
+// File: printStyles.css
+/* الحجم الافتراضي للصفحة في الطباعة */
+@page {
+  size: A4;
+  margin: 15mm; /* عدّل الهوامش كما تريد */
+}
+
+/* في وضع الطباعة، كرّر الـthead والtfoot في كل صفحة */
+thead {
+  display: table-header-group;
+}
+tfoot {
+  display: table-footer-group;
+}
+
+/* يمنع المتصفّح من تكرار رأس الجدول افتراضيًا؛
+   لهذا نجعله بهذا الشكل كي نضمن تكراره. */
+
+/* لتنسيق الحاوية العامة */
+.print-container {
+  width: 210mm; 
+  margin: 0 auto;
+  background: #fff;
+}
+
+/* الجدول الذي سيحتوي على الهيدر والفوتر والمحتوى */
+.print-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* في الوضع العادي (على الشاشة)، قد تريد إظهار حدود أو تباعد */
+.print-table td, .print-table th {
+  vertical-align: top;
+  /* border: 1px solid #ccc;  // إن أحببت إظهار خطوط */
+  padding: 0;
+}
+
+/* تنسيق اختياري لمنطقة الهيدر */
+.header-area {
+  text-align: center;
+  padding: 8px;
+  border-bottom: 1px solid #999;
+  /* أي تنسيقات إضافية */
+}
+
+/* تنسيق اختياري لمنطقة الفوتر */
+.footer-area {
+  text-align: center;
+  padding: 8px;
+  border-top: 1px solid #999;
+  /* أي تنسيقات إضافية */
+}
+
+/* بإمكانك إستخدام الـCSS Counters لرقم الصفحة مثلاً */
+@media print {
+  .page-number:after {
+    content: "Page " counter(page) " of " counter(pages);
+  }
+}
+
+/* منطقة المحتوى */
+.content-area {
+  padding: 10px;
+  /* أي تنسيقات إضافية */
+}
+
+
+
+// File: ProceduresSection.tsx
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// src/components/ProceduresSection.tsx
+import React, { useEffect, useState } from 'react';
+import axiosServices from 'src/utils/axiosServices';
+import {
+  Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Typography,
+} from '@mui/material';
+import EditDialog from './EditDialog';
+
+export interface Procedure {
+  Id: string;
+  Content_en: string;
+  Content_ar: string;
+  Version: number | null;
+  Is_Current: number;
+  Crt_Date: string;
+  Crt_by: string | null;
+  Modified_Date: string | null;
+  Modified_by: string | null;
+  Sop_HeaderId: string;
+  Is_Active: number;
+  modificationLog?: { date: string; change: string }[];
+  reviewer_Comment?: string | null;
+}
+
+interface ProceduresSectionProps {
+  initialData: Procedure | null;
+}
+
+const ProceduresSection: React.FC<ProceduresSectionProps> = ({ initialData }) => {
+  const [procedure, setProcedure] = useState<Procedure | null>(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [historyData, setHistoryData] = useState<Procedure[]>([]);
+
+  useEffect(() => {
+    if (initialData) {
+      setProcedure(initialData);
+    }
+  }, [initialData]);
+
+  const handleDoubleClick = () => {
+    if (!procedure) return;
+    axiosServices
+      .get(`/api/sopprocedures/getAllHistory/${procedure.Sop_HeaderId}`)
+      .then((res) => {
+        const activeRecords = res.data.filter((item: any) => item.Is_Active === 0);
+        setHistoryData(activeRecords);
+        setOpenDialog(true);
+      })
+      .catch((error) => console.error('Error fetching historical procedures:', error));
+  };
+
+  const handleDialogSave = (
+    newContentEn: string,
+    newContentAr: string,
+    newReviewerComment: string,
+  ) => {
+    if (!procedure) return;
+    if (newContentEn !== procedure.Content_en || newContentAr !== procedure.Content_ar) {
+      axiosServices
+        .post('/api/soprocedures/addSop-Procedure', {
+          Content_en: newContentEn,
+          Content_ar: newContentAr,
+          reviewer_Comment: newReviewerComment,
+          Sop_HeaderId: procedure.Sop_HeaderId,
+        })
+        .then((res) => {
+          setProcedure(res.data);
+          setOpenDialog(false);
+        })
+        .catch((error) => console.error('Error inserting procedure:', error));
+    } else {
+      axiosServices
+        .post(`/api/soprocedures/updateSop-Procedure/${procedure.Id}`, {
+          Content_en: newContentEn,
+          Content_ar: newContentAr,
+          reviewer_Comment: newReviewerComment,
+        })
+        .then((res) => {
+          setProcedure(res.data);
+          setOpenDialog(false);
+        })
+        .catch((error) => console.error('Error updating procedure:', error));
+    }
+  };
+
+  return (
+    <Box sx={{ mt: 2 }}>
+      <Typography
+        variant="h6"
+        gutterBottom
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          color: procedure && procedure.reviewer_Comment ? 'red' : 'inherit', // الشرط هنا لتلوين العنوان بالاحمر عند وجود تعليق
+        }}
+      >
+        <span>4. Procedures:</span>
+        <span dir="rtl">4. الإجراءات</span>
+      </Typography>
+      <TableContainer component={Paper} sx={{ mt: 1 }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{ fontWeight: 'bold', width: '50%' }}>English Content</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', width: '50%' }} align="right">
+                المحتوى العربي
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {procedure && (
+              <TableRow onDoubleClick={handleDoubleClick} hover sx={{ cursor: 'pointer' }}>
+                <TableCell>
+                  <div dangerouslySetInnerHTML={{ __html: procedure.Content_en }} />
+                </TableCell>
+                <TableCell align="right" style={{ direction: 'rtl' }}>
+                  <div dangerouslySetInnerHTML={{ __html: procedure.Content_ar }} />
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      {procedure && (
+        <EditDialog
+          open={openDialog}
+          title="تفاصيل الإجراءات"
+          initialContentEn={procedure.Content_en}
+          initialContentAr={procedure.Content_ar}
+          initialReviewerComment={procedure.reviewer_Comment || ''}
+          additionalInfo={{
+            version: procedure.Version,
+            crtDate: procedure.Crt_Date,
+            modifiedDate: procedure.Modified_Date,
+            crtBy: procedure.Crt_by,
+            modifiedBy: procedure.Modified_by,
+          }}
+          historyData={historyData}
+          onSave={handleDialogSave}
+          onClose={() => setOpenDialog(false)}
+        />
+      )}
+    </Box>
+  );
+};
+
+export default ProceduresSection;
+
+
+// File: PurposeSection.tsx
+// src/components/PurposeSection.tsx
+import React, { useEffect, useState } from "react";
+import axiosServices from "src/utils/axiosServices";
+import {
+  Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Typography,
+} from "@mui/material";
+import EditDialog from "./EditDialog";
+
+export interface Purpose {
+  Id: string;
+  Content_en: string;
+  Content_ar: string;
+  Version: number | null;
+  Is_Current: number;
+  Crt_Date: string;
+  Crt_by: string | null;
+  Modified_Date: string | null;
+  Modified_by: string | null;
+  Sop_HeaderId: string;
+  Is_Active: number;
+  modificationLog?: { date: string; change: string }[];
+  reviewer_Comment?: string | null;
+}
+
+interface PurposeSectionProps {
+  initialData: Purpose | null;
+}
+
+const PurposeSection: React.FC<PurposeSectionProps> = ({ initialData }) => {
+  const [purpose, setPurpose] = useState<Purpose | null>(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [historyData, setHistoryData] = useState<Purpose[]>([]);
+
+  useEffect(() => {
+    if (initialData) {
+      setPurpose(initialData);
+    }
+  }, [initialData]);
+
+  const handleDoubleClick = () => {
+    if (!purpose) return;
+    axiosServices
+      .get(`/api/soppurpose/getAllHistory/${purpose.Sop_HeaderId}`)
+      .then((res) => {
+        const activeRecords = res.data.filter((item: any) => item.Is_Active === 0);
+        setHistoryData(activeRecords);
+        setOpenDialog(true);
+      })
+      .catch((error) => console.error("Error fetching historical purposes:", error));
+  };
+
+  const handleDialogSave = (newContentEn: string, newContentAr: string, newReviewerComment: string) => {
+    if (!purpose) return;
+    if (newContentEn !== purpose.Content_en || newContentAr !== purpose.Content_ar) {
+      axiosServices
+        .post("/api/soppurpose/addSop-Purpose", {
+          Content_en: newContentEn,
+          Content_ar: newContentAr,
+          reviewer_Comment: newReviewerComment,
+          Sop_HeaderId: purpose.Sop_HeaderId,
+        })
+        .then((res) => {
+          setPurpose(res.data);
+          setOpenDialog(false);
+        })
+        .catch((error) => console.error("Error inserting purpose:", error));
+    } else {
+      axiosServices
+        .post(`/api/soppurpose/updateSop-Purpose/${purpose.Id}`, {
+          Content_en: newContentEn,
+          Content_ar: newContentAr,
+          reviewer_Comment: newReviewerComment,
+        })
+        .then((res) => {
+          setPurpose(res.data);
+          setOpenDialog(false);
+        })
+        .catch((error) => console.error("Error updating purpose:", error));
+    }
+  };
+
+  return (
+    <Box sx={{ mt: 2 }}>
+      <Typography variant="h6" gutterBottom sx={{ display: "flex", justifyContent: "space-between",     color: purpose && purpose.reviewer_Comment ? "red" : "inherit", // الشرط هنا لتلوين العنوان بالاحمر عند وجود تعليق
+ }}>
+        <span>1. Purpose:</span>
+        <span dir="rtl">1. الغرض</span>
+      </Typography>
+      <TableContainer component={Paper} sx={{ mt: 1 }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{ fontWeight: "bold", width: "50%" }}>English Content</TableCell>
+              <TableCell sx={{ fontWeight: "bold", width: "50%" }} align="right">
+                المحتوى العربي
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {purpose && (
+              <TableRow onDoubleClick={handleDoubleClick} hover sx={{ cursor: "pointer" }}>
+                <TableCell>
+                  <div dangerouslySetInnerHTML={{ __html: purpose.Content_en }} />
+                </TableCell>
+                <TableCell align="right" style={{ direction: "rtl" }}>
+                  <div dangerouslySetInnerHTML={{ __html: purpose.Content_ar }} />
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      {purpose && (
+        <EditDialog
+          open={openDialog}
+          title="تفاصيل الغرض"
+          initialContentEn={purpose.Content_en}
+          initialContentAr={purpose.Content_ar}
+          initialReviewerComment={purpose.reviewer_Comment || ""}
+          additionalInfo={{
+            version: purpose.Version,
+            crtDate: purpose.Crt_Date,
+            modifiedDate: purpose.Modified_Date,
+            crtBy: purpose.Crt_by,
+            modifiedBy: purpose.Modified_by,
+          }}
+          historyData={historyData}
+          onSave={handleDialogSave}
+          onClose={() => setOpenDialog(false)}
+        />
+      )}
+    </Box>
+  );
+};
+
+export default PurposeSection;
+
+
+// File: ResponsibilitiesSection.tsx
+// src/components/ResponsibilitiesSection.tsx
+import React, { useEffect, useState } from "react";
+import axiosServices from "src/utils/axiosServices";
+import {
+  Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Typography,
+} from "@mui/material";
+import EditDialog from "./EditDialog";
+
+export interface Responsibility {
+  Id: string;
+  Content_en: string;
+  Content_ar: string;
+  Version: number | null;
+  Is_Current: number;
+  Crt_Date: string;
+  Crt_by: string | null;
+  Modified_Date: string | null;
+  Modified_by: string | null;
+  Sop_HeaderId: string;
+  Is_Active: number;
+  modificationLog?: { date: string; change: string }[];
+  reviewer_Comment?: string | null;
+}
+
+interface ResponsibilitiesSectionProps {
+  initialData: Responsibility | null;
+}
+
+const ResponsibilitiesSection: React.FC<ResponsibilitiesSectionProps> = ({ initialData }) => {
+  const [responsibility, setResponsibility] = useState<Responsibility | null>(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [historyData, setHistoryData] = useState<Responsibility[]>([]);
+
+  useEffect(() => {
+    if (initialData) {
+      setResponsibility(initialData);
+    }
+  }, [initialData]);
+
+  const handleDoubleClick = () => {
+    if (!responsibility) return;
+    axiosServices
+      .get(`/api/sopRes/getAllHistory/${responsibility.Sop_HeaderId}`)
+      .then((res) => {
+        const activeRecords = res.data.filter((item: any) => item.Is_Active === 0);
+        setHistoryData(activeRecords);
+        setOpenDialog(true);
+      })
+      .catch((error) => console.error("Error fetching historical responsibilities:", error));
+  };
+
+  const handleDialogSave = (newContentEn: string, newContentAr: string, newReviewerComment: string) => {
+    if (!responsibility) return;
+    if (newContentEn !== responsibility.Content_en || newContentAr !== responsibility.Content_ar) {
+      axiosServices
+        .post("/api/sopRes/addSop-Res", {
+          Content_en: newContentEn,
+          Content_ar: newContentAr,
+          reviewer_Comment: newReviewerComment,
+          Sop_HeaderId: responsibility.Sop_HeaderId,
+        })
+        .then((res) => {
+          setResponsibility(res.data);
+          setOpenDialog(false);
+        })
+        .catch((error) => console.error("Error inserting responsibility:", error));
+    } else {
+      axiosServices
+        .post(`/api/sopRes/updateSop-Res/${responsibility.Id}`, {
+          Content_en: newContentEn,
+          Content_ar: newContentAr,
+          reviewer_Comment: newReviewerComment,
+        })
+        .then((res) => {
+          setResponsibility(res.data);
+          setOpenDialog(false);
+        })
+        .catch((error) => console.error("Error updating responsibility:", error));
+    }
+  };
+
+  return (
+    <Box sx={{ mt: 2 }}>
+      <Typography variant="h6" gutterBottom sx={{ display: "flex", justifyContent: "space-between",     color: responsibility && responsibility.reviewer_Comment ? "red" : "inherit", // الشرط هنا لتلوين العنوان بالاحمر عند وجود تعليق
+ }}>
+        <span>5. Responsibilities:</span>
+        <span dir="rtl">5. المسؤوليات</span>
+      </Typography>
+      <TableContainer component={Paper} sx={{ mt: 1 }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{ fontWeight: "bold", width: "50%" }}>English Content</TableCell>
+              <TableCell sx={{ fontWeight: "bold", width: "50%" }} align="right">
+                المحتوى العربي
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {responsibility && (
+              <TableRow onDoubleClick={handleDoubleClick} hover sx={{ cursor: "pointer" }}>
+                <TableCell>
+                  <div dangerouslySetInnerHTML={{ __html: responsibility.Content_en }} />
+                </TableCell>
+                <TableCell align="right" style={{ direction: "rtl" }}>
+                  <div dangerouslySetInnerHTML={{ __html: responsibility.Content_ar }} />
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      {responsibility && (
+        <EditDialog
+          open={openDialog}
+          title="تفاصيل المسؤوليات"
+          initialContentEn={responsibility.Content_en}
+          initialContentAr={responsibility.Content_ar}
+          initialReviewerComment={responsibility.reviewer_Comment || ""}
+          additionalInfo={{
+            version: responsibility.Version,
+            crtDate: responsibility.Crt_Date,
+            modifiedDate: responsibility.Modified_Date,
+            crtBy: responsibility.Crt_by,
+            modifiedBy: responsibility.Modified_by,
+          }}
+          historyData={historyData}
+          onSave={handleDialogSave}
+          onClose={() => setOpenDialog(false)}
+        />
+      )}
+    </Box>
+  );
+};
+
+export default ResponsibilitiesSection;
+
+
+// File: SafetyConcernsSection.tsx
+// src/components/SafetyConcernsSection.tsx
+import React, { useEffect, useState } from "react";
+import axiosServices from "src/utils/axiosServices";
+import {
+  Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Typography,
+} from "@mui/material";
+import EditDialog from "./EditDialog";
+
+export interface SafetyConcern {
+  Id: string;
+  Content_en: string;
+  Content_ar: string;
+  Version: number | null;
+  Is_Current: number;
+  Crt_Date: string;
+  Crt_by: string | null;
+  Modified_Date: string | null;
+  Modified_by: string | null;
+  Sop_HeaderId: string;
+  Is_Active: number;
+  modificationLog?: { date: string; change: string }[];
+  reviewer_Comment?: string | null;
+}
+
+interface SafetyConcernsSectionProps {
+  initialData: SafetyConcern | null;
+}
+
+const SafetyConcernsSection: React.FC<SafetyConcernsSectionProps> = ({ initialData }) => {
+  const [safetyConcern, setSafetyConcern] = useState<SafetyConcern | null>(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [historyData, setHistoryData] = useState<SafetyConcern[]>([]);
+
+  useEffect(() => {
+    if (initialData) {
+      setSafetyConcern(initialData);
+    }
+  }, [initialData]);
+
+  const handleDoubleClick = () => {
+    if (!safetyConcern) return;
+    axiosServices
+      .get(`/api/sopSafetyConcerns/getAllHistory/${safetyConcern.Sop_HeaderId}`)
+      .then((res) => {
+        const activeRecords = res.data.filter((item: any) => item.Is_Active === 0);
+        setHistoryData(activeRecords);
+        setOpenDialog(true);
+      })
+      .catch((error) => console.error("Error fetching historical safety concerns:", error));
+  };
+
+  const handleDialogSave = (newContentEn: string, newContentAr: string, newReviewerComment: string) => {
+    if (!safetyConcern) return;
+    if (newContentEn !== safetyConcern.Content_en || newContentAr !== safetyConcern.Content_ar) {
+      axiosServices
+        .post("/api/sopSafetyConcerns/addSop-SafetyConcerns", {
+          Content_en: newContentEn,
+          Content_ar: newContentAr,
+          reviewer_Comment: newReviewerComment,
+          Sop_HeaderId: safetyConcern.Sop_HeaderId,
+        })
+        .then((res) => {
+          setSafetyConcern(res.data);
+          setOpenDialog(false);
+        })
+        .catch((error) => console.error("Error inserting safety concern:", error));
+    } else {
+      axiosServices
+        .post(`/api/sopSafetyConcerns/updateSop-SafetyConcerns/${safetyConcern.Id}`, {
+          Content_en: newContentEn,
+          Content_ar: newContentAr,
+          reviewer_Comment: newReviewerComment,
+        })
+        .then((res) => {
+          setSafetyConcern(res.data);
+          setOpenDialog(false);
+        })
+        .catch((error) => console.error("Error updating safety concern:", error));
+    }
+  };
+
+  return (
+    <Box sx={{ mt: 2 }}>
+      <Typography variant="h6" gutterBottom sx={{ display: "flex", justifyContent: "space-between",     color: safetyConcern && safetyConcern.reviewer_Comment ? "red" : "inherit", // الشرط هنا لتلوين العنوان بالاحمر عند وجود تعليق
+ }}>
+        <span>6. Safety Concerns:</span>
+        <span dir="rtl">6. اشتراطات السلامة</span>
+      </Typography>
+      <TableContainer component={Paper} sx={{ mt: 1 }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{ fontWeight: "bold", width: "50%" }}>English Content</TableCell>
+              <TableCell sx={{ fontWeight: "bold", width: "50%" }} align="right">
+                المحتوى العربي
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {safetyConcern && (
+              <TableRow onDoubleClick={handleDoubleClick} hover sx={{ cursor: "pointer" }}>
+                <TableCell>
+                  <div dangerouslySetInnerHTML={{ __html: safetyConcern.Content_en }} />
+                </TableCell>
+                <TableCell align="right" style={{ direction: "rtl" }}>
+                  <div dangerouslySetInnerHTML={{ __html: safetyConcern.Content_ar }} />
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      {safetyConcern && (
+        <EditDialog
+          open={openDialog}
+          title="تفاصيل اشتراطات السلامة"
+          initialContentEn={safetyConcern.Content_en}
+          initialContentAr={safetyConcern.Content_ar}
+          initialReviewerComment={safetyConcern.reviewer_Comment || ""}
+          additionalInfo={{
+            version: safetyConcern.Version,
+            crtDate: safetyConcern.Crt_Date,
+            modifiedDate: safetyConcern.Modified_Date,
+            crtBy: safetyConcern.Crt_by,
+            modifiedBy: safetyConcern.Modified_by,
+          }}
+          historyData={historyData}
+          onSave={handleDialogSave}
+          onClose={() => setOpenDialog(false)}
+        />
+      )}
+    </Box>
+  );
+};
+
+export default SafetyConcernsSection;
+
+
+// File: ScopeSection.tsx
+// src/components/ScopeSection.tsx
+import React, { useEffect, useState } from "react";
+import axiosServices from "src/utils/axiosServices";
+import {
+  Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Typography,
+} from "@mui/material";
+import EditDialog from "./EditDialog";
+
+export interface Scope {
+  Id: string;
+  Content_en: string;
+  Content_ar: string;
+  Version: number | null;
+  Is_Current: number;
+  Crt_Date: string;
+  Crt_by: string | null;
+  Modified_Date: string | null;
+  Modified_by: string | null;
+  Sop_HeaderId: string;
+  Is_Active: number;
+  modificationLog?: { date: string; change: string }[];
+  reviewer_Comment?: string | null;
+}
+
+interface ScopeSectionProps {
+  initialData: Scope | null;
+}
+
+const ScopeSection: React.FC<ScopeSectionProps> = ({ initialData }) => {
+  const [scope, setScope] = useState<Scope | null>(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [historyData, setHistoryData] = useState<Scope[]>([]);
+
+  useEffect(() => {
+    if (initialData) {
+      setScope(initialData);
+    }
+  }, [initialData]);
+
+  const handleDoubleClick = () => {
+    if (!scope) return;
+    axiosServices
+      .get(`/api/sopScope/getAllHistory/${scope.Sop_HeaderId}`)
+      .then((res) => {
+        const activeRecords = res.data.filter((item: any) => item.Is_Active === 0);
+        setHistoryData(activeRecords);
+        setOpenDialog(true);
+      })
+      .catch((error) => console.error("Error fetching historical scope:", error));
+  };
+
+  const handleDialogSave = (newContentEn: string, newContentAr: string, newReviewerComment: string) => {
+    if (!scope) return;
+    if (newContentEn !== scope.Content_en || newContentAr !== scope.Content_ar) {
+      axiosServices
+        .post("/api/sopScope/addSop-Scope", {
+          Content_en: newContentEn,
+          Content_ar: newContentAr,
+          reviewer_Comment: newReviewerComment,
+          Sop_HeaderId: scope.Sop_HeaderId,
+        })
+        .then((res) => {
+          setScope(res.data);
+          setOpenDialog(false);
+        })
+        .catch((error) => console.error("Error inserting scope:", error));
+    } else {
+      axiosServices
+        .post(`/api/sopScope/updateSop-Scope/${scope.Id}`, {
+          Content_en: newContentEn,
+          Content_ar: newContentAr,
+          reviewer_Comment: newReviewerComment,
+        })
+        .then((res) => {
+          setScope(res.data);
+          setOpenDialog(false);
+        })
+        .catch((error) => console.error("Error updating scope:", error));
+    }
+  };
+
+  return (
+    <Box sx={{ mt: 2 }}>
+      <Typography variant="h6" gutterBottom sx={{ display: "flex", justifyContent: "space-between",     color: scope && scope.reviewer_Comment ? "red" : "inherit", // الشرط هنا لتلوين العنوان بالاحمر عند وجود تعليق
+ }}>
+        <span>3. Scope:</span>
+        <span dir="rtl">3. النطاق</span>
+      </Typography>
+      <TableContainer component={Paper} sx={{ mt: 1 }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{ fontWeight: "bold", width: "50%" }}>English Content</TableCell>
+              <TableCell sx={{ fontWeight: "bold", width: "50%" }} align="right">
+                المحتوى العربي
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {scope && (
+              <TableRow onDoubleClick={handleDoubleClick} hover sx={{ cursor: "pointer" }}>
+                <TableCell>
+                  <div dangerouslySetInnerHTML={{ __html: scope.Content_en }} />
+                </TableCell>
+                <TableCell align="right" style={{ direction: "rtl" }}>
+                  <div dangerouslySetInnerHTML={{ __html: scope.Content_ar }} />
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      {scope && (
+        <EditDialog
+          open={openDialog}
+          title="تفاصيل النطاق"
+          initialContentEn={scope.Content_en}
+          initialContentAr={scope.Content_ar}
+          initialReviewerComment={scope.reviewer_Comment || ""}
+          additionalInfo={{
+            version: scope.Version,
+            crtDate: scope.Crt_Date,
+            modifiedDate: scope.Modified_Date,
+            crtBy: scope.Crt_by,
+            modifiedBy: scope.Modified_by,
+          }}
+          historyData={historyData}
+          onSave={handleDialogSave}
+          onClose={() => setOpenDialog(false)}
+        />
+      )}
+    </Box>
+  );
+};
+
+export default ScopeSection;
+
+
+// File: sopDocument.css
+/* يمكنك تسميته كما تشاء مثلاً sopDocument.css */
+
+/* حاوية عامة للجدول */
+.sop-wrapper {
+  width: 210mm;
+  margin: 0 auto;
+}
+
+/* الجدول نفسه */
+.sop-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  /* لتعطيل أي هوامش في الطباعة */
+  page-break-after: always;
+}
+
+/* تأكد من تكرار الهيدر في كل صفحة مطبوعة */
+.sop-table thead {
+  display: table-header-group;
+}
+
+/* تأكد من تكرار الفوتر في كل صفحة مطبوعة */
+.sop-table tfoot {
+  display: table-footer-group;
+}
+
+/* تصغير المسافات الفارغة */
+.sop-table th, .sop-table td {
+  vertical-align: top;
+}
+
+/* إعدادات للـ A4 في وضع الطباعة */
+@media print {
+  body, html {
+    width: 210mm;
+    height: 297mm;
+    margin: 0;
+    padding: 0;
+  }
+  .sop-wrapper {
+    width: 210mm;
+    margin: 0 auto;
+  }
+  .sop-table {
+    page-break-after: always;
+  }
+}
+
+
+// File: SOPTemplate.tsx
+// src/components/SOPTemplate.tsx
+import React, { ReactNode, useMemo } from 'react';
+import Header from './Header';
+import PreparedBySection from './PreparedBySection';
+import Footer from './Footer';
+import { SopHeader } from '../types/SopHeader';
+import './sopDocument.css'; // هنا ملف الستايل
+
+interface SOPTemplateProps {
+  children: ReactNode; // أقسام الـSOP
+  headerData?: SopHeader | null;
+}
+
+const SOPTemplate: React.FC<SOPTemplateProps> = ({ children, headerData }) => {
+  // تحضير بيانات الهيدر
+  const headerComponent = useMemo(() => {
+    if (!headerData) return <div>No Header Data</div>;
+    return (
+      <Header
+        issueDate={headerData.Issued_Date || ''}
+        effectiveDate={headerData.Effective_Date || ''}
+        revisionDate={headerData.Revision_Date || ''}
+        codeNumber={headerData.Doc_Code || ''}
+        versionNumber={headerData.Version || ''}
+        pageNumber={headerData.Page_Number || '1'} 
+      />
+    );
+  }, [headerData]);
+
+  // تحضير الفوتر (يشمل PreparedBySection إن وجد)
+  const footerComponent = useMemo(() => {
+    if (!headerData) return null;
+    const preparedSignatureUrl = headerData?.prepared_by_sign || '';
+    const reviewedSignatureUrl = headerData?.reviewed_by_sign || '';
+    const approvedSignatureUrl = headerData?.approved_by_sign || '';
+
+    const preparedName = headerData?.User_Data_Sop_header_Prepared_ByToUser_Data
+      ? `${headerData.User_Data_Sop_header_Prepared_ByToUser_Data.FName} ${headerData.User_Data_Sop_header_Prepared_ByToUser_Data.LName}`
+      : '';
+    const reviewedName = headerData?.User_Data_Sop_header_reviewed_byToUser_Data
+      ? `${headerData.User_Data_Sop_header_reviewed_byToUser_Data.FName} ${headerData.User_Data_Sop_header_reviewed_byToUser_Data.LName}`
+      : '';
+    const approvedName = headerData?.User_Data_Sop_header_Approved_byToUser_Data
+      ? `${headerData.User_Data_Sop_header_Approved_byToUser_Data.FName} ${headerData.User_Data_Sop_header_Approved_byToUser_Data.LName}`
+      : '';
+
+    return (
+      <>
+        <PreparedBySection
+          preparedJobTitle="QA Associate"
+          reviewedJobTitle="QA Supervisor"
+          approvedJobTitle="QA Manager"
+          preparedName={preparedName}
+          reviewedName={reviewedName}
+          approvedName={approvedName}
+          stampImageUrl={headerData?.sop_stamp_url || './public/Stamps/QaApproval.svg'}
+          preparedSignatureUrl={preparedSignatureUrl}
+          reviewedSignatureUrl={reviewedSignatureUrl}
+          approvedSignatureUrl={approvedSignatureUrl}
+          prepared_date={headerData?.prepared_date}
+          reviewed_date={headerData?.reviewed_date}
+          approved_date={headerData?.approved_date}
+        />
+        <Footer />
+      </>
+    );
+  }, [headerData]);
+
+  return (
+    <div className="sop-wrapper">
+      <table className="sop-table">
+        <thead>
+          <tr>
+            <th>
+              {headerComponent}
+            </th>
+          </tr>
+        </thead>
+        <tfoot>
+          <tr>
+            <td>
+              {footerComponent}
+            </td>
+          </tr>
+        </tfoot>
+        <tbody>
+          <tr>
+            <td>
+              {/* هنا سيوضع كل المحتوى (الأقسام) في نفس الـtbody 
+                  وأي محتوى أطول من صفحة A4 سيتم تلقائياً قطعه إلى صفحة جديدة 
+                  مع تكرار الهيدر والفوتر (في الطباعة أو عند استخدام معاينة الطباعة).
+              */}
+              {children}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+export default SOPTemplate;
+
+
+// File: sopTemplatePagination.css
+/* حاوية تحتوي عدة جداول (كل جدول = صفحة) */
+.multi-page-container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px; /* مسافة بين الجداول أثناء العرض في الشاشة */
+    margin: 0 auto;
+    width: 100%;
+    max-width: 900px; /* لكي لا تتمدد أكثر من اللازم في الشاشة */
+    background-color: #fff;
+  }
+  
+  /* كل جدول = صفحة */
+  .one-page {
+    border: 1px solid #000;
+    border-collapse: collapse;
+    page-break-after: always; /* عند الطباعة، اجعل كل جدول = صفحة مستقلة */
+    background-color: #fff;
+  }
+  
+  /* العنصر المخفي لقياس الارتفاع */
+  .template-measure-hidden {
+    position: absolute;
+    visibility: hidden;
+    top: 0;
+    left: -9999px;
+    height: auto;
+    pointer-events: none;
+    /* لا تنسَ ضبط العرض ديناميكيًا في الإنلاين ستايل (width: pageWidth) */
+  }
+  
+  /* تحسين الطباعة */
+  @media print {
+    .multi-page-container {
+      margin: 0; /* إزالة المساحات في الطباعة */
+    }
+    .one-page {
+      border: none;
+      page-break-after: always;
+    }
+  }
+  
+

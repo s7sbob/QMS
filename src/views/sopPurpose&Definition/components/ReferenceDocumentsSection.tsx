@@ -35,14 +35,16 @@ const ReferenceDocumentsSection: React.FC<{ initialData: ReferenceDoc | null }> 
   const [openDlg, setOpenDlg] = useState(false);
   const [history, setHistory] = useState<ReferenceDoc[]>([]);
 
+  /*  ❱❱❱  اربط البيانات الواردة من الـ parent  */
   useEffect(() => {
     if (initialData) setRefDoc(initialData);
   }, [initialData]);
 
+  /*  ❱❱❱  جلب السجلّ التاريخي عند ضغط مزدوج  */
   const handleDoubleClick = () => {
     if (!refDoc) return;
     axiosServices
-      .get(`/api/sopReferences/getAllHistory/${refDoc.Sop_HeaderId}`)
+      .get(`/api/sopRefrences/history/${refDoc.Sop_HeaderId}`)
       .then((r) => {
         const inactive = r.data.filter((x: any) => x.Is_Active === 0);
         setHistory(inactive);
@@ -51,19 +53,25 @@ const ReferenceDocumentsSection: React.FC<{ initialData: ReferenceDoc | null }> 
       .catch((err) => console.error(err));
   };
 
+  /*  ❱❱❱  حفظ التعديلات أو إنشاء إصدار جديد  */
   const onSave = (en: string, ar: string, comment: string) => {
     if (!refDoc) return;
+
+    const payload = {
+      Content_en: en,
+      Content_ar: ar,
+      reviewer_Comment: comment,
+      Sop_HeaderId: refDoc.Sop_HeaderId,
+    };
+
     const isNew = en !== refDoc.Content_en || ar !== refDoc.Content_ar;
-    const url = isNew
-      ? '/api/sopReferences/addSop-References'
-      : `/api/sopReferences/updateSop-References/${refDoc.Id}`;
-    axiosServices
-      .post(url, {
-        Content_en: en,
-        Content_ar: ar,
-        reviewer_Comment: comment,
-        Sop_HeaderId: refDoc.Sop_HeaderId,
-      })
+
+    /*  ⬇︎  المسارات الجديدة في الـ backend  */
+    const request = isNew
+      ? axiosServices.post('/api/sopRefrences/Create', payload)
+      : axiosServices.put(`/api/sopRefrences/update/${refDoc.Id}`, payload);
+
+    request
       .then((res) => {
         setRefDoc(res.data);
         setOpenDlg(false);
@@ -90,15 +98,24 @@ const ReferenceDocumentsSection: React.FC<{ initialData: ReferenceDoc | null }> 
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: 'bold', width: '50%' }}>English Content</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', width: '50%' }} align="right">
+              <TableCell sx={{ fontWeight: 'bold', width: '50%' }}>
+                English Content
+              </TableCell>
+              <TableCell
+                sx={{ fontWeight: 'bold', width: '50%' }}
+                align="right"
+              >
                 المحتوى العربي
               </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {refDoc && (
-              <TableRow onDoubleClick={handleDoubleClick} hover sx={{ cursor: 'pointer' }}>
+              <TableRow
+                onDoubleClick={handleDoubleClick}
+                hover
+                sx={{ cursor: 'pointer' }}
+              >
                 <TableCell>
                   <div dangerouslySetInnerHTML={{ __html: refDoc.Content_en }} />
                 </TableCell>
@@ -126,4 +143,5 @@ const ReferenceDocumentsSection: React.FC<{ initialData: ReferenceDoc | null }> 
     </Box>
   );
 };
+
 export default ReferenceDocumentsSection;

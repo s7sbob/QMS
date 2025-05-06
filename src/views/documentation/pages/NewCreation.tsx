@@ -212,6 +212,12 @@ const NewCreation: React.FC = () => {
           ar: formData.safetyConcernsAr,
           url: '/api/sopSafetyConcerns/addsop-safety-concerns',
         },
+                /* ⭐ الوثائق المرجعية – NEW ⭐ */
+                {
+                  en: formData.referenceDocumentsEn,
+                  ar: formData.referenceDocumentsAr,
+                  url: '/api/sopRefrences/Create',           // مسار الـ backend الجديد
+                },
       ];
 
       for (const sec of sections) {
