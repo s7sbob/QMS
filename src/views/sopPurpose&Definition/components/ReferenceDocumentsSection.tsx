@@ -135,6 +135,13 @@ const ReferenceDocumentsSection: React.FC<{ initialData: ReferenceDoc | null }> 
           initialContentEn={refDoc.Content_en}
           initialContentAr={refDoc.Content_ar}
           initialReviewerComment={refDoc.reviewer_Comment || ''}
+          additionalInfo={{
+            version: refDoc.Version,
+            crtDate: refDoc.Crt_Date,
+            modifiedDate: refDoc.Modified_Date,
+            crtBy: refDoc.Crt_by,
+            modifiedBy: refDoc.Modified_by,
+          }}
           historyData={history}
           onSave={onSave}
           onClose={() => setOpenDlg(false)}

@@ -24,7 +24,7 @@ export interface SopDetailTracking {
   Sop_Res: any;
   Sop_Safety_Concerns?: any;
   Sop_References?: any;
-  Sop_Refrences?: any;
+  Sop_Refrence?: any;
   Is_Active: number;
   crt_date: string;
   Sop_header: any;
@@ -202,8 +202,7 @@ const SOPFullDocument: React.FC = () => {
         {/* ⭐ NEW – قسم References */}
         <ReferenceDocumentsSection
   initialData={
-    (sopDetail?.Sop_References as any) ||
-    (sopDetail?.Sop_Refrences as any) ||
+    (sopDetail?.Sop_Refrence as any) ||
     null
   }
 />        {/* ⭐ NEW – المرفقات */}
