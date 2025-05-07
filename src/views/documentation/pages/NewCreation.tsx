@@ -8,11 +8,9 @@ import React, { useState, useEffect, useContext } from 'react';
 import {
   Container,
   Paper,
-  Box,
   Grid,
   TextField,
   Button,
-  Typography,
   List,
   ListItem,
   ListItemText,
@@ -24,7 +22,6 @@ import {
   Select,
   Checkbox,
   FormControlLabel,
-  CircularProgress,
   GlobalStyles        // 🆕 لجعل القوائم المرقّمة عربية
 } from '@mui/material';
 import { IconUpload, IconTrash } from '@tabler/icons-react';
@@ -34,6 +31,8 @@ import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 import ReactSummernote from 'react-summernote';
 import 'react-summernote/dist/react-summernote.css';
+import { Backdrop, CircularProgress, Typography, Box } from '@mui/material'
+
 
 /* ╭──────────────────────────────────────────────────────────────╮
    │ إعداد شريط الأدوات: إضافة fontname, fontsize, height         │
@@ -82,7 +81,19 @@ const NewCreation: React.FC = () => {
   const [attachments, setAttachments] = useState<File[]>([]);
   const user = useContext(UserContext);
   const compId = user?.compId || '';
+  const [submitLoading, setSubmitLoading] = useState<boolean>(false);
+  const [submitStatus, setSubmitStatus] = useState<string>('');
 
+  const getSectionName = (url: string) => {
+  if (url.includes('addSop-Definition'))   return 'التعريفات';
+  if (url.includes('addSop-Purpose'))      return 'الغرض';
+  if (url.includes('SopReponsibility-create')) return 'المسؤولية';
+  if (url.includes('addSop-Procedure'))    return 'الإجراءات';
+  if (url.includes('addSop-Scope'))        return 'مجال التطبيق';
+  if (url.includes('addsop-safety-concerns')) return 'اشتراطات السلامة';
+  if (url.includes('/sopRefrences/Create'))   return 'الوثائق المرجعية';
+  return url;
+};
   const [departments, setDepartments] = useState<Department[]>([]);
   const [selectedDepartment, setSelectedDepartment] = useState<string>('');
   const [containTraining, setContainTraining] = useState<boolean>(false);
@@ -157,6 +168,7 @@ const NewCreation: React.FC = () => {
   /* ───────────────────────────── إرسال النموذج ──────────────────────────── */
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setSubmitLoading(true);
     try {
       const headerPayload = {
         Doc_Title_en: formData.titleEn,
@@ -171,15 +183,9 @@ const NewCreation: React.FC = () => {
         headerPayload
       );
       const headerId = headerResponse.data?.Id;
-      if (!headerId) {
-        Swal.fire({
-          title: 'خطأ',
-          text: 'لم يرجع السيرفر بمعرف Header صالح',
-          icon: 'error',
-          confirmButtonText: 'حسناً',
-        });
-        return;
-      }
+      if (!headerId) throw new Error('لا يوجد Header Id');
+  
+      setSubmitStatus('✅ Header تم إنشاؤه');
 
       const sections = [
         {
@@ -222,6 +228,8 @@ const NewCreation: React.FC = () => {
 
       for (const sec of sections) {
         if (sec.en || sec.ar) {
+          const sectionName = getSectionName(sec.url);
+          setSubmitStatus(`⏳ رفع قسم: ${sectionName}...`);
           await axiosServices.post(sec.url, {
             Content_en: sec.en,
             Content_ar: sec.ar,
@@ -229,8 +237,12 @@ const NewCreation: React.FC = () => {
             Is_Active: 1,
             Sop_HeaderId: headerId,
           });
+          setSubmitStatus(`✅ تمت إضافة: ${sectionName}`);
         }
       }
+      setSubmitStatus('🎉 اكتمل إنشاء الـ SOP');
+      // give the user a moment to read “done” before the alert
+      await new Promise(res => setTimeout(res, 500));
 
       Swal.fire({
         title: 'تم الإنشاء بنجاح!',
@@ -275,7 +287,24 @@ const NewCreation: React.FC = () => {
           },
         }}
       />
-
+<Backdrop
+  sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+  open={submitLoading}
+>
+  <Box sx={{
+    bgcolor: 'white',
+    color: 'black',
+    p: 4,
+    borderRadius: 2,
+    textAlign: 'center',
+    minWidth: 240
+  }}>
+    <CircularProgress />
+    <Typography variant="h6" sx={{ mt: 2 }}>
+      {submitStatus}
+    </Typography>
+  </Box>
+</Backdrop>
       <Paper sx={{ p: 4, m: 2 }}>
         <Box component="header" sx={{ textAlign: 'center', mb: 3 }}>
           <Typography variant="h4">CREATION SOP</Typography>
