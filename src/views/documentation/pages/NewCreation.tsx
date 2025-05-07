@@ -184,7 +184,18 @@ const NewCreation: React.FC = () => {
       );
       const headerId = headerResponse.data?.Id;
       if (!headerId) throw new Error('لا يوجد Header Id');
-  
+      // 1) guard against null
+      if (!user) {
+        Swal.fire({
+          title: 'خطأ',
+          text: 'بيانات المستخدم غير متوفرة.',
+          icon: 'error',
+          confirmButtonText: 'حسناً',
+        })
+        return
+      }
+      const userId = user.Id   // <-- note uppercase "Id"
+
       setSubmitStatus('✅ Header تم إنشاؤه');
 
       const sections = [
@@ -240,6 +251,26 @@ const NewCreation: React.FC = () => {
           setSubmitStatus(`✅ تمت إضافة: ${sectionName}`);
         }
       }
+
+           // ────────── NEW: upload attachments ──────────
+    if (attachments.length > 0) {
+        setSubmitStatus('⏳ رفع المرفقات...');
+        const fd = new FormData();
+        // append each file under the field name "files"
+        attachments.forEach(f => fd.append('files', f))
+        // inform the backend which SOP header these belong to
+        fd.append('Sop_HeadId', headerId)
+        // if you track who uploaded:
+        fd.append('Crt_by', userId)    // ✅ safe, correct property
+  
+        await axiosServices.post('/api/files/upload', fd, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        setSubmitStatus('✅ المرفقات تم رفعها');
+      }
+       // ─────────────────────────────────────────────
+
+
       setSubmitStatus('🎉 اكتمل إنشاء الـ SOP');
       // give the user a moment to read “done” before the alert
       await new Promise(res => setTimeout(res, 500));
@@ -307,7 +338,7 @@ const NewCreation: React.FC = () => {
 </Backdrop>
       <Paper sx={{ p: 4, m: 2 }}>
         <Box component="header" sx={{ textAlign: 'center', mb: 3 }}>
-          <Typography variant="h4">CREATION SOP</Typography>
+          <Typography variant="h1">CREATION SOP</Typography>
           <Typography variant="subtitle1">
             Standard Operating Procedure (SOP)
           </Typography>
@@ -383,12 +414,12 @@ const NewCreation: React.FC = () => {
                   </Select>
                 </FormControl>
 
-                <Typography variant="h6" gutterBottom sx={{ mt: 3 }} dir="rtl">
+                <Typography variant="h4" gutterBottom sx={{ mt: 3 }} dir="rtl">
                   المحتوى
                 </Typography>
 
                 {/* الغرض */}
-                <Typography variant="subtitle2" sx={{ textAlign: 'right' }}>
+                <Typography variant="h4" gutterBottom sx={{ textAlign: 'right' }}>
                   الغرض:
                 </Typography>
                 <Box dir="rtl">
@@ -402,7 +433,7 @@ const NewCreation: React.FC = () => {
                 </Box>
 
                 {/* التعريفات */}
-                <Typography variant="subtitle2" sx={{ mt: 2, textAlign: 'right' }}>
+                <Typography variant="h4" gutterBottom sx={{ mt: 2, textAlign: 'right' }}>
                   التعريفات:
                 </Typography>
                 <Box dir="rtl">
@@ -416,7 +447,7 @@ const NewCreation: React.FC = () => {
                 </Box>
 
                 {/* مجال التطبيق */}
-                <Typography variant="subtitle2" sx={{ mt: 2, textAlign: 'right' }}>
+                <Typography variant="h4" gutterBottom sx={{ mt: 2, textAlign: 'right' }}>
                   مجال التطبيق:
                 </Typography>
                 <Box dir="rtl">
@@ -430,7 +461,7 @@ const NewCreation: React.FC = () => {
                 </Box>
 
                 {/* المسؤولية */}
-                <Typography variant="subtitle2" sx={{ mt: 2, textAlign: 'right' }}>
+                <Typography variant="h4" gutterBottom sx={{ mt: 2, textAlign: 'right' }}>
                   المسؤولية:
                 </Typography>
                 <Box dir="rtl">
@@ -444,7 +475,7 @@ const NewCreation: React.FC = () => {
                 </Box>
 
                 {/* اشتراطات السلامة */}
-                <Typography variant="subtitle2" sx={{ mt: 2, textAlign: 'right' }}>
+                <Typography variant="h4" gutterBottom sx={{ mt: 2, textAlign: 'right' }}>
                   اشتراطات السلامة:
                 </Typography>
                 <Box dir="rtl">
@@ -458,7 +489,7 @@ const NewCreation: React.FC = () => {
                 </Box>
 
                 {/* الإجراءات */}
-                <Typography variant="subtitle2" sx={{ mt: 2, textAlign: 'right' }}>
+                <Typography variant="h4" gutterBottom sx={{ mt: 2, textAlign: 'right' }}>
                   الخطوات:
                 </Typography>
                 <Box dir="rtl">
@@ -472,7 +503,7 @@ const NewCreation: React.FC = () => {
                 </Box>
 
                 {/* الوثائق المرجعية */}
-                <Typography variant="subtitle2" sx={{ mt: 2, textAlign: 'right' }}>
+                <Typography variant="h4" gutterBottom sx={{ mt: 2, textAlign: 'right' }}>
                   الوثائق المرجعية:
                 </Typography>
                 <Box dir="rtl">
@@ -587,12 +618,12 @@ const NewCreation: React.FC = () => {
                   </Select>
                 </FormControl>
 
-                <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
+                <Typography variant="h4" gutterBottom sx={{ mt: 3 }}>
                   Content
                 </Typography>
 
                 {/* Purpose */}
-                <Typography variant="subtitle2">Purpose:</Typography>
+                <Typography variant="h4" gutterBottom>Purpose:</Typography>
                 <Box dir="ltr">
                   <ReactSummernote
                   value={formData.purposeEn}
@@ -604,7 +635,7 @@ const NewCreation: React.FC = () => {
                 </Box>
 
                 {/* Definitions */}
-                <Typography variant="subtitle2" sx={{ mt: 2 }}>
+                <Typography variant="h4" gutterBottom sx={{ mt: 2 }}>
                   Definitions:
                 </Typography>
                 <Box dir="ltr">
@@ -618,7 +649,7 @@ const NewCreation: React.FC = () => {
                 </Box>
 
                 {/* Scope */}
-                <Typography variant="subtitle2" sx={{ mt: 2 }}>
+                <Typography variant="h4" gutterBottom sx={{ mt: 2 }}>
                   Scope:
                 </Typography>
                 <Box dir="ltr">
@@ -632,7 +663,7 @@ const NewCreation: React.FC = () => {
                 </Box>
 
                 {/* Responsibility */}
-                <Typography variant="subtitle2" sx={{ mt: 2 }}>
+                <Typography variant="h4" gutterBottom sx={{ mt: 2 }}>
                   Responsibility:
                 </Typography>
                 <Box dir="ltr">
@@ -646,7 +677,7 @@ const NewCreation: React.FC = () => {
                 </Box>
 
                 {/* Safety Concerns */}
-                <Typography variant="subtitle2" sx={{ mt: 2 }}>
+                <Typography variant="h4" gutterBottom sx={{ mt: 2 }}>
                   Safety Concerns:
                 </Typography>
                 <Box dir="ltr">
@@ -660,7 +691,7 @@ const NewCreation: React.FC = () => {
                 </Box>
 
                 {/* Procedure */}
-                <Typography variant="subtitle2" sx={{ mt: 2 }}>
+                <Typography variant="h4" gutterBottom sx={{ mt: 2 }}>
                   Procedure:
                 </Typography>
                 <Box dir="ltr">
@@ -674,7 +705,7 @@ const NewCreation: React.FC = () => {
                 </Box>
 
                 {/* Reference Documents */}
-                <Typography variant="subtitle2" sx={{ mt: 2 }}>
+                <Typography variant="h4" gutterBottom sx={{ mt: 2 }}>
                   Reference Documents:
                 </Typography>
                 <Box dir="ltr">
