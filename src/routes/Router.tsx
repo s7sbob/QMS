@@ -15,6 +15,7 @@ const BlankLayout = Loadable(lazy(() => import('../layouts/blank/BlankLayout')))
 import AuthGuard from 'src/guards/AuthGuard'; // <--  تأكد من المسار الصحيح
 import SOPFullDocument from 'src/views/sopPurpose&Definition/Pages/SOPFullDocument';
 import AllNotifications from 'src/layouts/full/vertical/header/AllNotifications';
+import NewDocumentRequestForm from 'src/views/documentation/pages/NewDocumentRequestForm';
 
 /* ****Pages***** */
 const Documentation_Control = Loadable(lazy(() => import('../views/documentation/DocumentationControl')));
@@ -79,6 +80,8 @@ const Router = [
       { path: '/documentation-control/distribution_form', element: <Distribution_form /> },
       { path: '/ITManagementPage', element: <ITManagementPage /> },
       { path: '/SOPFullDocument', element: <SOPFullDocument /> },
+            { path: '/documentation-control/Request_Form', element: <NewDocumentRequestForm /> },
+
       {
         path: '/all-notifications',
         element: <AllNotifications />,

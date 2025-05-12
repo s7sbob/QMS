@@ -17,6 +17,12 @@ const actionLinks = [
     subtext: 'Create a new SOP',
     avatar: <IconFilePlus size={24} />,
   },
+    {
+    href: '/documentation-control/Request_Form',
+    title: 'New Document Request Form',
+    subtext: 'Create a new SOP',
+    avatar: <IconFilePlus size={24} />,
+  },
   {
     href: '/documentation-control/distribution_form',
     title: 'Distribution Form',

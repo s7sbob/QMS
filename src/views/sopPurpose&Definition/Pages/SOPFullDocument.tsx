@@ -13,6 +13,7 @@ import SafetyConcernsSection from '../components/SafetyConcernsSection';
 import { Button, Box } from '@mui/material';
 import ReferenceDocumentsSection from '../components/ReferenceDocumentsSection';
 import AttachmentsSection from '../components/AttachmentsSection';
+import CriticalControlPointsSection from '../components/CriticalControlPointsSection';
 
 export interface SopDetailTracking {
   Id: string;
@@ -24,6 +25,7 @@ export interface SopDetailTracking {
   Sop_Res: any;
   Sop_Safety_Concerns?: any;
   Sop_References?: any;
+  Sop_Critical_Control_Points?: any;   // ← NEW
   Sop_Refrence?: any;
   Is_Active: number;
   crt_date: string;
@@ -194,19 +196,29 @@ const SOPFullDocument: React.FC = () => {
     <>
       <SOPTemplate headerData={sopDetail?.Sop_header || null}>
         <PurposeSection initialData={sopDetail?.sop_purpose || null} />
+        {/* ⭐ NEW – قسم Definitions */}
         <DefinitionsSection initialData={sopDetail?.Sop_Definitions || null} />
+        {/* ⭐ NEW – قسم Scope */}
         <ScopeSection initialData={sopDetail?.Sop_Scope || null} />
-        <ProceduresSection initialData={sopDetail?.Sop_Procedures || null} />
-        <ResponsibilitiesSection initialData={sopDetail?.Sop_Res || null} />
+        {/* ⭐ NEW – قسم Safety Concerns */}
         <SafetyConcernsSection initialData={sopDetail?.Sop_Safety_Concerns || null} />
+        {/* ⭐ NEW – قسم Responsibilities */}
+        <ResponsibilitiesSection initialData={sopDetail?.Sop_Res || null} />
+        {/* ⭐ NEW – قسم Procedures */}
+        <ProceduresSection initialData={sopDetail?.Sop_Procedures || null} />
+        {/* ⭐ NEW – قسم Critical Control Points */}
+        {/* ⭐ NEW – Critical Control Points */}
+<CriticalControlPointsSection initialData={sopDetail?.Sop_Critical_Control_Points || null}/>
+
+        {/* ⭐ NEW – قسم Attachments */}
+        {headerId && <AttachmentsSection headerId={headerId} />}
         {/* ⭐ NEW – قسم References */}
         <ReferenceDocumentsSection
   initialData={
     (sopDetail?.Sop_Refrence as any) ||
     null
   }
-/>        {/* ⭐ NEW – المرفقات */}
-        {headerId && <AttachmentsSection headerId={headerId} />}
+/>        
       </SOPTemplate>
 
       {sopDetail && <StatusControl sopDetail={sopDetail} setSopDetail={setSopDetail} />}

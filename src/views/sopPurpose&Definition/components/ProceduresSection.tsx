@@ -103,8 +103,8 @@ const ProceduresSection: React.FC<ProceduresSectionProps> = ({ initialData }) =>
           color: procedure && procedure.reviewer_Comment ? 'red' : 'inherit', // الشرط هنا لتلوين العنوان بالاحمر عند وجود تعليق
         }}
       >
-        <span>4. Procedures:</span>
-        <span dir="rtl">4. الإجراءات</span>
+        <span>6. Procedures:</span>
+        <span dir="rtl">6. الإجراءات</span>
       </Typography>
       <TableContainer component={Paper} sx={{ mt: 1 }}>
         <Table>

@@ -22,7 +22,8 @@ import {
   Select,
   Checkbox,
   FormControlLabel,
-  GlobalStyles        // 🆕 لجعل القوائم المرقّمة عربية
+  GlobalStyles,        // 🆕 لجعل القوائم المرقّمة عربية
+  SelectChangeEvent
 } from '@mui/material';
 import { IconUpload, IconTrash } from '@tabler/icons-react';
 import axiosServices from 'src/utils/axiosServices';
@@ -115,6 +116,10 @@ const NewCreation: React.FC = () => {
     safetyConcernsEn: '',
     procedureEn: '',
     referenceDocumentsEn: '',
+        criticalPointsAr: '',             // ← Arabic
+    criticalPointsEn: '',             // ← English
+     documentType: 'SOP'
+
   });
 
   const creationDate = new Date().toISOString().slice(0, 10);
@@ -176,6 +181,8 @@ const NewCreation: React.FC = () => {
         Com_Id: compId,
         Dept_Id: selectedDepartment,
         status: '1',
+          Doc_Type: formData.documentType
+
       };
 
       const headerResponse = await axiosServices.post(
@@ -235,6 +242,9 @@ const NewCreation: React.FC = () => {
                   ar: formData.referenceDocumentsAr,
                   url: '/api/sopRefrences/Create',           // مسار الـ backend الجديد
                 },
+                 /* ⭐ CCP – NEW */
+        { en: formData.criticalPointsEn, ar: formData.criticalPointsAr, url: '/api/sopCriticalControlPoints/addSop-CriticalControlPoint'          },
+
       ];
 
       for (const sec of sections) {
@@ -352,6 +362,27 @@ const NewCreation: React.FC = () => {
                 <Typography variant="h5" gutterBottom dir="rtl">
                   العربية
                 </Typography>
+                <FormControl
+  fullWidth
+  margin="normal"
+  sx={{ direction: 'rtl', textAlign: 'right' }}
+>
+  <InputLabel id="doc-type-label-ar" dir="rtl">
+    نوع الوثيقة
+  </InputLabel>
+  <Select
+    labelId="doc-type-label-ar"
+    id="documentType"
+    name="documentType"
+    value={formData.documentType}
+    label="نوع الوثيقة"
+    onChange={(e) => setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }))}
+    sx={{ direction: 'rtl', textAlign: 'right' }}
+  >
+    <MenuItem value="SOP">SOP</MenuItem>
+    {/* later you can add more: <MenuItem value="XYZ">XYZ</MenuItem> */}
+  </Select>
+</FormControl>
 
                 <TextField
                   fullWidth
@@ -361,7 +392,7 @@ const NewCreation: React.FC = () => {
                   variant="outlined"
                   margin="normal"
                   value={formData.titleAr}
-                  onChange={handleInputChange}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }))}
                   inputProps={{ dir: 'rtl' }}
                   InputLabelProps={{ style: { direction: 'rtl' } }}
                 />
@@ -516,6 +547,19 @@ const NewCreation: React.FC = () => {
                   />
                 </Box>
 
+                 {/* ⭐ CCP – NEW (العربية) */}
+                <Typography variant="h4" gutterBottom sx={{ mt:2, textAlign:'right' }}>
+                  نقاط التحكم الحرجة:
+                </Typography>
+                <Box dir="rtl">
+                  <ReactSummernote
+                    value={formData.criticalPointsAr}
+                    options={summernoteOptionsAr}
+                    onChange={(c:string)=>
+                      setFormData(prev=>({...prev, criticalPointsAr:c}))}
+                  />
+                </Box>
+
                 {/* المرفقات */}
                 <Box sx={{ direction: 'rtl', textAlign: 'right', mt: 2 }}>
                   <Typography variant="subtitle1" gutterBottom dir="rtl">
@@ -568,7 +612,23 @@ const NewCreation: React.FC = () => {
                 <Typography variant="h5" gutterBottom>
                   English
                 </Typography>
-
+<FormControl fullWidth margin="normal">
+  <InputLabel id="doc-type-label-en">
+    Document Type
+  </InputLabel>
+  <Select
+    labelId="doc-type-label-en"
+    id="documentTypeEn"
+    name="documentType"
+    value={formData.documentType}
+    label="Document Type"
+    onChange={(event: SelectChangeEvent<string>) =>
+      setFormData((prev) => ({ ...prev, [event.target.name]: event.target.value }))
+    }
+  >
+    <MenuItem value="SOP">SOP</MenuItem>
+  </Select>
+</FormControl>
                 <TextField
                   fullWidth
                   label="Title Name:"
@@ -715,6 +775,18 @@ const NewCreation: React.FC = () => {
                   onChange={(content: string) =>
                     setFormData((prev: typeof formData) => ({ ...prev, referenceDocumentsEn: content }))
                   }
+                  />
+                </Box>
+                 {/* ⭐ CCP – NEW (English) */}
+                <Typography variant="h4" gutterBottom sx={{ mt:2 }}>
+                  Critical Control Points:
+                </Typography>
+                <Box dir="ltr">
+                  <ReactSummernote
+                    value={formData.criticalPointsEn}
+                    options={summernoteOptionsEn}
+                    onChange={(c:string)=>
+                      setFormData(prev=>({...prev, criticalPointsEn:c}))}
                   />
                 </Box>
 

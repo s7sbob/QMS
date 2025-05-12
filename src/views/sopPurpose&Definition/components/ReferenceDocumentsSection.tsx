@@ -90,8 +90,8 @@ const ReferenceDocumentsSection: React.FC<{ initialData: ReferenceDoc | null }> 
           color: refDoc?.reviewer_Comment ? 'red' : 'inherit',
         }}
       >
-        <span>7. Reference Documents:</span>
-        <span dir="rtl">7. الوثائق المرجعية</span>
+        <span>8. Reference Documents:</span>
+        <span dir="rtl">8. الوثائق المرجعية</span>
       </Typography>
 
       <TableContainer component={Paper} sx={{ mt: 1 }}>
