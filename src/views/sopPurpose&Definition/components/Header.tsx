@@ -2,13 +2,17 @@
 import React from "react";
 
 interface HeaderProps {
-  issueDate: string;
-  effectiveDate: string;
-  revisionDate: string;
+  issueDate: string | null;
+  effectiveDate: string | null;
+  revisionDate: string | null;
   codeNumber: string;
   versionNumber: string;
   pageNumber: string;
 }
+
+// helper to turn "2025-02-27T00:00:00.000Z" → "2025-02-27"
+const formatDate = (iso: string | null) =>
+  iso ? iso.split("T")[0] : "";
 
 const Header: React.FC<HeaderProps> = ({
   issueDate,
@@ -27,13 +31,8 @@ const Header: React.FC<HeaderProps> = ({
         border: "1px solid #000",
       }}
     >
-      {/* الجدول الأول (يسار) */}
-      <div
-        style={{
-          width: "25%",
-          borderRight: "1px solid #000",
-        }}
-      >
+      {/* Left table */}
+      <div style={{ width: "25%", borderRight: "1px solid #000" }}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr>
@@ -45,11 +44,8 @@ const Header: React.FC<HeaderProps> = ({
               </th>
             </tr>
             <tr>
-              <td
-                colSpan={2}
-                style={{ border: "1px solid #000", padding: "5px", textAlign: "center" }}
-              >
-                {issueDate}
+              <td colSpan={2} style={{ border: "1px solid #000", padding: "5px", textAlign: "center" }}>
+                {formatDate(issueDate)}
               </td>
             </tr>
             <tr>
@@ -57,15 +53,12 @@ const Header: React.FC<HeaderProps> = ({
                 Effective Date
               </th>
               <th style={{ border: "1px solid #000", padding: "5px", textAlign: "right" }}>
-                :تاريخ الفاعلية 
+                :تاريخ الفاعلية
               </th>
             </tr>
             <tr>
-              <td
-                colSpan={2}
-                style={{ border: "1px solid #000", padding: "5px", textAlign: "center" }}
-              >
-                {effectiveDate}
+              <td colSpan={2} style={{ border: "1px solid #000", padding: "5px", textAlign: "center" }}>
+                {formatDate(effectiveDate)}
               </td>
             </tr>
             <tr>
@@ -77,18 +70,15 @@ const Header: React.FC<HeaderProps> = ({
               </th>
             </tr>
             <tr>
-              <td
-                colSpan={2}
-                style={{ border: "1px solid #000", padding: "5px", textAlign: "center" }}
-              >
-                {revisionDate}
+              <td colSpan={2} style={{ border: "1px solid #000", padding: "5px", textAlign: "center" }}>
+                {formatDate(revisionDate)}
               </td>
             </tr>
           </thead>
         </table>
       </div>
 
-      {/* المساحة الوسطى للوغو الشركة */}
+      {/* Center logo */}
       <div
         style={{
           width: "50%",
@@ -99,19 +89,15 @@ const Header: React.FC<HeaderProps> = ({
         }}
       >
         <img
-          src="/logo.png" // تأكد من تغيير اسم الملف حسب تسميته في مجلد public
-          alt="Cigalah Healthcare Company - Healthcare Division"
+          src="/logo.png"
+          alt="Logo"
           style={{ maxWidth: "100%", height: "auto" }}
+          
         />
       </div>
 
-      {/* الجدول الثاني (يمين) */}
-      <div
-        style={{
-          width: "25%",
-          borderRight: "1px solid #000",
-        }}
-      >
+      {/* Right table */}
+      <div style={{ width: "25%", borderRight: "1px solid #000" }}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr>
@@ -123,10 +109,7 @@ const Header: React.FC<HeaderProps> = ({
               </th>
             </tr>
             <tr>
-              <td
-                colSpan={2}
-                style={{ border: "1px solid #000", padding: "5px", textAlign: "center" }}
-              >
+              <td colSpan={2} style={{ border: "1px solid #000", padding: "5px", textAlign: "center" }}>
                 {codeNumber}
               </td>
             </tr>
@@ -139,10 +122,7 @@ const Header: React.FC<HeaderProps> = ({
               </th>
             </tr>
             <tr>
-              <td
-                colSpan={2}
-                style={{ border: "1px solid #000", padding: "5px", textAlign: "center" }}
-              >
+              <td colSpan={2} style={{ border: "1px solid #000", padding: "5px", textAlign: "center" }}>
                 {versionNumber}
               </td>
             </tr>
@@ -155,10 +135,7 @@ const Header: React.FC<HeaderProps> = ({
               </th>
             </tr>
             <tr>
-              <td
-                colSpan={2}
-                style={{ border: "1px solid #000", padding: "5px", textAlign: "center" }}
-              >
+              <td colSpan={2} style={{ border: "1px solid #000", padding: "5px", textAlign: "center" }}>
                 {pageNumber}
               </td>
             </tr>

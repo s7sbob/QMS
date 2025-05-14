@@ -91,8 +91,8 @@ const SafetyConcernsSection: React.FC<SafetyConcernsSectionProps> = ({ initialDa
     <Box sx={{ mt: 2 }}>
       <Typography variant="h6" gutterBottom sx={{ display: "flex", justifyContent: "space-between",     color: safetyConcern && safetyConcern.reviewer_Comment ? "red" : "inherit", // الشرط هنا لتلوين العنوان بالاحمر عند وجود تعليق
  }}>
-        <span>4. Safety Concerns:</span>
-        <span dir="rtl">4. اشتراطات السلامة</span>
+        <span>5. Safety Concerns:</span>
+        <span dir="rtl">5. اشتراطات السلامة</span>
       </Typography>
       <TableContainer component={Paper} sx={{ mt: 1 }}>
         <Table>

@@ -91,8 +91,8 @@ const ResponsibilitiesSection: React.FC<ResponsibilitiesSectionProps> = ({ initi
     <Box sx={{ mt: 2 }}>
       <Typography variant="h6" gutterBottom sx={{ display: "flex", justifyContent: "space-between",     color: responsibility && responsibility.reviewer_Comment ? "red" : "inherit", // الشرط هنا لتلوين العنوان بالاحمر عند وجود تعليق
  }}>
-        <span>5. Responsibilities:</span>
-        <span dir="rtl">5. المسؤوليات</span>
+        <span>4. Responsibilities:</span>
+        <span dir="rtl">4. المسؤوليات</span>
       </Typography>
       <TableContainer component={Paper} sx={{ mt: 1 }}>
         <Table>

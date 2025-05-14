@@ -38,6 +38,8 @@ const SOPFullDocument: React.FC = () => {
   const [searchParams] = useSearchParams();
   const headerId = searchParams.get('headerId');
   const user = useContext(UserContext);
+    const navigate = useNavigate();
+
 
   const refreshSopDetail = () => {
     const url = headerId
@@ -53,6 +55,24 @@ const SOPFullDocument: React.FC = () => {
   };
 
   useEffect(refreshSopDetail, [headerId]);
+
+
+
+
+
+    // Redirect if status === "9"
+  useEffect(() => {
+    if (sopDetail?.Sop_header.status === '9') {
+      const dept = sopDetail.Sop_header.Dept_Id;
+      const docId = sopDetail.Sop_header.Id;
+      navigate(
+        `/documentation-control/Document_Revision_Checklist?department=${dept}&documentId=${docId}`,
+        { replace: true }
+      );
+    }
+  }, [sopDetail, navigate]);
+
+
 
   useEffect(() => {
     let url = '';
@@ -125,8 +145,12 @@ const SOPFullDocument: React.FC = () => {
         <Box sx={{ mt: 2, textAlign: 'center' }}>
           <Button
             variant="contained"
-            onClick={() => updateStatus('2', { signedBy: user?.signUrl })}
-          >
+            onClick={() =>
+              updateStatus('2', {
+                signedBy: user?.signUrl,
+                issuedDate: new Date().toISOString(),
+              })
+            }          >
             Save and Submit (تحديث الحالة إلى 2)
           </Button>
         </Box>
@@ -138,8 +162,12 @@ const SOPFullDocument: React.FC = () => {
           <Box sx={{ mt: 2, textAlign: 'center' }}>
             <Button
               variant="contained"
-              onClick={() => updateStatus('4', { signedBy: user?.signUrl })}
-            >
+              onClick={() =>
+                updateStatus('4', {
+                  signedBy: user?.signUrl,
+                  revisionDate: new Date().toISOString(),
+                })
+              }            >
               Approve as Supervisor (تحديث الحالة إلى 4)
             </Button>
           </Box>
@@ -172,8 +200,12 @@ const SOPFullDocument: React.FC = () => {
           <Button
             variant="contained"
             color="success"
-            onClick={() => updateStatus('6', { signedBy: user?.signUrl })}
-          >
+            onClick={() =>
+              updateStatus('6', {
+                signedBy: user?.signUrl,
+                effectiveDate: new Date().toISOString(),
+              })
+            }          >
             Approve as Manager (تحديث الحالة إلى 6)
           </Button>
           <Button
@@ -200,10 +232,10 @@ const SOPFullDocument: React.FC = () => {
         <DefinitionsSection initialData={sopDetail?.Sop_Definitions || null} />
         {/* ⭐ NEW – قسم Scope */}
         <ScopeSection initialData={sopDetail?.Sop_Scope || null} />
-        {/* ⭐ NEW – قسم Safety Concerns */}
-        <SafetyConcernsSection initialData={sopDetail?.Sop_Safety_Concerns || null} />
         {/* ⭐ NEW – قسم Responsibilities */}
         <ResponsibilitiesSection initialData={sopDetail?.Sop_Res || null} />
+        {/* ⭐ NEW – قسم Safety Concerns */}
+        <SafetyConcernsSection initialData={sopDetail?.Sop_Safety_Concerns || null} />
         {/* ⭐ NEW – قسم Procedures */}
         <ProceduresSection initialData={sopDetail?.Sop_Procedures || null} />
         {/* ⭐ NEW – قسم Critical Control Points */}
