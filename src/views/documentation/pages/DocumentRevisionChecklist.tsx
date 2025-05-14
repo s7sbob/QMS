@@ -18,9 +18,9 @@ import {
   Box,
 } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import axiosServices from 'src/utils/axiosServices';
 import { UserContext } from 'src/context/UserContext';
-import { useSearchParams } from 'react-router-dom';
 
 interface ChecklistItem {
   id: number;
@@ -56,233 +56,192 @@ const initialChecklist: ChecklistItem[] = [
   { id: 24, item: 'Are all changes in the previous version mentioned in the change history?', comply: 'Yes', comment: '' },
 ];
 
-interface FormData {
+type FormData = {
+  department: string;
   documentId: string;
   documentName: string;
   documentVersion: string;
   revisionDate: string;
-  department: string;
-}
+};
 
-interface Department {
-  Id: string;
-  Dept_name: string;
-}
+type Department = { Id: string; Dept_name: string };
+type ISopHeader = { Id: string; Dept_Id: string; Doc_Code: string; Doc_Title_en: string };
 
-interface ISopHeader {
+type RevisionForm = {
   Id: string;
-  Dept_Id: string;
-  Doc_Code: string;
-  Doc_Title_en: string;
-}
+  Sop_HeaderId: string;
+  revision_date: string;
+  revision_requestedBy?: string;
+  revision_ApprovedBy?: string;
+  RevisionForm_Code: string;
+  Question_Answer: Array<{
+    QuestionId: string;
+    Answer: number;
+    Comment: string;
+    User_Data: { userId: string; FName: string; LName: string; signUrl?: string };
+  }>;
+};
 
 const DocumentRevisionChecklist: React.FC = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const user = useContext(UserContext);
   const userRole =
-    user?.Users_Departments_Users_Departments_User_IdToUser_Data?.[0]
-      ?.User_Roles?.Name || '';
-  const userName = user ? `${user.FName} ${user.LName}` : '';
-  const userSign = user?.signUrl || '';
+    user?.Users_Departments_Users_Departments_User_IdToUser_Data?.[0]?.User_Roles?.Name || '';
+  const userId = user?.Id;
 
+  const revisionFormId = searchParams.get('revisionFormId');
+
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [allSopHeaders, setAllSopHeaders] = useState<ISopHeader[]>([]);
+  const [filteredSopHeaders, setFilteredSopHeaders] = useState<ISopHeader[]>([]);
   const [formData, setFormData] = useState<FormData>({
+    department: '',
     documentId: '',
     documentName: '',
     documentVersion: '',
     revisionDate: '',
-    department: '',
   });
   const [checklist, setChecklist] = useState<ChecklistItem[]>(initialChecklist);
-  const [departments, setDepartments] = useState<Department[]>([]);
-  const [allSopHeaders, setAllSopHeaders] = useState<ISopHeader[]>([]);
-  const [filteredSopHeaders, setFilteredSopHeaders] = useState<ISopHeader[]>([]);
-  const [revisionForm, setRevisionForm] = useState<any | null>(null);
+  const [revisionForm, setRevisionForm] = useState<RevisionForm | null>(null);
 
-  // load departments
+  // load departments & headers
   useEffect(() => {
     const userDeps = user?.Users_Departments_Users_Departments_User_IdToUser_Data || [];
     setDepartments(
-      userDeps.map((ud: any) => ({
-        Id: ud.Department_Data.Id,
-        Dept_name: ud.Department_Data.Dept_name,
-      }))
+      userDeps.map((ud: any) => ({ Id: ud.Department_Data.Id, Dept_name: ud.Department_Data.Dept_name }))
     );
-  }, [user]);
+  axiosServices
+    .get('/api/sopheader/getAllSopHeaders')
+    .then(res => setAllSopHeaders(res.data))
+    .catch(console.error);
+}, []);
 
-  // fetch headers
+  // pre-select department & document
   useEffect(() => {
-    axiosServices
-      .get('/api/sopheader/getAllSopHeaders')
-      .then((res) => setAllSopHeaders(res.data))
-      .catch((err) => console.error(err));
-  }, []);
+    const dept = searchParams.get('department');
+    const docId = searchParams.get('documentId');
+    if (dept) setFormData((f) => ({ ...f, department: dept }));
+    if (docId) setFormData((f) => ({ ...f, documentId: docId }));
+  }, [searchParams]);
 
-  // preselect via URL
+  // filter headers
   useEffect(() => {
-    const deptQ = searchParams.get('department');
-    const docQ = searchParams.get('documentId');
-    if (deptQ) {
-      setFormData((f) => ({ ...f, department: deptQ }));
-      const filtered = allSopHeaders.filter((s) => s.Dept_Id === deptQ);
-      setFilteredSopHeaders(filtered);
-      if (docQ) {
-        const sel = filtered.find((s) => s.Id === docQ);
-        if (sel) {
-          setFormData((f) => ({
-            ...f,
-            documentId: sel.Id,
-            documentName: sel.Doc_Title_en,
-            documentVersion: sel.Doc_Code,
-          }));
-        }
-      }
+    if (formData.department) {
+      setFilteredSopHeaders(
+        allSopHeaders.filter((h) => h.Dept_Id === formData.department)
+      );
     }
-  }, [allSopHeaders, searchParams]);
+  }, [formData.department, allSopHeaders]);
 
-  // fetch existing revision form by Sop_HeaderId
+  // fetch revision form by id if provided
   useEffect(() => {
-    if (!formData.documentId) return;
+    if (!revisionFormId) return;
     axiosServices
-      .get('/api/Revisionform/revision-forms')
+      .get<RevisionForm>(`/api/Revisionform/getrevision-form/${revisionFormId}`)
       .then((res) => {
-        const found = res.data.find((r: any) => r.Sop_HeaderId === formData.documentId);
-        if (found) {
-          setRevisionForm(found);
-          // populate answers
-          setChecklist(
-            initialChecklist.map((item) => {
-              const ans = found.Question_Answer.find(
-                (a: any) => a.QuestionId === item.id.toString()
-              );
-              return {
-                ...item,
-                comply: ans ? (ans.Answer === 1 ? 'Yes' : ans.Answer === 0 ? 'No' : 'NA') : item.comply,
-                comment: ans ? ans.Comment : '',
-              };
-            })
-          );
-        }
+        const rf = res.data;
+        setRevisionForm(rf);
+        setFormData((f) => ({ ...f, documentVersion: rf.RevisionForm_Code }));
+        setChecklist(
+          initialChecklist.map((item) => {
+            const ans = rf.Question_Answer.find((a) => a.QuestionId === String(item.id));
+            return {
+              ...item,
+              comply: ans ? (ans.Answer === 1 ? 'Yes' : ans.Answer === 0 ? 'No' : 'NA') : item.comply,
+              comment: ans ? ans.Comment : '',
+            };
+          })
+        );
       })
-      .catch((e) => console.error(e));
-  }, [formData.documentId]);
+      .catch(console.error);
+  }, [revisionFormId]);
 
+  // handlers
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-
+  const handleSelectDepartment = (e: SelectChangeEvent<string>) => {
+    setFormData((f) => ({ ...f, department: e.target.value }));
+  };
+  const handleSelectSop = (e: SelectChangeEvent<string>) => {
+    const id = e.target.value;
+    const sel = filteredSopHeaders.find((s) => s.Id === id);
+    if (sel) setFormData((f) => ({ ...f, documentId: sel.Id, documentName: sel.Doc_Title_en }));
+  };
   const handleChecklistChange = (
     id: number,
     field: 'comply' | 'comment',
     value: string
-  ) => {
-    setChecklist((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, [field]: value } : item))
-    );
-  };
-
-  const handleSelectDepartment = (e: SelectChangeEvent<string>) => {
-    const department = e.target.value;
-    setFormData((f) => ({
-      ...f,
-      department,
-      documentId: '',
-      documentName: '',
-      documentVersion: '',
-    }));
-    setFilteredSopHeaders(allSopHeaders.filter((s) => s.Dept_Id === department));
-  };
-
-  const handleSelectSop = (e: SelectChangeEvent<string>) => {
-    const id = e.target.value;
-    const sel = filteredSopHeaders.find((s) => s.Id === id);
-    if (sel) {
-      setFormData((f) => ({
-        ...f,
-        documentId: sel.Id,
-        documentName: sel.Doc_Title_en,
-        documentVersion: sel.Doc_Code,
-      }));
-    }
-  };
-
+  ) => setChecklist((prev) => prev.map((itm) => (itm.id === id ? { ...itm, [field]: value } : itm)));
   const handlePrint = () => window.print();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const payload: any = { Sop_HeaderId: formData.documentId };
+    if (!revisionForm) {
+      // first-time submit
+      payload.revision_date = new Date(formData.revisionDate);
+      payload.RevisionForm_Code = formData.documentVersion;
+      payload.answers = checklist.map((row) => ({
+        questionNumber: String(row.id),
+        comply: row.comply === 'Yes' ? 1 : row.comply === 'No' ? 0 : null,
+        comment: row.comment,
+      }));
+      payload.revision_requestedBy = userId;
+    } else if (userRole === 'QA Supervisor' && revisionForm && !revisionForm.revision_ApprovedBy) {
+      // sup update
+      payload.Id = revisionForm.Id;
+      payload.answers = checklist.map((row) => ({
+        questionNumber: String(row.id),
+        comply: row.comply === 'Yes' ? 1 : row.comply === 'No' ? 0 : null,
+        comment: row.comment,
+      }));
+      payload.revision_requestedBy = userId;
+    } else if (userRole === 'QA Manager' && revisionForm && !revisionForm.revision_ApprovedBy) {
+      // manager approve
+      payload.Id = revisionForm.Id;
+      payload.revision_ApprovedBy = userId;
+    }
     try {
-      const payload: any = {
-        Sop_HeaderId: formData.documentId,
-      };
-      if (!revisionForm) {
-        // Supervisor initial submit
-        payload.revision_date = new Date(formData.revisionDate);
-        payload.RevisionForm_Code = formData.documentVersion;
-        payload.answers = checklist.map((row) => ({
-          questionNumber: row.id.toString(),
-          comply: row.comply === 'Yes' ? 1 : row.comply === 'No' ? 0 : null,
-          comment: row.comment,
-        }));
-        payload.revision_requestedBy = user?.Id;
-      } else if (userRole === 'QA Manager' && revisionForm && !revisionForm.revision_ApprovedBy) {
-        // Manager approval
-        payload.Id = revisionForm.Id;
-        payload.revision_ApprovedBy = user?.Id;
-      }
-
-      await axiosServices.post(
+      const res = await axiosServices.post(
         '/api/Revisionform/addEditrevision-form',
         payload
       );
-      // refresh state
-      setRevisionForm(null);
-      // re-fetch
-      setFormData((f) => ({ ...f }));
+      const returned: RevisionForm = res.data;
+      // navigate with revisionFormId
+      navigate(`?department=${formData.department}&documentId=${formData.documentId}&revisionFormId=${returned.Id}`, { replace: true });
+      setRevisionForm(returned);
     } catch (err) {
       console.error(err);
-      alert('فشل الإرسال');
+      alert('فشل الأرسال');
     }
   };
 
   const hasSup = !!revisionForm?.revision_requestedBy;
   const hasMgr = !!revisionForm?.revision_ApprovedBy;
 
-  // final view if both done
-  if (hasSup && hasMgr) {
-    return (
-      <Container sx={{ py: 4 }}>
-        <Paper sx={{ p: 3, textAlign: 'center' }}>
-          <Typography variant="h5">Revision Complete</Typography>
-          <Box sx={{ mt: 2 }}>
-            {/* supervisor */}
-            <Typography>Revised By:</Typography>
-            <Box display="flex" alignItems="center" gap={1} justifyContent="center">
-              {/** assume supervisor data available in revisionForm.Question_Answer[0].User_Data **/}
-            </Box>
-            {/* manager */}
-            <Typography sx={{ mt: 2 }}>Approved By QA Manager:</Typography>
-          </Box>
-        </Paper>
-      </Container>
-    );
-  }
-
   return (
     <Container sx={{ py: 4 }}>
-      <Box component="header" sx={{ textAlign: 'center', mb: 3 }}>
+      {/* Title + Form Code */}
+      <Box textAlign="center" mb={3}>
         <Typography variant="h4">Document Revision Checklist</Typography>
+        <Typography variant="subtitle1" mt={1}>
+          Form Code: {revisionForm?.RevisionForm_Code || formData.documentVersion}
+        </Typography>
       </Box>
+
       <Paper sx={{ p: 3 }}>
         <form onSubmit={handleSubmit}>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
-              <FormControl fullWidth required>
+              <FormControl fullWidth>
                 <InputLabel>Department</InputLabel>
                 <Select
                   value={formData.department}
                   label="Department"
                   onChange={handleSelectDepartment}
-                  disabled={hasSup}
                 >
                   {departments.map((d) => (
                     <MenuItem key={d.Id} value={d.Id}>
@@ -293,13 +252,12 @@ const DocumentRevisionChecklist: React.FC = () => {
               </FormControl>
             </Grid>
             <Grid item xs={12} sm={6}>
-              <FormControl fullWidth required>
+              <FormControl fullWidth>
                 <InputLabel>Document Title</InputLabel>
                 <Select
                   value={formData.documentId}
                   label="Document Title"
                   onChange={handleSelectSop}
-                  disabled={!formData.department || hasSup}
                 >
                   {filteredSopHeaders.map((s) => (
                     <MenuItem key={s.Id} value={s.Id}>
@@ -309,136 +267,126 @@ const DocumentRevisionChecklist: React.FC = () => {
                 </Select>
               </FormControl>
             </Grid>
-              <>  
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Document Version"
-                    name="documentVersion"
-                    value={formData.documentVersion}
-                    InputProps={{ readOnly: true }}
-                    fullWidth
-                    required
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    type="date"
-                    label="Revision Date"
-                    name="revisionDate"
-                    value={formData.revisionDate}
-                    onChange={handleFormChange}
-                    InputLabelProps={{ shrink: true }}
-                    fullWidth
-                    required
-                  />
-                </Grid>
-              </>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Document Version"
+                name="documentVersion"
+                value={formData.documentVersion}
+                InputProps={{ readOnly: true }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                type="date"
+                label="Revision Date"
+                name="revisionDate"
+                value={formData.revisionDate}
+                onChange={handleFormChange}
+                InputLabelProps={{ shrink: true }}
+              />
+            </Grid>
           </Grid>
 
-          {!hasSup && (
-            <Box sx={{ mt: 3, overflowX: 'auto' }}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>No.</TableCell>
-                    <TableCell>Item To Be Checked</TableCell>
-                    <TableCell>Comply</TableCell>
-                    <TableCell>Comment</TableCell>
+          <Box mt={3} overflow="auto">
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>No.</TableCell>
+                  <TableCell>Item To Be Checked</TableCell>
+                  <TableCell>Comply</TableCell>
+                  <TableCell>Comment</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {checklist.map((row) => (
+                  <TableRow key={row.id}>
+                    <TableCell>{row.id}</TableCell>
+                    <TableCell>{row.item}</TableCell>
+                    <TableCell>
+                      <FormControl fullWidth size="small">
+                        <Select
+                          value={row.comply}
+                          onChange={(e) => handleChecklistChange(row.id, 'comply', e.target.value)}
+                        >
+                          <MenuItem value="Yes">Yes</MenuItem>
+                          <MenuItem value="No">No</MenuItem>
+                          <MenuItem value="NA">N/A</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                    <TableCell>
+                      <TextField
+                        fullWidth
+                        placeholder="Comment"
+                        value={row.comment}
+                        size="small"
+                        onChange={(e) => handleChecklistChange(row.id, 'comment', e.target.value)}
+                      />
+                    </TableCell>
                   </TableRow>
-                </TableHead>
-                <TableBody>
-                  {checklist.map((row) => (
-                    <TableRow key={row.id}>
-                      <TableCell>{row.id}</TableCell>
-                      <TableCell>{row.item}</TableCell>
-                      <TableCell>
-                        <FormControl fullWidth size="small">
-                          <Select
-                            value={row.comply}
-                            onChange={(e) =>
-                              handleChecklistChange(row.id, 'comply', e.target.value)
-                            }
-                          >
-                            <MenuItem value="Yes">Yes</MenuItem>
-                            <MenuItem value="No">No</MenuItem>
-                            <MenuItem value="NA">N/A</MenuItem>
-                          </Select>
-                        </FormControl>
-                      </TableCell>
-                      <TableCell>
-                        <TextField
-                          placeholder="Comment"
-                          value={row.comment}
-                          onChange={(e) =>
-                            handleChecklistChange(row.id, 'comment', e.target.value)
-                          }
-                          size="small"
-                          fullWidth
-                        />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </Box>
-          )}
+                ))}
+              </TableBody>
+            </Table>
+          </Box>
 
-          <Grid container spacing={2} sx={{ mt: 3 }}>
+          {/* Signatures */}
+          <Box mt={4} display="flex" justifyContent="center" gap={4}>
             {hasSup && (
-              <Grid item xs={12} sm={6}>
+              <Box textAlign="center">
                 <Typography variant="subtitle1">Revised By</Typography>
-                <Box display="flex" alignItems="center" gap={1}>
-                  {userSign && (
-                    <img
-                      src={userSign}
-                      alt="Supervisor signature"
-                      style={{ height: 60 }}
-                    />
-                  )}
-                  <Box>
-                    <Typography>{userName}</Typography>
-                    <Typography variant="caption">{userRole}</Typography>
-                  </Box>
-                </Box>
-              </Grid>
+                {revisionForm?.revision_requestedBy && (
+                  <img
+                    src={
+                      revisionForm.Question_Answer.find(
+                        (a) => a.User_Data.userId === revisionForm.revision_requestedBy
+                      )?.User_Data.signUrl
+                    }
+                    alt="Supervisor sig"
+                    style={{ height: 60 }}
+                  />
+                )}
+              </Box>
             )}
             {hasMgr && (
-              <Grid item xs={12} sm={6}>
+              <Box textAlign="center">
                 <Typography variant="subtitle1">Approved By QA Manager</Typography>
-                <Box display="flex" alignItems="center" gap={1}>
-                  {userSign && (
-                    <img
-                      src={userSign}
-                      alt="Manager signature"
-                      style={{ height: 60 }}
-                    />
-                  )}
-                  <Box>
-                    <Typography>{userName}</Typography>
-                    <Typography variant="caption">{userRole}</Typography>
-                  </Box>
-                </Box>
-              </Grid>
+                {revisionForm?.revision_ApprovedBy && (
+                  <img
+                    src={
+                      revisionForm.Question_Answer.find(
+                        (a) => a.User_Data.userId === revisionForm.revision_ApprovedBy
+                      )?.User_Data.signUrl
+                    }
+                    alt="Manager sig"
+                    style={{ height: 60 }}
+                  />
+                )}
+              </Box>
             )}
-          </Grid>
+          </Box>
 
-          <Box sx={{ mt: 4, textAlign: 'center' }}>
-            {!hasSup && userRole === 'QA Supervisor' && (
-              <Button
-                variant="contained"
-                type="submit"
-                disabled={!formData.documentId || !formData.revisionDate}
-              >
+          {/* Actions */}
+          <Box mt={4} textAlign="center">
+            {userRole === 'QA Supervisor' && !hasSup && (
+              <Button variant="contained" type="submit">
                 Submit
               </Button>
             )}
-            {hasSup && !hasMgr && userRole !== 'QA Supervisor' && userRole === 'QA Manager' && (
+            {userRole === 'QA Supervisor' && hasSup && !hasMgr && (
+              <Button variant="contained" type="submit">
+                Update
+              </Button>
+            )}
+            {userRole === 'QA Manager' && hasSup && !hasMgr && (
               <Button variant="contained" type="submit">
                 Approve
               </Button>
             )}
             {hasSup && !hasMgr && userRole !== 'QA Manager' && (
-              <Typography>Waiting for manager confirmation...</Typography>
+              <Typography>Waiting for manager confirmation…</Typography>
             )}
           </Box>
         </form>
