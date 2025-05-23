@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // ────────────────────────────────────────────────────────────────────────────────
 // src/pages/NewCreation.tsx
 // آخر تحديث: 23-مايو-2025
@@ -34,7 +35,7 @@ import { UserContext } from 'src/context/UserContext';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 
-import RichTextEditor from './components/RichTextEditor';            // ⬅️ الجديد
+import RichTextEditor from './components/RichTextEditor'; // ⬅️ الجديد
 
 /* ╭──────────────────────────────────────────────────────────────╮
    │ أنواع البيانات                                               │
@@ -106,9 +107,7 @@ const NewCreation: React.FC = () => {
   }, [compId]);
 
   /* ───────────────────────────── معالجات الإدخال ─────────────────────────── */
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -149,13 +148,10 @@ const NewCreation: React.FC = () => {
         Com_Id: compId,
         Dept_Id: selectedDepartment,
         status: '1',
-        Doc_Type: formData.documentType,
+        doc_Type: formData.documentType,
       };
 
-      const headerRes = await axiosServices.post(
-        '/api/sopheader/addEditSopHeader',
-        headerPayload,
-      );
+      const headerRes = await axiosServices.post('/api/sopheader/addEditSopHeader', headerPayload);
       const headerId = headerRes.data?.Id;
       if (!headerId) throw new Error('لا يوجد Header Id');
 
@@ -166,14 +162,38 @@ const NewCreation: React.FC = () => {
       const userId = user.Id;
 
       const sections = [
-        { en: formData.definitionsEn,   ar: formData.definitionsAr,   url: '/api/sopDefinition/addSop-Definition' },
-        { en: formData.purposeEn,       ar: formData.purposeAr,       url: '/api/soppurpose/addSop-Purpose' },
-        { en: formData.responsibilityEn,ar: formData.responsibilityAr,url: '/api/sopRes/SopReponsibility-create' },
-        { en: formData.procedureEn,     ar: formData.procedureAr,     url: '/api/sopProcedures/addSop-Procedure' },
-        { en: formData.scopeEn,         ar: formData.scopeAr,         url: '/api/sopScope/addSop-Scope' },
-        { en: formData.safetyConcernsEn,ar: formData.safetyConcernsAr,url: '/api/sopSafetyConcerns/addsop-safety-concerns' },
-        { en: formData.referenceDocumentsEn, ar: formData.referenceDocumentsAr, url: '/api/sopRefrences/Create' },
-        { en: formData.criticalPointsEn, ar: formData.criticalPointsAr, url: '/api/sopCriticalControlPoints/addSop-CriticalControlPoint' },
+        {
+          en: formData.definitionsEn,
+          ar: formData.definitionsAr,
+          url: '/api/sopDefinition/addSop-Definition',
+        },
+        { en: formData.purposeEn, ar: formData.purposeAr, url: '/api/soppurpose/addSop-Purpose' },
+        {
+          en: formData.responsibilityEn,
+          ar: formData.responsibilityAr,
+          url: '/api/sopRes/SopReponsibility-create',
+        },
+        {
+          en: formData.procedureEn,
+          ar: formData.procedureAr,
+          url: '/api/sopProcedures/addSop-Procedure',
+        },
+        { en: formData.scopeEn, ar: formData.scopeAr, url: '/api/sopScope/addSop-Scope' },
+        {
+          en: formData.safetyConcernsEn,
+          ar: formData.safetyConcernsAr,
+          url: '/api/sopSafetyConcerns/addsop-safety-concerns',
+        },
+        {
+          en: formData.referenceDocumentsEn,
+          ar: formData.referenceDocumentsAr,
+          url: '/api/sopRefrences/Create',
+        },
+        {
+          en: formData.criticalPointsEn,
+          ar: formData.criticalPointsAr,
+          url: '/api/sopCriticalControlPoints/addSop-CriticalControlPoint',
+        },
       ];
 
       for (const s of sections) {
@@ -238,10 +258,7 @@ const NewCreation: React.FC = () => {
         }}
       />
 
-      <Backdrop
-        sx={{ color: '#fff', zIndex: (t) => t.zIndex.drawer + 1 }}
-        open={submitLoading}
-      >
+      <Backdrop sx={{ color: '#fff', zIndex: (t) => t.zIndex.drawer + 1 }} open={submitLoading}>
         <Box
           sx={{
             bgcolor: 'white',
@@ -262,9 +279,7 @@ const NewCreation: React.FC = () => {
       <Paper sx={{ p: 4, m: 2 }}>
         <Box component="header" sx={{ textAlign: 'center', mb: 3 }}>
           <Typography variant="h1">CREATION SOP</Typography>
-          <Typography variant="subtitle1">
-            Standard Operating Procedure (SOP)
-          </Typography>
+          <Typography variant="subtitle1">Standard Operating Procedure (SOP)</Typography>
         </Box>
 
         <Container>
@@ -284,9 +299,7 @@ const NewCreation: React.FC = () => {
                     name="documentType"
                     value={formData.documentType}
                     label="نوع الوثيقة"
-                    onChange={(e) =>
-                      setFormData((p) => ({ ...p, documentType: e.target.value }))
-                    }
+                    onChange={(e) => setFormData((p) => ({ ...p, documentType: e.target.value }))}
                   >
                     <MenuItem value="SOP">SOP</MenuItem>
                   </Select>
@@ -412,9 +425,7 @@ const NewCreation: React.FC = () => {
                   language="ar"
                   dir="rtl"
                   value={formData.referenceDocumentsAr}
-                  onChange={(c: any) =>
-                    setFormData((p) => ({ ...p, referenceDocumentsAr: c }))
-                  }
+                  onChange={(c: any) => setFormData((p) => ({ ...p, referenceDocumentsAr: c }))}
                 />
 
                 {/* CCP */}
@@ -595,9 +606,7 @@ const NewCreation: React.FC = () => {
                 </Typography>
                 <RichTextEditor
                   value={formData.referenceDocumentsEn}
-                  onChange={(c: any) =>
-                    setFormData((p) => ({ ...p, referenceDocumentsEn: c }))
-                  }
+                  onChange={(c: any) => setFormData((p) => ({ ...p, referenceDocumentsEn: c }))}
                 />
 
                 {/* CCP */}
