@@ -32,7 +32,12 @@ interface ChecklistItem {
 const initialChecklist: ChecklistItem[] = [
   { id: 1, item: 'Document template and font format', comply: 'Yes', comment: '' },
   { id: 2, item: 'Does the document contain all items?', comply: 'Yes', comment: '' },
-  { id: 3, item: 'Is the document title describing sufficiently the purpose?', comply: 'Yes', comment: '' },
+  {
+    id: 3,
+    item: 'Is the document title describing sufficiently the purpose?',
+    comply: 'Yes',
+    comment: '',
+  },
   { id: 4, item: 'Is the document type right?', comply: 'Yes', comment: '' },
   { id: 5, item: 'Is the document code right? (CCP)', comply: 'Yes', comment: '' },
   { id: 6, item: 'Is the document version right? (CCP)', comply: 'Yes', comment: '' },
@@ -41,19 +46,49 @@ const initialChecklist: ChecklistItem[] = [
   { id: 9, item: 'Page numbering (CCP)', comply: 'Yes', comment: '' },
   { id: 10, item: 'Updating of table of contents (CCP)', comply: 'Yes', comment: '' },
   { id: 11, item: 'Is the purpose appropriate for this document?', comply: 'Yes', comment: '' },
-  { id: 12, item: 'Are all definitions and abbreviations clearly defined?', comply: 'Yes', comment: '' },
+  {
+    id: 12,
+    item: 'Are all definitions and abbreviations clearly defined?',
+    comply: 'Yes',
+    comment: '',
+  },
   { id: 13, item: 'Is the scope appropriate for this document?', comply: 'Yes', comment: '' },
   { id: 14, item: 'Are the responsibilities clearly determined?', comply: 'Yes', comment: '' },
   { id: 15, item: 'Are the safety concerns sufficient?', comply: 'Yes', comment: '' },
-  { id: 16, item: 'Is the procedure clear and understandable for implementation?', comply: 'Yes', comment: '' },
-  { id: 17, item: 'Are the procedure points written in a logical manner, using unambiguous language and easy to follow?', comply: 'Yes', comment: '' },
-  { id: 18, item: 'Is the numbering system of titles, subtitles, and points (CCP)', comply: 'Yes', comment: '' },
+  {
+    id: 16,
+    item: 'Is the procedure clear and understandable for implementation?',
+    comply: 'Yes',
+    comment: '',
+  },
+  {
+    id: 17,
+    item: 'Are the procedure points written in a logical manner, using unambiguous language and easy to follow?',
+    comply: 'Yes',
+    comment: '',
+  },
+  {
+    id: 18,
+    item: 'Is the numbering system of titles, subtitles, and points (CCP)',
+    comply: 'Yes',
+    comment: '',
+  },
   { id: 19, item: 'Are the critical control points sufficient?', comply: 'Yes', comment: '' },
   { id: 20, item: 'Are all attachments included in this document?', comply: 'Yes', comment: '' },
   { id: 21, item: 'Are all forms coded correctly? (CCP)', comply: 'Yes', comment: '' },
-  { id: 22, item: 'Do all forms contain the required data and are they clear to use?', comply: 'Yes', comment: '' },
+  {
+    id: 22,
+    item: 'Do all forms contain the required data and are they clear to use?',
+    comply: 'Yes',
+    comment: '',
+  },
   { id: 23, item: 'Review of references', comply: 'Yes', comment: '' },
-  { id: 24, item: 'Are all changes in the previous version mentioned in the change history?', comply: 'Yes', comment: '' },
+  {
+    id: 24,
+    item: 'Are all changes in the previous version mentioned in the change history?',
+    comply: 'Yes',
+    comment: '',
+  },
 ];
 
 type FormData = {
@@ -109,13 +144,16 @@ const DocumentRevisionChecklist: React.FC = () => {
   useEffect(() => {
     const userDeps = user?.Users_Departments_Users_Departments_User_IdToUser_Data || [];
     setDepartments(
-      userDeps.map((ud: any) => ({ Id: ud.Department_Data.Id, Dept_name: ud.Department_Data.Dept_name }))
+      userDeps.map((ud: any) => ({
+        Id: ud.Department_Data.Id,
+        Dept_name: ud.Department_Data.Dept_name,
+      })),
     );
-  axiosServices
-    .get('/api/sopheader/getAllSopHeaders')
-    .then(res => setAllSopHeaders(res.data))
-    .catch(console.error);
-}, []);
+    axiosServices
+      .get('/api/sopheader/getAllSopHeaders')
+      .then((res) => setAllSopHeaders(res.data))
+      .catch(console.error);
+  }, []);
 
   // pre-select department & document
   useEffect(() => {
@@ -128,9 +166,7 @@ const DocumentRevisionChecklist: React.FC = () => {
   // filter headers
   useEffect(() => {
     if (formData.department) {
-      setFilteredSopHeaders(
-        allSopHeaders.filter((h) => h.Dept_Id === formData.department)
-      );
+      setFilteredSopHeaders(allSopHeaders.filter((h) => h.Dept_Id === formData.department));
     }
   }, [formData.department, allSopHeaders]);
 
@@ -148,10 +184,16 @@ const DocumentRevisionChecklist: React.FC = () => {
             const ans = rf.Question_Answer.find((a) => a.QuestionId === String(item.id));
             return {
               ...item,
-              comply: ans ? (ans.Answer === 1 ? 'Yes' : ans.Answer === 0 ? 'No' : 'NA') : item.comply,
+              comply: ans
+                ? ans.Answer === 1
+                  ? 'Yes'
+                  : ans.Answer === 0
+                  ? 'No'
+                  : 'NA'
+                : item.comply,
               comment: ans ? ans.Comment : '',
             };
-          })
+          }),
         );
       })
       .catch(console.error);
@@ -170,12 +212,9 @@ const DocumentRevisionChecklist: React.FC = () => {
     const sel = filteredSopHeaders.find((s) => s.Id === id);
     if (sel) setFormData((f) => ({ ...f, documentId: sel.Id, documentName: sel.Doc_Title_en }));
   };
-  const handleChecklistChange = (
-    id: number,
-    field: 'comply' | 'comment',
-    value: string
-  ) => setChecklist((prev) => prev.map((itm) => (itm.id === id ? { ...itm, [field]: value } : itm)));
-  const handlePrint = () => window.print();
+  const handleChecklistChange = (id: number, field: 'comply' | 'comment', value: string) =>
+    setChecklist((prev) => prev.map((itm) => (itm.id === id ? { ...itm, [field]: value } : itm)));
+  // const handlePrint = () => window.print();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -205,13 +244,13 @@ const DocumentRevisionChecklist: React.FC = () => {
       payload.revision_ApprovedBy = userId;
     }
     try {
-      const res = await axiosServices.post(
-        '/api/Revisionform/addEditrevision-form',
-        payload
-      );
+      const res = await axiosServices.post('/api/Revisionform/addEditrevision-form', payload);
       const returned: RevisionForm = res.data;
       // navigate with revisionFormId
-      navigate(`?department=${formData.department}&documentId=${formData.documentId}&revisionFormId=${returned.Id}`, { replace: true });
+      navigate(
+        `?department=${formData.department}&documentId=${formData.documentId}&revisionFormId=${returned.Id}`,
+        { replace: true },
+      );
       setRevisionForm(returned);
     } catch (err) {
       console.error(err);
@@ -341,7 +380,7 @@ const DocumentRevisionChecklist: React.FC = () => {
                   <img
                     src={
                       revisionForm.Question_Answer.find(
-                        (a) => a.User_Data.userId === revisionForm.revision_requestedBy
+                        (a) => a.User_Data.userId === revisionForm.revision_requestedBy,
                       )?.User_Data.signUrl
                     }
                     alt="Supervisor sig"
@@ -357,7 +396,7 @@ const DocumentRevisionChecklist: React.FC = () => {
                   <img
                     src={
                       revisionForm.Question_Answer.find(
-                        (a) => a.User_Data.userId === revisionForm.revision_ApprovedBy
+                        (a) => a.User_Data.userId === revisionForm.revision_ApprovedBy,
                       )?.User_Data.signUrl
                     }
                     alt="Manager sig"
