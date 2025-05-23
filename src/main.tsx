@@ -9,6 +9,11 @@ import Spinner from './views/spinner/Spinner';
 import { UserProvider } from './context/UserContext';
 import './utils/i18n';
 import './_mockApis';
+import $ from 'jquery';
+(window as any).$ = $;
+(window as any).jQuery = $;
+
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';   // ✅ يحوي modal+dropdown+tooltip
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <Provider store={store}>
