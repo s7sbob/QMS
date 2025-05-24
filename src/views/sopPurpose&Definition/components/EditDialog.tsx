@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -10,8 +10,8 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import ReactSummernote from 'react-summernote';
-import 'react-summernote/dist/react-summernote.css';
+
+import RichTextEditor from 'src/views/documentation/pages/components/RichTextEditor.tsx';   // ⬅️ بدل ReactSummernote
 
 export interface HistoryRecord {
   Id: string;
@@ -60,97 +60,54 @@ const EditDialog: React.FC<EditDialogProps> = ({
   const [contentAr, setContentAr] = useState(initialContentAr);
   const [reviewerComment, setReviewerComment] = useState(initialReviewerComment);
 
-  // Create refs for each editor instance
-  const englishEditorRef = useRef<any>(null);
-  const arabicEditorRef = useRef<any>(null);
-  const reviewerEditorRef = useRef<any>(null);
-
-  // Update local state and force-update the underlying Summernote editors when dialog opens
+  /* عند فتح الـ Dialog أعد مزامنة الحالة مع القيم الابتدائية */
   useEffect(() => {
     if (open) {
       setContentEn(initialContentEn);
       setContentAr(initialContentAr);
       setReviewerComment(initialReviewerComment);
-
-      // Force-update the editor content via the underlying Summernote API if the ref is set
-      setTimeout(() => {
-        if (englishEditorRef.current) {
-          englishEditorRef.current.editor.summernote('code', initialContentEn);
-        }
-        if (arabicEditorRef.current) {
-          arabicEditorRef.current.editor.summernote('code', initialContentAr);
-        }
-        if (reviewerEditorRef.current) {
-          reviewerEditorRef.current.editor.summernote('code', initialReviewerComment);
-        }
-      }, 100);
     }
   }, [open, initialContentEn, initialContentAr, initialReviewerComment]);
 
-  // Base Summernote options
-  const baseSummernoteOptions = useMemo(
-    () => ({
-      height: 200,
-      dialogsInBody: true,
-      toolbar: [
-        ['style', ['style']],
-        ['font', ['bold', 'italic', 'underline', 'clear']],
-        ['para', ['ul', 'ol', 'paragraph']],
-        ['table', ['table']],
-      ],
-      callbacks: {
-        onInit: () => console.log('Summernote initialized'),
-      },
-    }),
-    [],
-  );
-
-  const englishOptions = baseSummernoteOptions;
-  const arabicOptions = useMemo(
-    () => ({
-      ...baseSummernoteOptions,
-      lang: 'ar',
-    }),
-    [baseSummernoteOptions],
-  );
-
-  const handleSave = () => {
-    onSave(contentEn, contentAr, reviewerComment);
-  };
+  const handleSave = () => onSave(contentEn, contentAr, reviewerComment);
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle>{title}</DialogTitle>
+
       <DialogContent dividers>
         <Typography variant="h6" gutterBottom>
           Current Record
         </Typography>
+
         <Box sx={{ mb: 2, border: '1px solid #ccc', p: 2, borderRadius: 1 }}>
           <Stack spacing={2}>
+            {/* English */}
             <Typography variant="body2">English Content</Typography>
-            <ReactSummernote
-              ref={englishEditorRef}
-              defaultValue={initialContentEn}
-              options={englishOptions}
-              onChange={(content: string) => setContentEn(content)}
+            <RichTextEditor
+              value={contentEn}
+              onChange={setContentEn}
+              language="en"
             />
 
+            {/* Arabic */}
             <Typography variant="body2">Arabic Content</Typography>
-            <ReactSummernote
-              ref={arabicEditorRef}
-              defaultValue={initialContentAr}
-              options={arabicOptions}
-              onChange={(content: string) => setContentAr(content)}
+            <RichTextEditor
+              value={contentAr}
+              onChange={setContentAr}
+              language="ar"
+              dir="rtl"
             />
 
+            {/* Reviewer */}
             <Typography variant="body2">Reviewer Comment</Typography>
-            <ReactSummernote
-              ref={reviewerEditorRef}
-              defaultValue={initialReviewerComment}
-              options={englishOptions}
-              onChange={(content: string) => setReviewerComment(content)}
+            <RichTextEditor
+              value={reviewerComment}
+              onChange={setReviewerComment}
+              language="en"
             />
 
+            {/* معلومات إضافية */}
             {additionalInfo && (
               <>
                 {additionalInfo.version !== undefined && (
@@ -177,54 +134,43 @@ const EditDialog: React.FC<EditDialogProps> = ({
           </Stack>
         </Box>
 
-        {historyData && historyData.length > 0 && (
+        {/* السجلّ */}
+        {historyData?.length ? (
           <>
             <Typography variant="h6" gutterBottom>
               History (read-only)
             </Typography>
-            {historyData.map((record) => (
-              <Box key={record.Id} sx={{ mb: 2, border: '1px solid #eee', p: 1, borderRadius: 1 }}>
+            {historyData.map((r) => (
+              <Box key={r.Id} sx={{ mb: 2, border: '1px solid #eee', p: 1, borderRadius: 1 }}>
                 <Typography variant="body2">
                   <strong>Content (EN):</strong>
-                  <div dangerouslySetInnerHTML={{ __html: record.Content_en }} />
+                  <div dangerouslySetInnerHTML={{ __html: r.Content_en }} />
                 </Typography>
                 <Typography variant="body2">
                   <strong>Content (AR):</strong>
-                  <div
-                    style={{ direction: 'rtl' }}
-                    dangerouslySetInnerHTML={{ __html: record.Content_ar }}
-                  />
+                  <div style={{ direction: 'rtl' }} dangerouslySetInnerHTML={{ __html: r.Content_ar }} />
                 </Typography>
-                <Typography variant="body2">
-                  <strong>Version:</strong> {record.Version}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Crt_Date:</strong> {record.Crt_Date}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Modified_Date:</strong> {record.Modified_Date || 'N/A'}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Crt_by:</strong> {record.Crt_by}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Modified_by:</strong> {record.Modified_by || 'N/A'}
-                </Typography>
-                {record.reviewer_Comment && (
+                <Typography variant="body2"><strong>Version:</strong> {r.Version}</Typography>
+                <Typography variant="body2"><strong>Crt_Date:</strong> {r.Crt_Date}</Typography>
+                <Typography variant="body2"><strong>Modified_Date:</strong> {r.Modified_Date || 'N/A'}</Typography>
+                <Typography variant="body2"><strong>Crt_by:</strong> {r.Crt_by}</Typography>
+                <Typography variant="body2"><strong>Modified_by:</strong> {r.Modified_by || 'N/A'}</Typography>
+                {r.reviewer_Comment && (
                   <Typography variant="body2" sx={{ color: 'red' }}>
-                    <strong>Reviewer Comment:</strong> {record.reviewer_Comment}
+                    <strong>Reviewer Comment:</strong> {r.reviewer_Comment}
                   </Typography>
                 )}
               </Box>
             ))}
           </>
-        )}
+        ) : null}
       </DialogContent>
+
       <DialogActions>
         <Button onClick={onClose} color="inherit">
           Cancel
         </Button>
-        <Button onClick={handleSave} variant="contained" color="primary">
+        <Button onClick={handleSave} variant="contained">
           Save Current Record
         </Button>
       </DialogActions>

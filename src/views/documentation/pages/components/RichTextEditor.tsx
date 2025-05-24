@@ -1,3 +1,4 @@
+/* eslint-disable-next-line */
 import React, { useCallback, useRef } from 'react';
 import ReactSummernote from 'react-summernote';
 import 'react-summernote/dist/react-summernote.css';
@@ -56,7 +57,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     fontNames: language === 'ar' ? fontAr : fontEn,
     fontSizes: sizes,
     lineHeights: lines,
-    dialogsInBody: true,
+    dialogsInBody: false,
     placeholder: language === 'ar' ? 'اكتب هنا…' : 'Type here…',
   };
 
