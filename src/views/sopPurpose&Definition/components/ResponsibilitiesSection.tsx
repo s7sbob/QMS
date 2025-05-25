@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/components/ResponsibilitiesSection.tsx
-import React, { useEffect, useState } from "react";
-import axiosServices from "src/utils/axiosServices";
+import React, { useEffect, useState } from 'react';
+import axiosServices from 'src/utils/axiosServices';
 import {
   Box,
   Table,
@@ -11,8 +12,8 @@ import {
   TableRow,
   Paper,
   Typography,
-} from "@mui/material";
-import EditDialog from "./EditDialog";
+} from '@mui/material';
+import EditDialog from './EditDialog';
 
 export interface Responsibility {
   Id: string;
@@ -54,14 +55,18 @@ const ResponsibilitiesSection: React.FC<ResponsibilitiesSectionProps> = ({ initi
         setHistoryData(activeRecords);
         setOpenDialog(true);
       })
-      .catch((error) => console.error("Error fetching historical responsibilities:", error));
+      .catch((error) => console.error('Error fetching historical responsibilities:', error));
   };
 
-  const handleDialogSave = (newContentEn: string, newContentAr: string, newReviewerComment: string) => {
+  const handleDialogSave = (
+    newContentEn: string,
+    newContentAr: string,
+    newReviewerComment: string,
+  ) => {
     if (!responsibility) return;
     if (newContentEn !== responsibility.Content_en || newContentAr !== responsibility.Content_ar) {
       axiosServices
-        .post("/api/sopRes/addSop-Res", {
+        .post('/api/sopRes/SopReponsibility-create', {
           Content_en: newContentEn,
           Content_ar: newContentAr,
           reviewer_Comment: newReviewerComment,
@@ -71,7 +76,7 @@ const ResponsibilitiesSection: React.FC<ResponsibilitiesSectionProps> = ({ initi
           setResponsibility(res.data);
           setOpenDialog(false);
         })
-        .catch((error) => console.error("Error inserting responsibility:", error));
+        .catch((error) => console.error('Error inserting responsibility:', error));
     } else {
       axiosServices
         .post(`/api/sopRes/updateSop-Res/${responsibility.Id}`, {
@@ -83,14 +88,21 @@ const ResponsibilitiesSection: React.FC<ResponsibilitiesSectionProps> = ({ initi
           setResponsibility(res.data);
           setOpenDialog(false);
         })
-        .catch((error) => console.error("Error updating responsibility:", error));
+        .catch((error) => console.error('Error updating responsibility:', error));
     }
   };
 
   return (
     <Box sx={{ mt: 2 }}>
-      <Typography variant="h6" gutterBottom sx={{ display: "flex", justifyContent: "space-between",     color: responsibility && responsibility.reviewer_Comment ? "red" : "inherit", // الشرط هنا لتلوين العنوان بالاحمر عند وجود تعليق
- }}>
+      <Typography
+        variant="h6"
+        gutterBottom
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          color: responsibility && responsibility.reviewer_Comment ? 'red' : 'inherit', // الشرط هنا لتلوين العنوان بالاحمر عند وجود تعليق
+        }}
+      >
         <span>4. Responsibilities:</span>
         <span dir="rtl">4. المسؤوليات</span>
       </Typography>
@@ -98,19 +110,19 @@ const ResponsibilitiesSection: React.FC<ResponsibilitiesSectionProps> = ({ initi
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: "bold", width: "50%" }}>English Content</TableCell>
-              <TableCell sx={{ fontWeight: "bold", width: "50%" }} align="right">
+              <TableCell sx={{ fontWeight: 'bold', width: '50%' }}>English Content</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', width: '50%' }} align="right">
                 المحتوى العربي
               </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {responsibility && (
-              <TableRow onDoubleClick={handleDoubleClick} hover sx={{ cursor: "pointer" }}>
+              <TableRow onDoubleClick={handleDoubleClick} hover sx={{ cursor: 'pointer' }}>
                 <TableCell>
                   <div dangerouslySetInnerHTML={{ __html: responsibility.Content_en }} />
                 </TableCell>
-                <TableCell align="right" style={{ direction: "rtl" }}>
+                <TableCell align="right" style={{ direction: 'rtl' }}>
                   <div dangerouslySetInnerHTML={{ __html: responsibility.Content_ar }} />
                 </TableCell>
               </TableRow>
@@ -124,7 +136,7 @@ const ResponsibilitiesSection: React.FC<ResponsibilitiesSectionProps> = ({ initi
           title="تفاصيل المسؤوليات"
           initialContentEn={responsibility.Content_en}
           initialContentAr={responsibility.Content_ar}
-          initialReviewerComment={responsibility.reviewer_Comment || ""}
+          initialReviewerComment={responsibility.reviewer_Comment || ''}
           additionalInfo={{
             version: responsibility.Version,
             crtDate: responsibility.Crt_Date,
