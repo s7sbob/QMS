@@ -3,7 +3,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 
 const axiosServices = axios.create({
-  baseURL: 'https://qualitylead-qms.duckdns.org',
+  baseURL: process.env.BackEnd_Url,
   // baseURL: 'http://localhost:3000',
 });
 
