@@ -213,7 +213,7 @@ const NewDocumentRequestForm: React.FC = () => {
       
       // 1. Save/Update SOP Header
       const sopHeaderPayload = buildSopHeaderPayload();
-      const headerResponse = await axiosServices.post('/addEditSopHeader', sopHeaderPayload);
+      const headerResponse = await axiosServices.post('/api/docrequest-form/addEdit', sopHeaderPayload);
       const headerId = headerResponse.data?.Id || form.Id;
 
       if (!headerId) {
@@ -493,7 +493,7 @@ const NewDocumentRequestForm: React.FC = () => {
                 onChange={(content: string) => setForm(prev => ({ ...prev, qaComment: content }))}
               />
             </Box>
-            
+
             {/* QA Manager Approval / Document Officer Approval table - READ ONLY */}
             <TableContainer component={Paper} sx={{ mb: 4, bgcolor: '#f5f5f5' }}>
               <Table>
