@@ -213,7 +213,7 @@ const NewDocumentRequestForm: React.FC = () => {
       
       // 1. Save/Update SOP Header
       const sopHeaderPayload = buildSopHeaderPayload();
-      const headerResponse = await axiosServices.post('/api/docrequest-form/addEdit', sopHeaderPayload);
+      const headerResponse = await axiosServices.post('/api/sopheader/addEditSopHeader', sopHeaderPayload);
       const headerId = headerResponse.data?.Id || form.Id;
 
       if (!headerId) {
