@@ -10,6 +10,7 @@ export interface RichTextEditorProps {
   onChange: (c: string) => void;
   dir?: 'rtl' | 'ltr';
   language?: 'ar' | 'en';
+    disabled?: boolean;
 }
 
 const toolbar = [

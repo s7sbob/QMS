@@ -1,4 +1,4 @@
-// src/pages/NewDocumentRequestForm.tsx
+// src/pages/DocumentRequestManagement.tsx
 import React, { useState, useEffect, useContext } from 'react';
 import {
   Container,
@@ -20,8 +20,17 @@ import {
   Select,
   Backdrop,
   CircularProgress,
+  LinearProgress,
+  Chip,
+  Card,
+  CardContent,
+  CardActions,
+  Alert,
+  Stepper,
+  Step,
+  StepLabel,
 } from '@mui/material';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import axiosServices from 'src/utils/axiosServices';
 import { SopHeaderInput } from './types/sopHeader';
 import RichTextEditor from './components/RichTextEditor';
@@ -40,19 +49,41 @@ interface Department {
   Dept_name: string;
 }
 
+interface DocRequestForm {
+  Id: string;
+  sop_HeaderId: string;
+  Requested_by: string;
+  Request_date: string;
+  Reviewed_by: string | null;
+  RequestFrm_code: string;
+  Reviewed_date: string | null;
+  Request_status: number;
+  Qa_comment: string;
+  Doc_type: string;
+  QaMan_Id: string | null;
+  QaDoc_officerId: string | null;
+  QaManApprove_Date: string | null;
+  QaDoc_officerDate: string | null;
+  User_Data_DocRequest_frm_Requested_byToUser_Data: any;
+  User_Data_DocRequest_frm_Reviewed_byToUser_Data: any;
+  User_Data_DocRequest_frm_QaMan_IdToUser_Data: any;
+  User_Data_DocRequest_frm_QaDoc_officerIdToUser_Data: any;
+  Sop_header: any;
+}
+
 interface FormState {
   Id?: string | null;
   department: string;
-  docTitle: string;           // Doc_Title_en
-  docTitleAr: string;         // Doc_Title_ar
-  purposeEn: string;          // sop_purpose English
-  purposeAr: string;          // sop_purpose Arabic
-  scopeEn: string;            // Sop_Scope English
-  scopeAr: string;            // Sop_Scope Arabic
+  docTitle: string;
+  docTitleAr: string;
+  purposeEn: string;
+  purposeAr: string;
+  scopeEn: string;
+  scopeAr: string;
   requested: RequestedBy;
   reviewed: RequestedBy;
-  qaComment: string;          // NOTES - now rich text
-  docType: string;            // doc_Type
+  qaComment: string;
+  docType: string;
   qaManager: RequestedBy;
   docOfficer: RequestedBy;
 }
@@ -73,8 +104,9 @@ const initialState: FormState = {
   docOfficer: { name: '', designation: '', signature: '', date: '' },
 };
 
-const NewDocumentRequestForm: React.FC = () => {
+const DocumentRequestManagement: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const user = useContext<IUser | null>(UserContext);
   const compId = user?.compId || '';
@@ -84,17 +116,63 @@ const NewDocumentRequestForm: React.FC = () => {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [submitStatus, setSubmitStatus] = useState('');
   const [departments, setDepartments] = useState<Department[]>([]);
+  const [docRequestForm, setDocRequestForm] = useState<DocRequestForm | null>(null);
+  const [userRole, setUserRole] = useState<string>('');
+  const [canEdit, setCanEdit] = useState(false);
 
-  // Auto-fill user data when component loads
+  // تحديد الخطوات والحالات
+  const getStatusSteps = () => [
+    { label: 'طلب جديد', status: 8 },
+    { label: 'تم الإرسال', status: 9 },
+    { label: 'مراجعة المدير', status: 10 },
+    { label: 'مراجعة QA Manager', status: 11 },
+    { label: 'موافقة QA Officer', status: 12 },
+    { label: 'مرفوض', status: 13 },
+    { label: 'مرفوض من QA Manager', status: 14 },
+  ];
+
+  const getCurrentStepIndex = (status: number) => {
+    const steps = getStatusSteps();
+    const index = steps.findIndex(step => step.status === status);
+    return index >= 0 ? index : 0;
+  };
+
+  const getStatusColor = (status: number) => {
+    switch (status) {
+      case 8: return 'info';
+      case 9: return 'warning';
+      case 10: return 'primary';
+      case 11: return 'secondary';
+      case 12: return 'success';
+      case 13:
+      case 14: return 'error';
+      default: return 'default';
+    }
+  };
+
+  const getStatusText = (status: number) => {
+    const steps = getStatusSteps();
+    const step = steps.find(s => s.status === status);
+    return step ? step.label : 'غير محدد';
+  };
+
+  // تحديد دور المستخدم
+  useEffect(() => {
+    if (user?.Users_Departments_Users_Departments_User_IdToUser_Data?.[0]?.User_Roles?.Name) {
+      setUserRole(user.Users_Departments_Users_Departments_User_IdToUser_Data[0].User_Roles.Name);
+    }
+  }, [user]);
+
+  // تحميل البيانات الأساسية
   useEffect(() => {
     if (user) {
       const currentDate = new Date().toISOString().split('T')[0];
       setForm(prev => ({
         ...prev,
         requested: {
-          name: user.name || '',
-          designation: user.designation || '',
-          signature: user.signature || '',
+          name: user.FName + ' ' + user.LName || '',
+          designation: userRole || '',
+          signature: user.signUrl || '',
           date: currentDate,
         },
         reviewed: {
@@ -111,15 +189,15 @@ const NewDocumentRequestForm: React.FC = () => {
         },
         docOfficer: {
           name: user.docOfficerName || '',
-          designation: 'Document Officer',
+          designation: 'QA Officer',
           signature: user.docOfficerSignature || '',
           date: currentDate,
         },
       }));
     }
-  }, [user]);
+  }, [user, userRole]);
 
-  // load departments for dropdown
+  // تحميل الأقسام
   useEffect(() => {
     if (compId) {
       setLoading(true);
@@ -141,155 +219,314 @@ const NewDocumentRequestForm: React.FC = () => {
     }
   }, [compId]);
 
-  // if editing, fetch existing header
+  // تحميل بيانات الطلب إذا كان هناك ID
   useEffect(() => {
-    if (!id) return;
-    setLoading(true);
-    axiosServices
-      .get(`/getSopHeaderById/${id}`)
-      .then(res => {
-        const data = res.data;
-        setForm(prev => ({
-          ...prev,
-          Id: data.Id,
-          department: data.Dept_Id || '',
-          docTitle: data.Doc_Title_en || '',
-          docTitleAr: data.Doc_Title_ar || '',
-          purposeEn: data.sop_purpose_en || '',
-          purposeAr: data.sop_purpose_ar || '',
-          scopeEn: data.Sop_Scope_en || '',
-          scopeAr: data.Sop_Scope_ar || '',
-          qaComment: data.NOTES || '',
-          docType: data.doc_Type || '',
-        }));
-      })
-      .catch(err => {
-        console.error(err);
-        Swal.fire('خطأ', 'فشل في جلب بيانات المستند', 'error');
-      })
-      .finally(() => setLoading(false));
-  }, [id]);
+    if (id) {
+      setLoading(true);
+      axiosServices
+        .get(`/api/docrequest-form/getbyid/${id}`)
+        .then(res => {
+          const data = res.data;
+          setDocRequestForm(data);
+          
+          // تحديد إمكانية التعديل بناءً على الدور والحالة
+          const canUserEdit = checkEditPermission(data, userRole, user?.Id ?? '');
+          setCanEdit(canUserEdit);
 
-  const handleChange =
-    (field: keyof FormState) =>
+          // ملء النموذج بالبيانات
+          setForm(prev => ({
+            ...prev,
+            Id: data.sop_HeaderId,
+            department: data.Sop_header?.Dept_Id || '',
+            docTitle: data.Sop_header?.Doc_Title_en || '',
+            docTitleAr: data.Sop_header?.Doc_Title_ar || '',
+            qaComment: data.Qa_comment || '',
+            docType: data.Doc_type || '',
+            requested: {
+              name: data.User_Data_DocRequest_frm_Requested_byToUser_Data?.FName + ' ' + 
+                    data.User_Data_DocRequest_frm_Requested_byToUser_Data?.LName || '',
+              designation: 'Requester',
+              signature: data.User_Data_DocRequest_frm_Requested_byToUser_Data?.signUrl || '',
+              date: data.Request_date ? new Date(data.Request_date).toLocaleDateString() : '',
+            },
+            reviewed: {
+              name: data.User_Data_DocRequest_frm_Reviewed_byToUser_Data?.FName + ' ' + 
+                    data.User_Data_DocRequest_frm_Reviewed_byToUser_Data?.LName || '',
+              designation: 'Department Manager',
+              signature: data.User_Data_DocRequest_frm_Reviewed_byToUser_Data?.signUrl || '',
+              date: data.Reviewed_date ? new Date(data.Reviewed_date).toLocaleDateString() : '',
+            },
+            qaManager: {
+              name: data.User_Data_DocRequest_frm_QaMan_IdToUser_Data?.FName + ' ' + 
+                    data.User_Data_DocRequest_frm_QaMan_IdToUser_Data?.LName || '',
+              designation: 'QA Manager',
+              signature: data.User_Data_DocRequest_frm_QaMan_IdToUser_Data?.signUrl || '',
+              date: data.QaManApprove_Date ? new Date(data.QaManApprove_Date).toLocaleDateString() : '',
+            },
+            docOfficer: {
+              name: data.User_Data_DocRequest_frm_QaDoc_officerIdToUser_Data?.FName + ' ' + 
+                    data.User_Data_DocRequest_frm_QaDoc_officerIdToUser_Data?.LName || '',
+              designation: 'QA Officer',
+              signature: data.User_Data_DocRequest_frm_QaDoc_officerIdToUser_Data?.signUrl || '',
+              date: data.QaDoc_officerDate ? new Date(data.QaDoc_officerDate).toLocaleDateString() : '',
+            },
+          }));
+        })
+        .catch(err => {
+          console.error(err);
+          Swal.fire('خطأ', 'فشل في جلب بيانات الطلب', 'error');
+        })
+        .finally(() => setLoading(false));
+    } else {
+      // إذا لم يكن هناك ID، تحميل الطلبات الخاصة بالمستخدم
+      loadUserRequests();
+    }
+  }, [id, userRole, user?.Id]);
+
+  const checkEditPermission = (docRequest: DocRequestForm, role: string, userId: string) => {
+    if (!docRequest || !role || !userId) return false;
+
+    const status = docRequest.Request_status;
+    
+    switch (role) {
+      case 'QA Associate':
+        return docRequest.Requested_by === userId && (status === 8 || status === 9);
+      case 'Dept Manager':
+        return status === 9;
+      case 'QA Manager':
+        return status === 10;
+      case 'QA Officer':
+        return status === 11;
+      default:
+        return false;
+    }
+  };
+
+  const loadUserRequests = async () => {
+    if (!user?.Id) return;
+    
+    setLoading(true);
+    try {
+      const response = await axiosServices.get('/api/docrequest-form/getall');
+      const userRequests = response.data.filter((req: DocRequestForm) => 
+        req.Requested_by === user.Id && req.Request_status < 12
+      );
+      
+      if (userRequests.length > 0) {
+        // عرض أحدث طلب للمستخدم
+        const latestRequest = userRequests[0];
+        setDocRequestForm(latestRequest);
+        const canUserEdit = checkEditPermission(latestRequest, userRole, user.Id);
+        setCanEdit(canUserEdit);
+      }
+    } catch (error) {
+      console.error('Error loading user requests:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChange = (field: keyof FormState) => 
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       setForm(prev => ({ ...prev, [field]: e.target.value }));
 
-  const buildSopHeaderPayload = (): SopHeaderInput => ({
-    Id: form.Id || null,
-    Doc_Title_en: form.docTitle,
-    Doc_Title_ar: form.docTitleAr || null,
-    Dept_Id: form.department || null,
-    NOTES: form.qaComment || null,
-    doc_Type: form.docType || null,
-  });
+  const handleStatusUpdate = async (newStatus: number, additionalData: any = {}) => {
+    if (!docRequestForm) return;
 
-  const buildDocRequestPayload = () => ({
-    sop_HeaderId: form.Id || undefined,
-    Qa_comment: form.qaComment || undefined,
-    Doc_type: form.docType || undefined,
-    Requested_by_name: form.requested.name,
-    Requested_by_designation: form.requested.designation,
-    Requested_by_signature: form.requested.signature,
-    Requested_by_date: form.requested.date,
-    Reviewed_by_name: form.reviewed.name,
-    Reviewed_by_designation: form.reviewed.designation,
-    Reviewed_by_signature: form.reviewed.signature,
-    Reviewed_by_date: form.reviewed.date,
-    QA_manager_name: form.qaManager.name,
-    QA_manager_signature: form.qaManager.signature,
-    QA_manager_date: form.qaManager.date,
-    Doc_officer_name: form.docOfficer.name,
-    Doc_officer_signature: form.docOfficer.signature,
-    Doc_officer_date: form.docOfficer.date,
-  });
+    setSubmitLoading(true);
+    try {
+      const payload = {
+        Id: docRequestForm.Id,
+        Request_status: newStatus,
+        ...additionalData,
+      };
+
+      // إضافة بيانات التوقيع حسب الدور
+      if (userRole === 'Dept Manager' && newStatus === 10) {
+        payload.Reviewed_by = user?.Id;
+        payload.Reviewed_date = new Date().toISOString();
+      } else if (userRole === 'QA Manager' && newStatus === 11) {
+        payload.QaMan_Id = user?.Id;
+        payload.QaManApprove_Date = new Date().toISOString();
+      } else if (userRole === 'QA Officer' && newStatus === 12) {
+        payload.QaDoc_officerId = user?.Id;
+        payload.QaDoc_officerDate = new Date().toISOString();
+      }
+
+      await axiosServices.post('/api/docrequest-form/addEdit', payload);
+      
+      Swal.fire('تم', 'تم تحديث حالة الطلب بنجاح', 'success').then(() => {
+        window.location.reload();
+      });
+    } catch (error) {
+      console.error('Error updating status:', error);
+      Swal.fire('خطأ', 'حدث خطأ أثناء تحديث الحالة', 'error');
+    } finally {
+      setSubmitLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canEdit) return;
+
     setSubmitLoading(true);
     
     try {
-      setSubmitStatus('⏳ جاري حفظ بيانات المستند الأساسية...');
+      setSubmitStatus('⏳ جاري حفظ البيانات...');
       
-      // 1. Save/Update SOP Header
-      const sopHeaderPayload = buildSopHeaderPayload();
-      const headerResponse = await axiosServices.post('/api/sopheader/addEditSopHeader', sopHeaderPayload);
-      const headerId = headerResponse.data?.Id || form.Id;
+      if (docRequestForm) {
+        // تحديث طلب موجود
+        const payload = {
+          Id: docRequestForm.Id,
+          Qa_comment: form.qaComment,
+          Doc_type: form.docType,
+        };
 
-      if (!headerId) {
-        throw new Error('فشل في الحصول على معرف المستند');
+        await axiosServices.post('/api/docrequest-form/addEdit', payload);
+        
+        // تحديث SOP Header إذا لزم الأمر
+        if (userRole === 'QA Manager') {
+          const sopHeaderPayload = {
+            Id: form.Id,
+            Doc_Title_en: form.docTitle,
+            Doc_Title_ar: form.docTitleAr,
+            Dept_Id: form.department,
+            NOTES: form.qaComment,
+            doc_Type: form.docType,
+          };
+          await axiosServices.post('/api/sopheader/addEditSopHeader', sopHeaderPayload);
+        }
+      } else {
+        // إنشاء طلب جديد
+        const sopHeaderPayload = {
+          Doc_Title_en: form.docTitle,
+          Doc_Title_ar: form.docTitleAr,
+          Dept_Id: form.department,
+          NOTES: form.qaComment,
+          doc_Type: form.docType,
+          status: '8',
+        };
+        
+        const headerResponse = await axiosServices.post('/api/sopheader/addEditSopHeader', sopHeaderPayload);
+        const headerId = headerResponse.data?.Id;
+
+        if (!headerId) {
+          throw new Error('فشل في إنشاء المستند');
+        }
+
+        // إنشاء طلب المستند
+        const docRequestPayload = {
+          sop_HeaderId: headerId,
+          Qa_comment: form.qaComment,
+          Doc_type: form.docType,
+          Request_status: 8,
+        };
+        
+        await axiosServices.post('/api/docrequest-form/addEdit', docRequestPayload);
       }
 
-      // 2. Save Purpose (English)
-      if (form.purposeEn) {
-        setSubmitStatus('⏳ جاري حفظ الغرض (إنجليزي)...');
-        await axiosServices.post('/api/soppurpose/addSop-Purpose', {
-          Content_en: form.purposeEn,
-          Content_ar: '',
-          Is_Current: 1,
-          Is_Active: 1,
-          Sop_HeaderId: headerId,
-        });
-      }
-
-      // 3. Save Purpose (Arabic)
-      if (form.purposeAr) {
-        setSubmitStatus('⏳ جاري حفظ الغرض (عربي)...');
-        await axiosServices.post('/api/soppurpose/addSop-Purpose', {
-          Content_en: '',
-          Content_ar: form.purposeAr,
-          Is_Current: 1,
-          Is_Active: 1,
-          Sop_HeaderId: headerId,
-        });
-      }
-
-      // 4. Save Scope (English)
-      if (form.scopeEn) {
-        setSubmitStatus('⏳ جاري حفظ مجال التطبيق (إنجليزي)...');
-        await axiosServices.post('/api/sopScope/addSop-Scope', {
-          Content_en: form.scopeEn,
-          Content_ar: '',
-          Is_Current: 1,
-          Is_Active: 1,
-          Sop_HeaderId: headerId,
-        });
-      }
-
-      // 5. Save Scope (Arabic)
-      if (form.scopeAr) {
-        setSubmitStatus('⏳ جاري حفظ مجال التطبيق (عربي)...');
-        await axiosServices.post('/api/sopScope/addSop-Scope', {
-          Content_en: '',
-          Content_ar: form.scopeAr,
-          Is_Current: 1,
-          Is_Active: 1,
-          Sop_HeaderId: headerId,
-        });
-      }
-
-      // 6. Save Document Request Form
-      setSubmitStatus('⏳ جاري حفظ نموذج طلب المستند...');
-      const docRequestPayload = {
-        ...buildDocRequestPayload(),
-        sop_HeaderId: headerId,
-      };
-      await axiosServices.post('/api/docrequest-form/addEdit', docRequestPayload);
-
-      setSubmitStatus('🎉 تم حفظ المستند بنجاح');
+      setSubmitStatus('🎉 تم حفظ البيانات بنجاح');
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      Swal.fire('تم', `تم ${id ? 'تحديث' : 'إنشاء'} المستند بنجاح!`, 'success').then(() => {
-        navigate(-1);
+      Swal.fire('تم', 'تم حفظ البيانات بنجاح!', 'success').then(() => {
+        if (!id) {
+          navigate(-1);
+        } else {
+          window.location.reload();
+        }
       });
       
     } catch (err: any) {
       console.error(err);
-      Swal.fire('خطأ', 'حدث خطأ أثناء الإرسال: ' + (err.response?.data?.message || err.message), 'error');
+      Swal.fire('خطأ', 'حدث خطأ أثناء الحفظ: ' + (err.response?.data?.message || err.message), 'error');
     } finally {
       setSubmitLoading(false);
       setSubmitStatus('');
     }
+  };
+
+  const renderActionButtons = () => {
+    if (!docRequestForm) return null;
+
+    const status = docRequestForm.Request_status;
+
+    if (userRole === 'Dept Manager' && status === 9) {
+      return (
+        <Stack direction="row" spacing={2} justifyContent="center">
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => handleStatusUpdate(10)}
+            disabled={submitLoading}
+          >
+            موافقة المدير
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => handleStatusUpdate(13)}
+            disabled={submitLoading}
+          >
+            رفض الطلب
+          </Button>
+        </Stack>
+      );
+    }
+
+    if (userRole === 'QA Manager' && status === 10) {
+      return (
+        <Stack direction="row" spacing={2} justifyContent="center">
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => handleStatusUpdate(11)}
+            disabled={submitLoading}
+          >
+            موافقة QA Manager
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => handleStatusUpdate(14)}
+            disabled={submitLoading}
+          >
+            رفض الطلب
+          </Button>
+        </Stack>
+      );
+    }
+
+    if (userRole === 'QA Officer' && status === 11) {
+      return (
+        <Stack direction="row" spacing={2} justifyContent="center">
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => handleStatusUpdate(12)}
+            disabled={submitLoading}
+          >
+            موافقة QA Officer
+          </Button>
+        </Stack>
+      );
+    }
+
+    if (userRole === 'QA Associate' && status === 8 && canEdit) {
+      return (
+        <Stack direction="row" spacing={2} justifyContent="center">
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={submitLoading}
+          >
+            إرسال الطلب
+          </Button>
+        </Stack>
+      );
+    }
+
+    return null;
   };
 
   if (!user) {
@@ -324,46 +561,85 @@ const NewDocumentRequestForm: React.FC = () => {
       </Backdrop>
 
       <Container sx={{ py: 4 }}>
+        {/* Progress Bar */}
+        {docRequestForm && (
+          <Paper sx={{ p: 3, mb: 3 }}>
+            <Typography variant="h6" sx={{ mb: 2, textAlign: 'center' }}>
+              حالة الطلب: {docRequestForm.RequestFrm_code}
+            </Typography>
+            
+            <Box sx={{ mb: 2 }}>
+              <Chip 
+                label={getStatusText(docRequestForm.Request_status)} 
+                color={getStatusColor(docRequestForm.Request_status)}
+                size="medium"
+                sx={{ display: 'block', mx: 'auto', mb: 2 }}
+              />
+            </Box>
+
+            <Stepper activeStep={getCurrentStepIndex(docRequestForm.Request_status)} alternativeLabel>
+              {getStatusSteps().filter(step => ![13, 14].includes(step.status)).map((step) => (
+                <Step key={step.status}>
+                  <StepLabel>{step.label}</StepLabel>
+                </Step>
+              ))}
+            </Stepper>
+
+            {[13, 14].includes(docRequestForm.Request_status) && (
+              <Alert severity="error" sx={{ mt: 2 }}>
+                تم رفض الطلب
+              </Alert>
+            )}
+          </Paper>
+        )}
+
         <form onSubmit={handleSubmit}>
           <Paper sx={{ p: 3 }}>
             <Box textAlign="center" mb={3}>
               <Typography variant="h4">
-                {id ? 'تعديل طلب مستند' : 'إنشاء طلب مستند جديد'}
+                {id ? 'عرض طلب المستند' : 'إنشاء طلب مستند جديد'}
               </Typography>
+              {docRequestForm && (
+                <Typography variant="subtitle1" color="text.secondary">
+                  رقم الطلب: {docRequestForm.RequestFrm_code}
+                </Typography>
+              )}
             </Box>
 
-            {/* Type of Document (dropdown) */}
+            {/* نوع المستند */}
             <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel id="doc-type-label">Type of Document</InputLabel>
+              <InputLabel id="doc-type-label">نوع المستند</InputLabel>
               <Select
                 labelId="doc-type-label"
                 value={form.docType}
-                label="Type of Document"
+                label="نوع المستند"
                 onChange={e => setForm(prev => ({ ...prev, docType: e.target.value }))}
+                disabled={!canEdit}
               >
-                <MenuItem value="SOP">Standard operating procedure (SOP)</MenuItem>
-                <MenuItem value="MU">Quality management manual (MU)</MenuItem>
-                <MenuItem value="SMF">Site master file (SMF)</MenuItem>
-                <MenuItem value="PR">Protocol (PR)</MenuItem>
-                <MenuItem value="PL">Plan (PL)</MenuItem>
-                <MenuItem value="PC">Policy (PC)</MenuItem>
-                <MenuItem value="ST">Study (ST)</MenuItem>
-                <MenuItem value="WI">Work Instruction (WI)</MenuItem>
-                <MenuItem value="O">Other</MenuItem>
+                <MenuItem value="SOP">إجراء تشغيل معياري (SOP)</MenuItem>
+                <MenuItem value="MU">دليل إدارة الجودة (MU)</MenuItem>
+                <MenuItem value="SMF">ملف الموقع الرئيسي (SMF)</MenuItem>
+                <MenuItem value="PR">بروتوكول (PR)</MenuItem>
+                <MenuItem value="PL">خطة (PL)</MenuItem>
+                <MenuItem value="PC">سياسة (PC)</MenuItem>
+                <MenuItem value="ST">دراسة (ST)</MenuItem>
+                <MenuItem value="WI">تعليمات العمل (WI)</MenuItem>
+                <MenuItem value="O">أخرى</MenuItem>
               </Select>
             </FormControl>
 
-            {/* Department (dropdown) */}
+            {/* القسم */}
             <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel id="dept-label-en">Department</InputLabel>
+              <InputLabel id="dept-label">القسم</InputLabel>
               <Select
-                labelId="dept-label-en"
+                labelId="dept-label"
                 value={form.department}
-                label="Department"
+                label="القسم"
                 onChange={(e) => setForm(prev => ({ ...prev, department: e.target.value }))}
+                disabled={!canEdit}
               >
                 {loading ? (
-                  <MenuItem disabled>Loading…</MenuItem>
+                  <MenuItem disabled>جاري التحميل...</MenuItem>
                 ) : departments.length ? (
                   departments.map((d) => (
                     <MenuItem key={d.Id} value={d.Id}>
@@ -371,39 +647,42 @@ const NewDocumentRequestForm: React.FC = () => {
                     </MenuItem>
                   ))
                 ) : (
-                  <MenuItem disabled>No departments</MenuItem>
+                  <MenuItem disabled>لا توجد أقسام</MenuItem>
                 )}
               </Select>
             </FormControl>
 
-            {/* Document Title */}
+            {/* عنوان المستند */}
             <Grid container spacing={2} mb={2}>
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="Document Title (EN)"
+                  label="عنوان المستند (إنجليزي)"
                   value={form.docTitle}
                   onChange={handleChange('docTitle')}
+                  disabled={!canEdit}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="Document Title (AR)"
+                  label="عنوان المستند (عربي)"
                   value={form.docTitleAr}
                   onChange={handleChange('docTitleAr')}
                   inputProps={{ dir: 'rtl' }}
+                  disabled={!canEdit}
                 />
               </Grid>
             </Grid>
 
-            {/* Purpose - English & Arabic */}
+            {/* الغرض والنطاق - للعرض فقط */}
             <Grid container spacing={2} mb={3}>
               <Grid item xs={12} md={6}>
-                <Typography fontWeight="bold" mb={1}>Purpose (English):</Typography>
+                <Typography fontWeight="bold" mb={1}>الغرض (إنجليزي):</Typography>
                 <RichTextEditor
                   value={form.purposeEn}
                   onChange={(content: string) => setForm(prev => ({ ...prev, purposeEn: content }))}
+                  disabled={!canEdit}
                 />
               </Grid>
               <Grid item xs={12} md={6} sx={{ direction: 'rtl' }}>
@@ -413,31 +692,33 @@ const NewDocumentRequestForm: React.FC = () => {
                   dir="rtl"
                   value={form.purposeAr}
                   onChange={(content: string) => setForm(prev => ({ ...prev, purposeAr: content }))}
+                  disabled={!canEdit}
                 />
               </Grid>
             </Grid>
 
-            {/* Scope - English & Arabic */}
             <Grid container spacing={2} mb={4}>
               <Grid item xs={12} md={6}>
-                <Typography fontWeight="bold" mb={1}>Scope (English):</Typography>
+                <Typography fontWeight="bold" mb={1}>النطاق (إنجليزي):</Typography>
                 <RichTextEditor
                   value={form.scopeEn}
                   onChange={(content: string) => setForm(prev => ({ ...prev, scopeEn: content }))}
+                  disabled={!canEdit}
                 />
               </Grid>
               <Grid item xs={12} md={6} sx={{ direction: 'rtl' }}>
-                <Typography fontWeight="bold" mb={1} sx={{ textAlign: 'right' }}>مجال التطبيق (عربي):</Typography>
+                <Typography fontWeight="bold" mb={1} sx={{ textAlign: 'right' }}>النطاق (عربي):</Typography>
                 <RichTextEditor
                   language="ar"
                   dir="rtl"
                   value={form.scopeAr}
                   onChange={(content: string) => setForm(prev => ({ ...prev, scopeAr: content }))}
+                  disabled={!canEdit}
                 />
               </Grid>
             </Grid>
 
-            {/* Requested By / Reviewed By table - READ ONLY */}
+            {/* جدول التوقيعات */}
             <TableContainer component={Paper} sx={{ mb: 4, bgcolor: '#f5f5f5' }}>
               <Table>
                 <TableBody>
@@ -447,54 +728,63 @@ const NewDocumentRequestForm: React.FC = () => {
                       align="center"
                       sx={{ fontWeight: 'bold', bgcolor: 'primary.light', color: 'black' }}
                     >
-                      Requested By
+                      طلب من
                     </TableCell>
                     <TableCell
                       colSpan={2}
                       align="center"
                       sx={{ fontWeight: 'bold', bgcolor: 'primary.light', color: 'black' }}
                     >
-                      Reviewed By
+                      مراجعة من
                     </TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 'bold', width: '15%' }}>Name</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', width: '15%' }}>الاسم</TableCell>
                     <TableCell sx={{ bgcolor: '#fafafa' }}>{form.requested.name}</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', width: '15%' }}>Name</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', width: '15%' }}>الاسم</TableCell>
                     <TableCell sx={{ bgcolor: '#fafafa' }}>{form.reviewed.name}</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Designation</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>المنصب</TableCell>
                     <TableCell sx={{ bgcolor: '#fafafa' }}>{form.requested.designation}</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Designation</TableCell>
-                    <TableCell sx={{ bgcolor: '#fafafa' }}></TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>المنصب</TableCell>
+                    <TableCell sx={{ bgcolor: '#fafafa' }}>{form.reviewed.designation}</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Signature</TableCell>
-                    <TableCell sx={{ bgcolor: '#fafafa' }}>{form.requested.signature}</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Signature</TableCell>
-                    <TableCell sx={{ bgcolor: '#fafafa' }}>{form.reviewed.signature}</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>التوقيع</TableCell>
+                    <TableCell sx={{ bgcolor: '#fafafa' }}>
+                      {form.requested.signature && (
+                        <img src={form.requested.signature} alt="توقيع" style={{ maxHeight: 50 }} />
+                      )}
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>التوقيع</TableCell>
+                    <TableCell sx={{ bgcolor: '#fafafa' }}>
+                      {form.reviewed.signature && (
+                        <img src={form.reviewed.signature} alt="توقيع" style={{ maxHeight: 50 }} />
+                      )}
+                    </TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Date</TableCell>
-                    <TableCell sx={{ bgcolor: '#fafafa' }}></TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Date</TableCell>
-                    <TableCell sx={{ bgcolor: '#fafafa' }}></TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>التاريخ</TableCell>
+                    <TableCell sx={{ bgcolor: '#fafafa' }}>{form.requested.date}</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>التاريخ</TableCell>
+                    <TableCell sx={{ bgcolor: '#fafafa' }}>{form.reviewed.date}</TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
             </TableContainer>
 
-            {/* QA Comment - Rich Text Editor */}
+            {/* تعليق QA */}
             <Box mb={3}>
-              <Typography fontWeight="bold" mb={1}>QA Comment:</Typography>
+              <Typography fontWeight="bold" mb={1}>تعليق QA:</Typography>
               <RichTextEditor
                 value={form.qaComment}
                 onChange={(content: string) => setForm(prev => ({ ...prev, qaComment: content }))}
+                disabled={!canEdit || (userRole !== 'QA Manager' && userRole !== 'QA Associate')}
               />
             </Box>
 
-            {/* QA Manager Approval / Document Officer Approval table - READ ONLY */}
+            {/* جدول موافقات QA */}
             <TableContainer component={Paper} sx={{ mb: 4, bgcolor: '#f5f5f5' }}>
               <Table>
                 <TableBody>
@@ -504,54 +794,62 @@ const NewDocumentRequestForm: React.FC = () => {
                       align="center"
                       sx={{ fontWeight: 'bold', bgcolor: 'primary.light', color: 'black' }}
                     >
-                      QA Manager Approval
+                      موافقة مدير QA
                     </TableCell>
                     <TableCell
                       colSpan={2}
                       align="center"
                       sx={{ fontWeight: 'bold', bgcolor: 'primary.light', color: 'black' }}
                     >
-                      Document Officer Approval
+                      موافقة مسؤول الوثائق
                     </TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 'bold', width: '15%' }}>Name</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', width: '15%' }}>الاسم</TableCell>
                     <TableCell sx={{ bgcolor: '#fafafa' }}>{form.qaManager.name}</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', width: '15%' }}>Name</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', width: '15%' }}>الاسم</TableCell>
                     <TableCell sx={{ bgcolor: '#fafafa' }}>{form.docOfficer.name}</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Signature</TableCell>
-                    <TableCell sx={{ bgcolor: '#fafafa' }}>{form.qaManager.signature}</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Signature</TableCell>
-                    <TableCell sx={{ bgcolor: '#fafafa' }}>{form.docOfficer.signature}</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>التوقيع</TableCell>
+                    <TableCell sx={{ bgcolor: '#fafafa' }}>
+                      {form.qaManager.signature && (
+                        <img src={form.qaManager.signature} alt="توقيع" style={{ maxHeight: 50 }} />
+                      )}
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>التوقيع</TableCell>
+                    <TableCell sx={{ bgcolor: '#fafafa' }}>
+                      {form.docOfficer.signature && (
+                        <img src={form.docOfficer.signature} alt="توقيع" style={{ maxHeight: 50 }} />
+                      )}
+                    </TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Date</TableCell>
-                    <TableCell sx={{ bgcolor: '#fafafa' }}></TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Date</TableCell>
-                    <TableCell sx={{ bgcolor: '#fafafa' }}></TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>التاريخ</TableCell>
+                    <TableCell sx={{ bgcolor: '#fafafa' }}>{form.qaManager.date}</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>التاريخ</TableCell>
+                    <TableCell sx={{ bgcolor: '#fafafa' }}>{form.docOfficer.date}</TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
             </TableContainer>
 
-
-
-            {/* Submit / Reset */}
-            <Stack direction="row" justifyContent="flex-end" spacing={2}>
-              <Button
-                type="button"
-                variant="outlined"
-                onClick={() => setForm(initialState)}
-                disabled={loading || submitLoading}
-              >
-                إعادة تعيين
-              </Button>
-              <Button type="submit" variant="contained" disabled={loading || submitLoading}>
-                {submitLoading ? 'جاري المعالجة...' : id ? 'حفظ التعديلات' : 'إنشاء المستند'}
-              </Button>
-            </Stack>
+            {/* أزرار الإجراءات */}
+            <Box sx={{ mt: 3 }}>
+              {renderActionButtons()}
+              
+              {canEdit && userRole === 'QA Manager' && (
+                <Stack direction="row" justifyContent="center" spacing={2} sx={{ mt: 2 }}>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    disabled={loading || submitLoading}
+                  >
+                    حفظ التعديلات
+                  </Button>
+                </Stack>
+              )}
+            </Box>
           </Paper>
         </form>
       </Container>
@@ -559,4 +857,4 @@ const NewDocumentRequestForm: React.FC = () => {
   );
 };
 
-export default NewDocumentRequestForm;
+export default DocumentRequestManagement;
