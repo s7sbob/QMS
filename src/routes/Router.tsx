@@ -12,24 +12,28 @@ const FullLayout = Loadable(lazy(() => import('../layouts/full/FullLayout')));
 const BlankLayout = Loadable(lazy(() => import('../layouts/blank/BlankLayout')));
 
 /* *** Guards (الحارس) *** */
-import AuthGuard from 'src/guards/AuthGuard'; // <--  تأكد من المسار الصحيح
+import AuthGuard from 'src/guards/AuthGuard';
 import SOPFullDocument from 'src/views/sopPurpose&Definition/Pages/SOPFullDocument';
 import AllNotifications from 'src/layouts/full/vertical/header/AllNotifications';
 import NewDocumentRequestForm from 'src/views/documentation/pages/NewDocumentRequestForm';
 
 /* ****Pages***** */
-const Documentation_Control = Loadable(lazy(() => import('../views/documentation/DocumentationControl')));
+const Documentation_Control = Loadable(
+  lazy(() => import('../views/documentation/DocumentationControl')),
+);
 const SOPDetail = Loadable(lazy(() => import('../views/documentation/SOPDetail')));
 const New_Creation_SOP = Loadable(lazy(() => import('../views/documentation/pages/NewCreation')));
 const Document_Revision_Checklist = Loadable(
   lazy(() => import('../views/documentation/pages/DocumentRevisionChecklist')),
 );
-const CancellationForm = Loadable(lazy(() => import('../views/documentation/pages/CancellationForm')));
-const Distribution_form = Loadable(lazy(() => import('../views/documentation/pages/DistributionForm')));
+const CancellationForm = Loadable(
+  lazy(() => import('../views/documentation/pages/CancellationForm')),
+);
+const Distribution_form = Loadable(
+  lazy(() => import('../views/documentation/pages/DistributionForm')),
+);
 
 const Users_Page = Loadable(lazy(() => import('../views/Users-Page/Users')));
-
-
 
 /* **** ITManagementPage ***** */
 
@@ -68,7 +72,7 @@ const Router = [
     children: [
       { path: '/', element: <Dashboard /> },
       { path: '/Users-Page', element: <Users_Page /> },
-      { path: '/documentation-control', element: < Documentation_Control/> },
+      { path: '/documentation-control', element: <Documentation_Control /> },
 
       { path: '/documentation-control/:id', element: <SOPDetail /> },
       { path: '/documentation-control/New_Creation_SOP', element: <New_Creation_SOP /> },
@@ -80,13 +84,13 @@ const Router = [
       { path: '/documentation-control/distribution_form', element: <Distribution_form /> },
       { path: '/ITManagementPage', element: <ITManagementPage /> },
       { path: '/SOPFullDocument', element: <SOPFullDocument /> },
-            { path: '/documentation-control/Request_Form', element: <NewDocumentRequestForm /> },
+      { path: '/documentation-control/Request_Form', element: <NewDocumentRequestForm /> },
 
       {
         path: '/all-notifications',
         element: <AllNotifications />,
       },
-      
+
       // لو كتب أي شيء مش معروف نوجهه لصفحة 404
       { path: '*', element: <Navigate to="/auth/404" /> },
     ],

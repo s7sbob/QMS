@@ -1,0 +1,112 @@
+/* A4 Document Styles */
+.a4-document {
+  background: #f5f5f5;
+  padding: 20px;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+}
+
+.a4-page {
+  width: 210mm;
+  height: 297mm;
+  padding: 20mm;
+  margin: 0 auto 20px auto;
+  background: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #ddd;
+  overflow: visible;
+  page-break-after: always;
+  position: relative;
+  box-sizing: border-box;
+  display: block;
+}
+
+.sop-section {
+  margin-bottom: 15px;
+  page-break-inside: avoid;
+}
+
+/* Page footer */
+.page-footer {
+  position: absolute;
+  bottom: 10mm;
+  right: 20mm;
+  font-size: 10px;
+  color: #999;
+}
+
+/* RTL language support */
+.arabic {
+  direction: rtl;
+  text-align: right;
+  font-family: 'Tahoma', 'Arial', sans-serif;
+}
+
+/* English section (if used in bilingual layout) */
+.english {
+  direction: ltr;
+  text-align: left;
+}
+
+/* Bilingual side-by-side layout */
+.bilingual-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.bilingual-row .en {
+  flex: 1;
+  text-align: left;
+}
+
+.bilingual-row .ar {
+  flex: 1;
+  text-align: right;
+  direction: rtl;
+}
+
+/* Print styles */
+@page {
+  size: A4;
+  margin: 0;
+}
+
+@media print {
+  body {
+    margin: 0;
+    padding: 0;
+    background: white;
+  }
+
+  .a4-document {
+    background: white;
+    padding: 0;
+  }
+
+  .a4-page {
+    width: 210mm;
+    height: 297mm;
+    margin: 0;
+    box-shadow: none;
+    border: none;
+    page-break-after: always;
+  }
+
+  .sop-section {
+    page-break-inside: avoid;
+  }
+
+  .page-footer {
+    display: none;
+  }
+}
+
+/* Responsive design */
+@media screen and (max-width: 768px) {
+  .a4-page {
+    width: 95%;
+    height: 297mm;
+    padding: 10mm;
+  }
+}
