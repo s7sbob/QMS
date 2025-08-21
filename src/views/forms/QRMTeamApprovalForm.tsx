@@ -14,9 +14,7 @@ import {
   TableRow,
   Paper,
   IconButton,
-  Stack,
-  Divider
-} from '@mui/material';
+  Stack} from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
 
 import Breadcrumb from 'src/layouts/full/shared/breadcrumb/Breadcrumb';

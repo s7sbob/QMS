@@ -309,7 +309,7 @@ const RiskAssessmentForm: React.FC = () => {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {formData.riskItems.map((item, index) => (
+                      {formData.riskItems.map((item, _index) => (
                         <TableRow key={item.id}>
                           <TableCell>
                             <CustomTextField

@@ -4,16 +4,11 @@ import {
   Box,
   Typography,
   FormControl,
-  MenuItem,
   RadioGroup,
   FormControlLabel,
   Button,
   Card,
   CardContent,
-  Divider,
-  TextField,
-  Checkbox,
-  FormGroup,
   Stack
 } from '@mui/material';
 
@@ -24,7 +19,6 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 import CustomTextField from 'src/components/forms/theme-elements/CustomTextField';
-import CustomSelect from 'src/components/forms/theme-elements/CustomSelect';
 import CustomFormLabel from 'src/components/forms/theme-elements/CustomFormLabel';
 import CustomCheckbox from 'src/components/forms/theme-elements/CustomCheckbox';
 import CustomRadio from 'src/components/forms/theme-elements/CustomRadio';
