@@ -177,7 +177,7 @@ const CustomerComplaintForm: React.FC = () => {
                       variant="outlined"
                       fullWidth
                       value={formData.complaintNo}
-                      onChange={(e) => handleInputChange('complaintNo', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('complaintNo', e.target.value)}
                     />
                   </Grid>
                   
@@ -199,7 +199,7 @@ const CustomerComplaintForm: React.FC = () => {
                       fullWidth
                       type="time"
                       value={formData.receiptTime}
-                      onChange={(e) => handleInputChange('receiptTime', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('receiptTime', e.target.value)}
                     />
                   </Grid>
                 </Grid>
@@ -241,7 +241,7 @@ const CustomerComplaintForm: React.FC = () => {
                       variant="outlined"
                       fullWidth
                       value={formData.receivedBy}
-                      onChange={(e) => handleInputChange('receivedBy', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('receivedBy', e.target.value)}
                     />
                   </Grid>
                   
@@ -252,7 +252,7 @@ const CustomerComplaintForm: React.FC = () => {
                       variant="outlined"
                       fullWidth
                       value={formData.receivedBySign}
-                      onChange={(e) => handleInputChange('receivedBySign', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('receivedBySign', e.target.value)}
                     />
                   </Grid>
                   
@@ -283,7 +283,7 @@ const CustomerComplaintForm: React.FC = () => {
                       variant="outlined"
                       fullWidth
                       value={formData.complainantName}
-                      onChange={(e) => handleInputChange('complainantName', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('complainantName', e.target.value)}
                     />
                   </Grid>
                   
@@ -294,7 +294,7 @@ const CustomerComplaintForm: React.FC = () => {
                       variant="outlined"
                       fullWidth
                       value={formData.location}
-                      onChange={(e) => handleInputChange('location', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('location', e.target.value)}
                     />
                   </Grid>
                 </Grid>
@@ -316,7 +316,7 @@ const CustomerComplaintForm: React.FC = () => {
                       variant="outlined"
                       fullWidth
                       value={formData.productName}
-                      onChange={(e) => handleInputChange('productName', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('productName', e.target.value)}
                     />
                   </Grid>
                   
@@ -327,7 +327,7 @@ const CustomerComplaintForm: React.FC = () => {
                       variant="outlined"
                       fullWidth
                       value={formData.batchNo}
-                      onChange={(e) => handleInputChange('batchNo', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('batchNo', e.target.value)}
                     />
                   </Grid>
                   
@@ -338,7 +338,7 @@ const CustomerComplaintForm: React.FC = () => {
                       variant="outlined"
                       fullWidth
                       value={formData.packageSize}
-                      onChange={(e) => handleInputChange('packageSize', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('packageSize', e.target.value)}
                     />
                   </Grid>
                   
@@ -349,7 +349,7 @@ const CustomerComplaintForm: React.FC = () => {
                       variant="outlined"
                       fullWidth
                       value={formData.strength}
-                      onChange={(e) => handleInputChange('strength', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('strength', e.target.value)}
                     />
                   </Grid>
                   
@@ -360,7 +360,7 @@ const CustomerComplaintForm: React.FC = () => {
                       variant="outlined"
                       fullWidth
                       value={formData.dosageForm}
-                      onChange={(e) => handleInputChange('dosageForm', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('dosageForm', e.target.value)}
                     />
                   </Grid>
                   
@@ -404,7 +404,7 @@ const CustomerComplaintForm: React.FC = () => {
                       multiline
                       rows={4}
                       value={formData.complaintDescription}
-                      onChange={(e) => handleInputChange('complaintDescription', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('complaintDescription', e.target.value)}
                     />
                   </Grid>
                   
@@ -426,7 +426,7 @@ const CustomerComplaintForm: React.FC = () => {
                           variant="outlined"
                           fullWidth
                           value={formData.sampleCount}
-                          onChange={(e) => handleInputChange('sampleCount', e.target.value)}
+                          onChange={(e: { target: { value: any; }; }) => handleInputChange('sampleCount', e.target.value)}
                         />
                       </Box>
                     )}
@@ -440,7 +440,7 @@ const CustomerComplaintForm: React.FC = () => {
                       fullWidth
                       type="email"
                       value={formData.customerEmail}
-                      onChange={(e) => handleInputChange('customerEmail', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('customerEmail', e.target.value)}
                     />
                   </Grid>
                   
@@ -451,7 +451,7 @@ const CustomerComplaintForm: React.FC = () => {
                       variant="outlined"
                       fullWidth
                       value={formData.customerPhone}
-                      onChange={(e) => handleInputChange('customerPhone', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('customerPhone', e.target.value)}
                     />
                   </Grid>
                 </Grid>
@@ -484,7 +484,7 @@ const CustomerComplaintForm: React.FC = () => {
                           variant="outlined"
                           fullWidth
                           value={formData.sfdaReference}
-                          onChange={(e) => handleInputChange('sfdaReference', e.target.value)}
+                          onChange={(e: { target: { value: any; }; }) => handleInputChange('sfdaReference', e.target.value)}
                         />
                       </Box>
                     )}
@@ -497,7 +497,7 @@ const CustomerComplaintForm: React.FC = () => {
                       variant="outlined"
                       fullWidth
                       value={formData.complaintCategory}
-                      onChange={(e) => handleInputChange('complaintCategory', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('complaintCategory', e.target.value)}
                     />
                   </Grid>
                   
@@ -529,7 +529,7 @@ const CustomerComplaintForm: React.FC = () => {
                       multiline
                       rows={3}
                       value={formData.qaInvestigation}
-                      onChange={(e) => handleInputChange('qaInvestigation', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('qaInvestigation', e.target.value)}
                     />
                   </Grid>
                   
@@ -540,7 +540,7 @@ const CustomerComplaintForm: React.FC = () => {
                       variant="outlined"
                       fullWidth
                       value={formData.safetyConcern}
-                      onChange={(e) => handleInputChange('safetyConcern', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('safetyConcern', e.target.value)}
                     />
                   </Grid>
                   
@@ -553,7 +553,7 @@ const CustomerComplaintForm: React.FC = () => {
                       multiline
                       rows={3}
                       value={formData.actionsTaken}
-                      onChange={(e) => handleInputChange('actionsTaken', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('actionsTaken', e.target.value)}
                     />
                   </Grid>
                   
@@ -564,7 +564,7 @@ const CustomerComplaintForm: React.FC = () => {
                       variant="outlined"
                       fullWidth
                       value={formData.capaNumber}
-                      onChange={(e) => handleInputChange('capaNumber', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('capaNumber', e.target.value)}
                     />
                   </Grid>
                   
@@ -575,7 +575,7 @@ const CustomerComplaintForm: React.FC = () => {
                       variant="outlined"
                       fullWidth
                       value={formData.supplierInformed}
-                      onChange={(e) => handleInputChange('supplierInformed', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('supplierInformed', e.target.value)}
                     />
                   </Grid>
                   
@@ -620,7 +620,7 @@ const CustomerComplaintForm: React.FC = () => {
                       multiline
                       rows={3}
                       value={formData.finalComment}
-                      onChange={(e) => handleInputChange('finalComment', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('finalComment', e.target.value)}
                     />
                   </Grid>
                 </Grid>
@@ -642,7 +642,7 @@ const CustomerComplaintForm: React.FC = () => {
                       variant="outlined"
                       fullWidth
                       value={formData.reportedBy}
-                      onChange={(e) => handleInputChange('reportedBy', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('reportedBy', e.target.value)}
                     />
                   </Grid>
                   
@@ -653,7 +653,7 @@ const CustomerComplaintForm: React.FC = () => {
                       variant="outlined"
                       fullWidth
                       value={formData.approvedBy}
-                      onChange={(e) => handleInputChange('approvedBy', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('approvedBy', e.target.value)}
                     />
                   </Grid>
                 </Grid>

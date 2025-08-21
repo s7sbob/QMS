@@ -72,7 +72,7 @@ const SimpleTestForm: React.FC = () => {
                     variant="outlined"
                     fullWidth
                     value={formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    onChange={(e: { target: { value: string; }; }) => handleInputChange('name', e.target.value)}
                     placeholder="Enter your name"
                   />
                 </Grid>
@@ -85,7 +85,7 @@ const SimpleTestForm: React.FC = () => {
                     fullWidth
                     type="email"
                     value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    onChange={(e: { target: { value: string; }; }) => handleInputChange('email', e.target.value)}
                     placeholder="Enter your email"
                   />
                 </Grid>
@@ -99,7 +99,7 @@ const SimpleTestForm: React.FC = () => {
                     multiline
                     rows={4}
                     value={formData.message}
-                    onChange={(e) => handleInputChange('message', e.target.value)}
+                    onChange={(e: { target: { value: string; }; }) => handleInputChange('message', e.target.value)}
                     placeholder="Enter your message"
                   />
                 </Grid>

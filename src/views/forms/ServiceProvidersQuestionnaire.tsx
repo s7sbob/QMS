@@ -300,7 +300,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                     variant="outlined"
                     fullWidth
                     value={formData.companyName}
-                    onChange={(e) => handleInputChange('companyName', e.target.value)}
+                    onChange={(e: { target: { value: any; }; }) => handleInputChange('companyName', e.target.value)}
                   />
                 </Grid>
                 
@@ -313,7 +313,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                     multiline
                     rows={3}
                     value={formData.address}
-                    onChange={(e) => handleInputChange('address', e.target.value)}
+                    onChange={(e: { target: { value: any; }; }) => handleInputChange('address', e.target.value)}
                   />
                 </Grid>
                 
@@ -325,7 +325,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                     fullWidth
                     type="email"
                     value={formData.genericEmail}
-                    onChange={(e) => handleInputChange('genericEmail', e.target.value)}
+                    onChange={(e: { target: { value: any; }; }) => handleInputChange('genericEmail', e.target.value)}
                   />
                 </Grid>
                 
@@ -346,7 +346,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                                   variant="outlined"
                                   fullWidth
                                   value={person.name}
-                                  onChange={(e) => handleContactPersonChange(index, 'name', e.target.value)}
+                                  onChange={(e: { target: { value: string; }; }) => handleContactPersonChange(index, 'name', e.target.value)}
                                 />
                               </Grid>
                               <Grid item xs={12}>
@@ -355,7 +355,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                                   variant="outlined"
                                   fullWidth
                                   value={person.position}
-                                  onChange={(e) => handleContactPersonChange(index, 'position', e.target.value)}
+                                  onChange={(e: { target: { value: string; }; }) => handleContactPersonChange(index, 'position', e.target.value)}
                                 />
                               </Grid>
                               <Grid item xs={12}>
@@ -365,7 +365,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                                   fullWidth
                                   type="email"
                                   value={person.email}
-                                  onChange={(e) => handleContactPersonChange(index, 'email', e.target.value)}
+                                  onChange={(e: { target: { value: string; }; }) => handleContactPersonChange(index, 'email', e.target.value)}
                                 />
                               </Grid>
                               <Grid item xs={12}>
@@ -374,7 +374,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                                   variant="outlined"
                                   fullWidth
                                   value={person.phone}
-                                  onChange={(e) => handleContactPersonChange(index, 'phone', e.target.value)}
+                                  onChange={(e: { target: { value: string; }; }) => handleContactPersonChange(index, 'phone', e.target.value)}
                                 />
                               </Grid>
                             </Grid>
@@ -436,7 +436,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                               multiline
                               rows={3}
                               value={formData.qualitySystemDescription}
-                              onChange={(e) => handleInputChange('qualitySystemDescription', e.target.value)}
+                              onChange={(e: { target: { value: any; }; }) => handleInputChange('qualitySystemDescription', e.target.value)}
                             />
                           </Box>
                         )}
@@ -464,7 +464,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                           variant="outlined"
                           fullWidth
                           value={formData.sfdaCertificates}
-                          onChange={(e) => handleInputChange('sfdaCertificates', e.target.value)}
+                          onChange={(e: { target: { value: any; }; }) => handleInputChange('sfdaCertificates', e.target.value)}
                           placeholder="Certificate details or file references"
                         />
                       </Box>
@@ -491,7 +491,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                           variant="outlined"
                           fullWidth
                           value={formData.isoCertificates}
-                          onChange={(e) => handleInputChange('isoCertificates', e.target.value)}
+                          onChange={(e: { target: { value: any; }; }) => handleInputChange('isoCertificates', e.target.value)}
                           placeholder="Certificate details or file references"
                         />
                       </Box>
@@ -601,7 +601,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                                 multiline
                                 rows={2}
                                 value={question.comments}
-                                onChange={(e) => handleQuestionChange('personnelQuestions', question.id, 'comments', e.target.value)}
+                                onChange={(e: { target: { value: any; }; }) => handleQuestionChange('personnelQuestions', question.id, 'comments', e.target.value)}
                               />
                             </TableCell>
                             <TableCell>
@@ -610,7 +610,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                                 type="number"
                                 inputProps={{ min: 1, max: 5 }}
                                 value={question.score}
-                                onChange={(e) => handleQuestionChange('personnelQuestions', question.id, 'score', parseInt(e.target.value) || 0)}
+                                onChange={(e: { target: { value: string; }; }) => handleQuestionChange('personnelQuestions', question.id, 'score', parseInt(e.target.value) || 0)}
                               />
                             </TableCell>
                           </TableRow>
@@ -671,7 +671,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                                 multiline
                                 rows={2}
                                 value={question.comments}
-                                onChange={(e) => handleQuestionChange('complaintsQuestions', question.id, 'comments', e.target.value)}
+                                onChange={(e: { target: { value: any; }; }) => handleQuestionChange('complaintsQuestions', question.id, 'comments', e.target.value)}
                               />
                             </TableCell>
                             <TableCell>
@@ -680,7 +680,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                                 type="number"
                                 inputProps={{ min: 1, max: 5 }}
                                 value={question.score}
-                                onChange={(e) => handleQuestionChange('complaintsQuestions', question.id, 'score', parseInt(e.target.value) || 0)}
+                                onChange={(e: { target: { value: string; }; }) => handleQuestionChange('complaintsQuestions', question.id, 'score', parseInt(e.target.value) || 0)}
                               />
                             </TableCell>
                           </TableRow>
@@ -763,7 +763,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                             multiline
                             rows={2}
                             value={question.comments}
-                            onChange={(e) => handleQuestionChange('operationsQuestions', question.id, 'comments', e.target.value)}
+                            onChange={(e: { target: { value: any; }; }) => handleQuestionChange('operationsQuestions', question.id, 'comments', e.target.value)}
                           />
                         </TableCell>
                         <TableCell>
@@ -772,7 +772,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                             type="number"
                             inputProps={{ min: 1, max: 5 }}
                             value={question.score}
-                            onChange={(e) => handleQuestionChange('operationsQuestions', question.id, 'score', parseInt(e.target.value) || 0)}
+                            onChange={(e: { target: { value: string; }; }) => handleQuestionChange('operationsQuestions', question.id, 'score', parseInt(e.target.value) || 0)}
                           />
                         </TableCell>
                       </TableRow>

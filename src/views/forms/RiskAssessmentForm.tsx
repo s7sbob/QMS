@@ -221,7 +221,7 @@ const RiskAssessmentForm: React.FC = () => {
                       variant="outlined"
                       fullWidth
                       value={formData.reportNo}
-                      onChange={(e) => handleInputChange('reportNo', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('reportNo', e.target.value)}
                     />
                   </Grid>
                   
@@ -232,7 +232,7 @@ const RiskAssessmentForm: React.FC = () => {
                       variant="outlined"
                       fullWidth
                       value={formData.department}
-                      onChange={(e) => handleInputChange('department', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('department', e.target.value)}
                     />
                   </Grid>
                   
@@ -253,7 +253,7 @@ const RiskAssessmentForm: React.FC = () => {
                       variant="outlined"
                       fullWidth
                       value={formData.process}
-                      onChange={(e) => handleInputChange('process', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('process', e.target.value)}
                     />
                   </Grid>
                 </Grid>
@@ -315,7 +315,7 @@ const RiskAssessmentForm: React.FC = () => {
                             <CustomTextField
                               size="small"
                               value={item.riskNo}
-                              onChange={(e) => handleRiskItemChange(item.id, 'riskNo', e.target.value)}
+                              onChange={(e: { target: { value: string; }; }) => handleRiskItemChange(item.id, 'riskNo', e.target.value)}
                             />
                           </TableCell>
                           <TableCell>
@@ -324,7 +324,7 @@ const RiskAssessmentForm: React.FC = () => {
                               multiline
                               rows={2}
                               value={item.riskDescription}
-                              onChange={(e) => handleRiskItemChange(item.id, 'riskDescription', e.target.value)}
+                              onChange={(e: { target: { value: string; }; }) => handleRiskItemChange(item.id, 'riskDescription', e.target.value)}
                             />
                           </TableCell>
                           <TableCell>
@@ -333,7 +333,7 @@ const RiskAssessmentForm: React.FC = () => {
                               multiline
                               rows={2}
                               value={item.riskImpact}
-                              onChange={(e) => handleRiskItemChange(item.id, 'riskImpact', e.target.value)}
+                              onChange={(e: { target: { value: string; }; }) => handleRiskItemChange(item.id, 'riskImpact', e.target.value)}
                             />
                           </TableCell>
                           
@@ -342,7 +342,7 @@ const RiskAssessmentForm: React.FC = () => {
                             <CustomSelect
                               size="small"
                               value={item.probabilityBefore}
-                              onChange={(e) => {
+                              onChange={(e: { target: { value: string; }; }) => {
                                 handleRiskItemChange(item.id, 'probabilityBefore', e.target.value);
                                 const rpn = calculateRPN(e.target.value, item.severityBefore, item.detectabilityBefore);
                                 handleRiskItemChange(item.id, 'rpnBefore', rpn);
@@ -359,7 +359,7 @@ const RiskAssessmentForm: React.FC = () => {
                             <CustomSelect
                               size="small"
                               value={item.severityBefore}
-                              onChange={(e) => {
+                              onChange={(e: { target: { value: string; }; }) => {
                                 handleRiskItemChange(item.id, 'severityBefore', e.target.value);
                                 const rpn = calculateRPN(item.probabilityBefore, e.target.value, item.detectabilityBefore);
                                 handleRiskItemChange(item.id, 'rpnBefore', rpn);
@@ -376,7 +376,7 @@ const RiskAssessmentForm: React.FC = () => {
                             <CustomSelect
                               size="small"
                               value={item.detectabilityBefore}
-                              onChange={(e) => {
+                              onChange={(e: { target: { value: string; }; }) => {
                                 handleRiskItemChange(item.id, 'detectabilityBefore', e.target.value);
                                 const rpn = calculateRPN(item.probabilityBefore, item.severityBefore, e.target.value);
                                 handleRiskItemChange(item.id, 'rpnBefore', rpn);
@@ -393,7 +393,7 @@ const RiskAssessmentForm: React.FC = () => {
                             <CustomSelect
                               size="small"
                               value={item.riskClassBefore}
-                              onChange={(e) => handleRiskItemChange(item.id, 'riskClassBefore', e.target.value)}
+                              onChange={(e: { target: { value: string; }; }) => handleRiskItemChange(item.id, 'riskClassBefore', e.target.value)}
                             >
                               {riskClassOptions.map((option) => (
                                 <option key={option.value} value={option.value}>
@@ -406,7 +406,7 @@ const RiskAssessmentForm: React.FC = () => {
                             <CustomTextField
                               size="small"
                               value={item.riskPriorityBefore}
-                              onChange={(e) => handleRiskItemChange(item.id, 'riskPriorityBefore', e.target.value)}
+                              onChange={(e: { target: { value: string; }; }) => handleRiskItemChange(item.id, 'riskPriorityBefore', e.target.value)}
                             />
                           </TableCell>
                           <TableCell>
@@ -425,7 +425,7 @@ const RiskAssessmentForm: React.FC = () => {
                               multiline
                               rows={3}
                               value={item.controlMeasures}
-                              onChange={(e) => handleRiskItemChange(item.id, 'controlMeasures', e.target.value)}
+                              onChange={(e: { target: { value: string; }; }) => handleRiskItemChange(item.id, 'controlMeasures', e.target.value)}
                             />
                           </TableCell>
                           
@@ -434,7 +434,7 @@ const RiskAssessmentForm: React.FC = () => {
                             <CustomSelect
                               size="small"
                               value={item.probabilityAfter}
-                              onChange={(e) => {
+                              onChange={(e: { target: { value: string; }; }) => {
                                 handleRiskItemChange(item.id, 'probabilityAfter', e.target.value);
                                 const rpn = calculateRPN(e.target.value, item.severityAfter, item.detectabilityAfter);
                                 handleRiskItemChange(item.id, 'rpnAfter', rpn);
@@ -451,7 +451,7 @@ const RiskAssessmentForm: React.FC = () => {
                             <CustomSelect
                               size="small"
                               value={item.severityAfter}
-                              onChange={(e) => {
+                              onChange={(e: { target: { value: string; }; }) => {
                                 handleRiskItemChange(item.id, 'severityAfter', e.target.value);
                                 const rpn = calculateRPN(item.probabilityAfter, e.target.value, item.detectabilityAfter);
                                 handleRiskItemChange(item.id, 'rpnAfter', rpn);
@@ -468,7 +468,7 @@ const RiskAssessmentForm: React.FC = () => {
                             <CustomSelect
                               size="small"
                               value={item.detectabilityAfter}
-                              onChange={(e) => {
+                              onChange={(e: { target: { value: string; }; }) => {
                                 handleRiskItemChange(item.id, 'detectabilityAfter', e.target.value);
                                 const rpn = calculateRPN(item.probabilityAfter, item.severityAfter, e.target.value);
                                 handleRiskItemChange(item.id, 'rpnAfter', rpn);
@@ -485,7 +485,7 @@ const RiskAssessmentForm: React.FC = () => {
                             <CustomSelect
                               size="small"
                               value={item.riskClassAfter}
-                              onChange={(e) => handleRiskItemChange(item.id, 'riskClassAfter', e.target.value)}
+                              onChange={(e: { target: { value: string; }; }) => handleRiskItemChange(item.id, 'riskClassAfter', e.target.value)}
                             >
                               {riskClassOptions.map((option) => (
                                 <option key={option.value} value={option.value}>
@@ -498,7 +498,7 @@ const RiskAssessmentForm: React.FC = () => {
                             <CustomTextField
                               size="small"
                               value={item.riskPriorityAfter}
-                              onChange={(e) => handleRiskItemChange(item.id, 'riskPriorityAfter', e.target.value)}
+                              onChange={(e: { target: { value: string; }; }) => handleRiskItemChange(item.id, 'riskPriorityAfter', e.target.value)}
                             />
                           </TableCell>
                           <TableCell>
@@ -543,7 +543,7 @@ const RiskAssessmentForm: React.FC = () => {
                       variant="outlined"
                       fullWidth
                       value={formData.processOwner}
-                      onChange={(e) => handleInputChange('processOwner', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('processOwner', e.target.value)}
                     />
                   </Grid>
                   
@@ -554,7 +554,7 @@ const RiskAssessmentForm: React.FC = () => {
                       variant="outlined"
                       fullWidth
                       value={formData.departmentManager}
-                      onChange={(e) => handleInputChange('departmentManager', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('departmentManager', e.target.value)}
                     />
                   </Grid>
                   
@@ -565,7 +565,7 @@ const RiskAssessmentForm: React.FC = () => {
                       variant="outlined"
                       fullWidth
                       value={formData.qaAssociate}
-                      onChange={(e) => handleInputChange('qaAssociate', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('qaAssociate', e.target.value)}
                     />
                   </Grid>
                   
@@ -576,7 +576,7 @@ const RiskAssessmentForm: React.FC = () => {
                       variant="outlined"
                       fullWidth
                       value={formData.qaManager}
-                      onChange={(e) => handleInputChange('qaManager', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('qaManager', e.target.value)}
                     />
                   </Grid>
                 </Grid>

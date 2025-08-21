@@ -165,7 +165,7 @@ const RecallLogbook: React.FC = () => {
                             <CustomTextField
                               size="small"
                               value={entry.productName}
-                              onChange={(e) => handleEntryChange(entry.id, 'productName', e.target.value)}
+                              onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'productName', e.target.value)}
                               placeholder="Enter product name"
                             />
                           </TableCell>
@@ -173,7 +173,7 @@ const RecallLogbook: React.FC = () => {
                             <CustomTextField
                               size="small"
                               value={entry.supplierName}
-                              onChange={(e) => handleEntryChange(entry.id, 'supplierName', e.target.value)}
+                              onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'supplierName', e.target.value)}
                               placeholder="Enter supplier name"
                             />
                           </TableCell>
@@ -181,7 +181,7 @@ const RecallLogbook: React.FC = () => {
                             <CustomSelect
                               size="small"
                               value={entry.recallLevel}
-                              onChange={(e) => handleEntryChange(entry.id, 'recallLevel', e.target.value)}
+                              onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'recallLevel', e.target.value)}
                               displayEmpty
                             >
                               <option value="">Select Level</option>
@@ -198,7 +198,7 @@ const RecallLogbook: React.FC = () => {
                               multiline
                               rows={2}
                               value={entry.remarks}
-                              onChange={(e) => handleEntryChange(entry.id, 'remarks', e.target.value)}
+                              onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'remarks', e.target.value)}
                               placeholder="Enter remarks"
                             />
                           </TableCell>
