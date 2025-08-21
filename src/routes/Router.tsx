@@ -12,7 +12,6 @@ const FullLayout = Loadable(lazy(() => import('../layouts/full/FullLayout')));
 const BlankLayout = Loadable(lazy(() => import('../layouts/blank/BlankLayout')));
 
 /* *** Guards (الحارس) *** */
-import AuthGuard from 'src/guards/AuthGuard';
 import SOPFullDocument from 'src/views/sopPurpose&Definition/Pages/SOPFullDocument';
 import AllNotifications from 'src/layouts/full/vertical/header/AllNotifications';
 import NewDocumentRequestForm from 'src/views/documentation/pages/NewDocumentRequestForm';
@@ -36,8 +35,16 @@ const Distribution_form = Loadable(
 const Users_Page = Loadable(lazy(() => import('../views/Users-Page/Users')));
 
 /* **** ITManagementPage ***** */
-
 const ITManagementPage = Loadable(lazy(() => import('../views/ITManagement/ITManagementPage')));
+
+/* **** QMS Forms ***** */
+const CustomerComplaintForm = Loadable(lazy(() => import('../views/forms/CustomerComplaintForm')));
+const RiskAssessmentForm = Loadable(lazy(() => import('../views/forms/RiskAssessmentForm')));
+const ServiceProvidersQuestionnaire = Loadable(lazy(() => import('../views/forms/ServiceProvidersQuestionnaire')));
+const RecallLogbook = Loadable(lazy(() => import('../views/forms/RecallLogbook')));
+const ContactList = Loadable(lazy(() => import('../views/forms/ContactList')));
+const QRMTeamApprovalForm = Loadable(lazy(() => import('../views/forms/QRMTeamApprovalForm')));
+const SimpleTestForm = Loadable(lazy(() => import('../views/forms/SimpleTestForm')));
 
 // authentication
 const Login = Loadable(lazy(() => import('../views/authentication/auth/Login')));
@@ -64,11 +71,7 @@ const Router = [
     // جميع هذه المسارات نريد حمايتها بالتوكن
     path: '/',
     // نغلف الـ FullLayout بـ AuthGuard
-    element: (
-      <AuthGuard>
-        <FullLayout />
-      </AuthGuard>
-    ),
+    element: <FullLayout />,
     children: [
       { path: '/', element: <Dashboard /> },
       { path: '/Users-Page', element: <Users_Page /> },
@@ -90,6 +93,15 @@ const Router = [
         path: '/all-notifications',
         element: <AllNotifications />,
       },
+
+      // QMS Forms Routes
+      { path: '/forms/simple-test', element: <SimpleTestForm /> },
+      { path: '/forms/customer-complaint', element: <CustomerComplaintForm /> },
+      { path: '/forms/risk-assessment', element: <RiskAssessmentForm /> },
+      { path: '/forms/service-providers-questionnaire', element: <ServiceProvidersQuestionnaire /> },
+      { path: '/forms/recall-logbook', element: <RecallLogbook /> },
+      { path: '/forms/contact-list', element: <ContactList /> },
+      { path: '/forms/qrm-team-approval', element: <QRMTeamApprovalForm /> },
 
       // لو كتب أي شيء مش معروف نوجهه لصفحة 404
       { path: '*', element: <Navigate to="/auth/404" /> },

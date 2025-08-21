@@ -18,9 +18,8 @@ import { SliderThumb } from '@mui/material/Slider';
 import Breadcrumb from 'src/layouts/full/shared/breadcrumb/Breadcrumb';
 import PageContainer from 'src/components/container/PageContainer';
 
-import { LocalizationProvider } from '@mui/x-date-pickers';
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 
 import CustomTextField from 'src/components/forms/theme-elements/CustomTextField';
@@ -174,10 +173,10 @@ const FormCustom = () => {
             />
             <CustomFormLabel htmlFor="date">Date</CustomFormLabel>
             <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DateTimePicker
-                renderInput={(props) => (
+              <DatePicker
+                renderInput={(params) => (
                   <CustomTextField
-                    {...props}
+                    {...params}
                     fullWidth
                     sx={{
                       '& .MuiSvgIcon-root': {

@@ -20,11 +20,7 @@ import {
   Select,
   Backdrop,
   CircularProgress,
-  LinearProgress,
   Chip,
-  Card,
-  CardContent,
-  CardActions,
   Alert,
   Stepper,
   Step,
@@ -32,7 +28,6 @@ import {
 } from '@mui/material';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import axiosServices from 'src/utils/axiosServices';
-import { SopHeaderInput } from './types/sopHeader';
 import RichTextEditor from './components/RichTextEditor';
 import { UserContext, IUser } from 'src/context/UserContext';
 import Swal from 'sweetalert2';
@@ -106,7 +101,7 @@ const initialState: FormState = {
 
 const DocumentRequestManagement: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [searchParams] = useSearchParams();
+  const [] = useSearchParams();
   const navigate = useNavigate();
   const user = useContext<IUser | null>(UserContext);
   const compId = user?.compId || '';
