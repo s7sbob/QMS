@@ -22,7 +22,7 @@ import Breadcrumb from 'src/layouts/full/shared/breadcrumb/Breadcrumb';
 import PageContainer from 'src/components/container/PageContainer';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 import CustomTextField from 'src/components/forms/theme-elements/CustomTextField';
 import CustomSelect from 'src/components/forms/theme-elements/CustomSelect';
@@ -154,15 +154,11 @@ const RecallLogbook: React.FC = () => {
                       {formData.entries.map((entry) => (
                         <TableRow key={entry.id}>
                           <TableCell>
-                            <DateTimePicker
+                            <DatePicker
                               value={entry.recallDate}
                               onChange={(newValue) => handleEntryChange(entry.id, 'recallDate', newValue)}
-                              slotProps={{
-                                textField: {
-                                  size: 'small',
-                                  variant: 'outlined',
-                                },
-                              }}
+                              inputFormat="MM/dd/yyyy"
+                              renderInput={(params) => <CustomTextField {...params} size="small" variant="outlined" />}
                             />
                           </TableCell>
                           <TableCell>
@@ -207,15 +203,11 @@ const RecallLogbook: React.FC = () => {
                             />
                           </TableCell>
                           <TableCell>
-                            <DateTimePicker
+                            <DatePicker
                               value={entry.completionDate}
                               onChange={(newValue) => handleEntryChange(entry.id, 'completionDate', newValue)}
-                              slotProps={{
-                                textField: {
-                                  size: 'small',
-                                  variant: 'outlined',
-                                },
-                              }}
+                              inputFormat="MM/dd/yyyy"
+                              renderInput={(params) => <CustomTextField {...params} size="small" variant="outlined" />}
                             />
                           </TableCell>
                           <TableCell>

@@ -185,13 +185,9 @@ const CustomerComplaintForm: React.FC = () => {
                     <CustomFormLabel htmlFor="receiptDate">Date of receipt</CustomFormLabel>
                     <DatePicker
                       value={formData.receiptDate}
-                      onChange={(newValue) => handleInputChange('receiptDate', newValue)}
-                      slotProps={{
-                        textField: {
-                          fullWidth: true,
-                          variant: 'outlined',
-                        },
-                      }}
+                      onChange={(newValue) => handleInputChange("receiptDate", newValue)}
+                      inputFormat="MM/dd/yyyy"
+                      renderInput={(params) => <CustomTextField {...params} fullWidth variant="outlined" />}
                     />
                   </Grid>
                   
@@ -372,13 +368,9 @@ const CustomerComplaintForm: React.FC = () => {
                     <CustomFormLabel htmlFor="mfgDate">Mfg. Date</CustomFormLabel>
                     <DatePicker
                       value={formData.mfgDate}
-                      onChange={(newValue) => handleInputChange('mfgDate', newValue)}
-                      slotProps={{
-                        textField: {
-                          fullWidth: true,
-                          variant: 'outlined',
-                        },
-                      }}
+                      onChange={(newValue) => handleInputChange("mfgDate", newValue)}
+                      inputFormat="MM/dd/yyyy"
+                      renderInput={(params) => <CustomTextField {...params} fullWidth variant="outlined" />}
                     />
                   </Grid>
                   
@@ -386,13 +378,9 @@ const CustomerComplaintForm: React.FC = () => {
                     <CustomFormLabel htmlFor="expDate">Exp. Date</CustomFormLabel>
                     <DatePicker
                       value={formData.expDate}
-                      onChange={(newValue) => handleInputChange('expDate', newValue)}
-                      slotProps={{
-                        textField: {
-                          fullWidth: true,
-                          variant: 'outlined',
-                        },
-                      }}
+                      onChange={(newValue) => handleInputChange("expDate", newValue)}
+                      inputFormat="MM/dd/yyyy"
+                      renderInput={(params) => <CustomTextField {...params} fullWidth variant="outlined" />}
                     />
                   </Grid>
                 </Grid>
@@ -595,13 +583,9 @@ const CustomerComplaintForm: React.FC = () => {
                     <CustomFormLabel htmlFor="complaintClosedDate">Complaint closed Date</CustomFormLabel>
                     <DatePicker
                       value={formData.complaintClosedDate}
-                      onChange={(newValue) => handleInputChange('complaintClosedDate', newValue)}
-                      slotProps={{
-                        textField: {
-                          fullWidth: true,
-                          variant: 'outlined',
-                        },
-                      }}
+                      onChange={(newValue) => handleInputChange("complaintClosedDate", newValue)}
+                      inputFormat="MM/dd/yyyy"
+                      renderInput={(params) => <CustomTextField {...params} fullWidth variant="outlined" />}
                     />
                   </Grid>
                   
@@ -609,22 +593,18 @@ const CustomerComplaintForm: React.FC = () => {
                     <CustomFormLabel htmlFor="customerNotificationDate">Customer Notification Date "If Needed"</CustomFormLabel>
                     <DatePicker
                       value={formData.customerNotificationDate}
-                      onChange={(newValue) => handleInputChange('customerNotificationDate', newValue)}
-                      slotProps={{
-                        textField: {
-                          fullWidth: true,
-                          variant: 'outlined',
-                        },
-                      }}
+                      onChange={(newValue) => handleInputChange("customerNotificationDate", newValue)}
+                      inputFormat="MM/dd/yyyy"
+                      renderInput={(params) => <CustomTextField {...params} fullWidth variant="outlined" />}
                     />
                   </Grid>
                   
-                  <Grid item xs={12}>
+                  <Grid item xs={12} md={6}>
                     <FormControlLabel
                       control={
                         <CustomCheckbox
                           checked={formData.productRecall}
-                          onChange={(e) => handleInputChange('productRecall', e.target.checked)}
+                          onChange={(e) => handleInputChange("productRecall", e.target.checked)}
                         />
                       }
                       label="Product Recall"

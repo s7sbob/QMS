@@ -174,10 +174,10 @@ const FormCustom = () => {
             />
             <CustomFormLabel htmlFor="date">Date</CustomFormLabel>
             <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DateTimePicker
-                renderInput={(props) => (
+              <DatePicker
+                renderInput={(params) => (
                   <CustomTextField
-                    {...props}
+                    {...params}
                     fullWidth
                     sx={{
                       '& .MuiSvgIcon-root': {

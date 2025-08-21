@@ -22,7 +22,7 @@ import Breadcrumb from 'src/layouts/full/shared/breadcrumb/Breadcrumb';
 import PageContainer from 'src/components/container/PageContainer';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 import CustomTextField from 'src/components/forms/theme-elements/CustomTextField';
 import CustomSelect from 'src/components/forms/theme-elements/CustomSelect';
@@ -238,15 +238,11 @@ const RiskAssessmentForm: React.FC = () => {
                   
                   <Grid item xs={12} md={4}>
                     <CustomFormLabel htmlFor="date">Date</CustomFormLabel>
-                    <DateTimePicker
+                    <DatePicker
                       value={formData.date}
-                      onChange={(newValue) => handleInputChange('date', newValue)}
-                      slotProps={{
-                        textField: {
-                          fullWidth: true,
-                          variant: 'outlined',
-                        },
-                      }}
+                      onChange={(newValue) => handleInputChange("date", newValue)}
+                      inputFormat="MM/dd/yyyy"
+                      renderInput={(params) => <CustomTextField {...params} fullWidth variant="outlined" />}
                     />
                   </Grid>
                   

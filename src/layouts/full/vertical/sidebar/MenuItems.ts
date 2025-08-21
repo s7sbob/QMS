@@ -16,7 +16,7 @@ interface MenuitemsType {
   variant?: string;
   external?: boolean;
 }
-import { IconUserCircle, IconCertificate, IconHierarchy } from '@tabler/icons-react';
+import { IconUserCircle, IconCertificate, IconHierarchy, IconFileDescription } from '@tabler/icons-react';
 
 const Menuitems: MenuitemsType[] = [
   {
@@ -108,6 +108,53 @@ const Menuitems: MenuitemsType[] = [
     icon: IconHierarchy,
     chipColor: 'secondary',
     href: '/ITManagementPage',
+  },
+
+  {
+    navlabel: true,
+    subheader: 'QMS Forms',
+  },
+  {
+    id: uniqueId(),
+    title: 'Customer Complaint Form',
+    icon: IconFileDescription,
+    href: '/forms/customer-complaint',
+  },
+  {
+    id: uniqueId(),
+    title: 'Risk Assessment Report',
+    icon: IconFileDescription,
+    href: '/forms/risk-assessment',
+  },
+  {
+    id: uniqueId(),
+    title: 'Service Providers Questionnaire',
+    icon: IconFileDescription,
+    href: '/forms/service-providers-questionnaire',
+  },
+  {
+    id: uniqueId(),
+    title: 'Recall Logbook',
+    icon: IconFileDescription,
+    href: '/forms/recall-logbook',
+  },
+  {
+    id: uniqueId(),
+    title: 'Contact List',
+    icon: IconFileDescription,
+    href: '/forms/contact-list',
+  },
+  {
+    id: uniqueId(),
+    title: 'QRM Team Approval Form',
+    icon: IconFileDescription,
+    href: '/forms/qrm-team-approval',
+  },
+  {
+    id: uniqueId(),
+    title: 'Simple Test Form',
+    icon: IconFileDescription,
+    href: '/forms/simple-test',
   },
 
   // {
