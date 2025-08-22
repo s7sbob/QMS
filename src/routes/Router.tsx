@@ -40,7 +40,12 @@ const ITManagementPage = Loadable(lazy(() => import('../views/ITManagement/ITMan
 
 /* **** QMS Forms ***** */
 const CustomerComplaintForm = Loadable(lazy(() => import('../views/forms/CustomerComplaintForm')));
+const CustomerComplaintLogbook = Loadable(lazy(() => import('../views/forms/CustomerComplaintLogbook')));
+const CustomerComplaintTrendAnalysis = Loadable(lazy(() => import('../views/forms/CustomerComplaintTrendAnalysis')));
 const RiskAssessmentForm = Loadable(lazy(() => import('../views/forms/RiskAssessmentForm')));
+const RiskAssessmentFollowUp = Loadable(lazy(() => import('../views/forms/RiskAssessmentFollowUp')));
+const QRMMinutesOfMeeting = Loadable(lazy(() => import('../views/forms/QRMMinutesOfMeeting')));
+const RiskNotificationForm = Loadable(lazy(() => import('../views/forms/RiskNotificationForm')));
 const ServiceProvidersQuestionnaire = Loadable(lazy(() => import('../views/forms/ServiceProvidersQuestionnaire')));
 const RecallLogbook = Loadable(lazy(() => import('../views/forms/RecallLogbook')));
 const ContactList = Loadable(lazy(() => import('../views/forms/ContactList')));
@@ -98,7 +103,12 @@ const Router = [
       // QMS Forms Routes
       { path: '/forms/simple-test', element: <SimpleTestForm /> },
       { path: '/forms/customer-complaint', element: <CustomerComplaintForm /> },
+      { path: '/forms/customer-complaint-logbook', element: <CustomerComplaintLogbook /> },
+      { path: '/forms/customer-complaint-trend-analysis', element: <CustomerComplaintTrendAnalysis /> },
       { path: '/forms/risk-assessment', element: <RiskAssessmentForm /> },
+      { path: '/forms/risk-assessment-follow-up', element: <RiskAssessmentFollowUp /> },
+      { path: '/forms/qrm-minutes-of-meeting', element: <QRMMinutesOfMeeting /> },
+      { path: '/forms/risk-notification', element: <RiskNotificationForm /> },
       { path: '/forms/service-providers-questionnaire', element: <ServiceProvidersQuestionnaire /> },
       { path: '/forms/recall-logbook', element: <RecallLogbook /> },
       { path: '/forms/contact-list', element: <ContactList /> },

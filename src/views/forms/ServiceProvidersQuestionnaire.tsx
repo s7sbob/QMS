@@ -20,7 +20,11 @@ import {
   Stack,
   Accordion,
   AccordionSummary,
-  AccordionDetails
+  AccordionDetails,
+  Checkbox,
+  Select,
+  MenuItem,
+  InputLabel
 } from '@mui/material';
 import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 
@@ -30,6 +34,7 @@ import PageContainer from 'src/components/container/PageContainer';
 import CustomTextField from 'src/components/forms/theme-elements/CustomTextField';
 import CustomFormLabel from 'src/components/forms/theme-elements/CustomFormLabel';
 import CustomRadio from 'src/components/forms/theme-elements/CustomRadio';
+import CustomSelect from 'src/components/forms/theme-elements/CustomSelect';
 import ParentCard from 'src/components/shared/ParentCard';
 
 const BCrumb = [
@@ -65,6 +70,13 @@ interface OperationsQuestion {
   score: number;
 }
 
+interface PerformanceQuestion {
+  id: string;
+  question: string;
+  comments: string;
+  score: number;
+}
+
 interface ServiceProviderData {
   // Section A - Service Provider Details
   companyName: string;
@@ -93,8 +105,33 @@ interface ServiceProviderData {
   // Complaints & CAPA Questions
   complaintsQuestions: QualitySystemQuestion[];
   
-  // Operations Questions
-  operationsQuestions: OperationsQuestion[];
+  // Section C - Operations (different service types)
+  selectedServiceType: string;
+  temperatureQualificationQuestions: OperationsQuestion[];
+  maintenanceQuestions: OperationsQuestion[];
+  destructionQuestions: OperationsQuestion[];
+  pestControlQuestions: OperationsQuestion[];
+  fireAndSafetyQuestions: OperationsQuestion[];
+  generalWasteQuestions: OperationsQuestion[];
+  printingQuestions: OperationsQuestion[];
+  computerSystemValidationQuestions: OperationsQuestion[];
+  
+  // Section D - Performance Evaluation
+  performanceQuestions: PerformanceQuestion[];
+  
+  // Final Approval Section
+  auditReportCAPAAcceptance: 'yes' | 'no' | 'na';
+  finalQualificationStatus: 'qualified_2years' | 'approved_1year' | 'not_accepted' | '';
+  
+  // Sign-off
+  serviceProviderName: string;
+  serviceProviderDesignation: string;
+  serviceProviderDate: string;
+  cigalahQAName: string;
+  cigalahQADate: string;
+  qaManagerName: string;
+  qaManagerDate: string;
+  conclusionRecommendations: string;
 }
 
 const ServiceProvidersQuestionnaire: React.FC = () => {
@@ -117,6 +154,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
     sustainabilityPolicy: '',
     codeOfConduct: '',
     anticorruption: '',
+    selectedServiceType: 'temperature_qualification',
     personnelQuestions: [
       {
         id: 'personnel_1',
@@ -149,85 +187,101 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
         score: 0
       }
     ],
-    operationsQuestions: [
-      {
-        id: 'ops_1',
-        question: 'Are all devices clearly identified?',
-        answer: '',
-        comments: '',
-        score: 0
-      },
-      {
-        id: 'ops_2',
-        question: 'Has the company an established and maintained procedures for traceability of product from purchase to distribution?',
-        answer: '',
-        comments: '',
-        score: 0
-      },
-      {
-        id: 'ops_3',
-        question: 'Do you have a qualified measuring system, including products traceability by serial numbers and models?',
-        answer: '',
-        comments: '',
-        score: 0
-      },
-      {
-        id: 'ops_4',
-        question: 'Are devices and equipment kept at required storage condition?',
-        answer: '',
-        comments: '',
-        score: 0
-      },
-      {
-        id: 'ops_5',
-        question: 'Do you keep inventory log or record indicating equipment name, serial No., quantity, supplier\'s name?',
-        answer: '',
-        comments: '',
-        score: 0
-      },
-      {
-        id: 'ops_6',
-        question: 'Are rejected devices marked and stored separately in a Secured area?',
-        answer: '',
-        comments: '',
-        score: 0
-      },
-      {
-        id: 'ops_7',
-        question: 'Do you have procedure for visual examination of devices for damage at the time of receipt?',
-        answer: '',
-        comments: '',
-        score: 0
-      },
-      {
-        id: 'ops_8',
-        question: 'Is controlled storage conditions maintained as required?',
-        answer: '',
-        comments: '',
-        score: 0
-      },
-      {
-        id: 'ops_9',
-        question: 'Are devices distribution records maintained?',
-        answer: '',
-        comments: '',
-        score: 0
-      },
-      {
-        id: 'ops_10',
-        question: 'Do you perform qualification for the used equipment?',
-        answer: '',
-        comments: '',
-        score: 0
-      },
-      {
-        id: 'ops_11',
-        question: 'Do you perform re-calibration for the reference devices?',
-        answer: '',
-        comments: '',
-        score: 0
-      }
-    ]
+    temperatureQualificationQuestions: [
+      { id: 'temp_1', question: 'Are all devices clearly identified?', answer: '', comments: '', score: 0 },
+      { id: 'temp_2', question: 'Has the company an established and maintained procedures for traceability of product from purchase to distribution?', answer: '', comments: '', score: 0 },
+      { id: 'temp_3', question: 'Do you have a qualified measuring system, including products traceability by serial numbers and models?', answer: '', comments: '', score: 0 },
+      { id: 'temp_4', question: 'Are devices and equipment kept at required storage condition?', answer: '', comments: '', score: 0 },
+      { id: 'temp_5', question: 'Do you keep inventory log or record indicating equipment name, serial No., quantity, supplier\'s name?', answer: '', comments: '', score: 0 },
+      { id: 'temp_6', question: 'Are rejected devices marked and stored separately in a Secured area?', answer: '', comments: '', score: 0 },
+      { id: 'temp_7', question: 'Do you have procedure for visual examination of devices for damage at the time of receipt?', answer: '', comments: '', score: 0 },
+      { id: 'temp_8', question: 'Is controlled storage conditions maintained as required?', answer: '', comments: '', score: 0 },
+      { id: 'temp_9', question: 'Are devices distribution records maintained?', answer: '', comments: '', score: 0 },
+      { id: 'temp_10', question: 'Do you perform qualification for the used equipment?', answer: '', comments: '', score: 0 },
+      { id: 'temp_11', question: 'Do you perform re-calibration for the reference devices?', answer: '', comments: '', score: 0 }
+    ],
+    maintenanceQuestions: [
+      { id: 'maint_1', question: 'Has the company established and maintained procedures for traceability of maintenance activities?', answer: '', comments: '', score: 0 },
+      { id: 'maint_2', question: 'Are all items stored well?', answer: '', comments: '', score: 0 },
+      { id: 'maint_3', question: 'Do you have procedure for visual examination of items for damage at the time of receipt?', answer: '', comments: '', score: 0 },
+      { id: 'maint_4', question: 'Is controlled storage conditions maintained as required?', answer: '', comments: '', score: 0 },
+      { id: 'maint_5', question: 'Do you perform qualification for the used items?', answer: '', comments: '', score: 0 }
+    ],
+    destructionQuestions: [
+      { id: 'dest_1', question: 'Has the company an established and maintained procedures for traceability of destruction requests, CODs?', answer: '', comments: '', score: 0 },
+      { id: 'dest_2', question: 'Do you have a validated computerized system?', answer: '', comments: '', score: 0 },
+      { id: 'dest_3', question: 'Do you perform qualification for the used equipment/machines?', answer: '', comments: '', score: 0 },
+      { id: 'dest_4', question: 'Do you have a procedure to describe the handling of each type of pharmaceutical products?', answer: '', comments: '', score: 0 },
+      { id: 'dest_5', question: 'Do you have a dedicated area for destroying processes?', answer: '', comments: '', score: 0 },
+      { id: 'dest_6', question: 'Do you have a procedure for the picking products up and control the goods?', answer: '', comments: '', score: 0 }
+    ],
+    pestControlQuestions: [
+      { id: 'pest_1', question: 'Has the company established and maintained documented procedures for traceability of pest control activities and visit reports?', answer: '', comments: '', score: 0 },
+      { id: 'pest_2', question: 'Are products kept at required storage condition?', answer: '', comments: '', score: 0 },
+      { id: 'pest_3', question: 'Do you keep inventory log or record indicating material name, Lot No., quantity, supplier\'s name, receiving code and date?', answer: '', comments: '', score: 0 },
+      { id: 'pest_4', question: 'Are all materials are approved from the authority and have MSDS?', answer: '', comments: '', score: 0 },
+      { id: 'pest_5', question: 'Are materials properly segregated to avoid mix-ups?', answer: '', comments: '', score: 0 },
+      { id: 'pest_6', question: 'Do you use stock rotation system (FIFO)?', answer: '', comments: '', score: 0 },
+      { id: 'pest_7', question: 'Are rejected materials marked and stored separately in a Secured area?', answer: '', comments: '', score: 0 },
+      { id: 'pest_8', question: 'Do you have procedure for visual examination of materials for damage at the time of receipt?', answer: '', comments: '', score: 0 },
+      { id: 'pest_9', question: 'Is controlled storage conditions maintained as required?', answer: '', comments: '', score: 0 },
+      { id: 'pest_10', question: 'Are devices distribution records maintained?', answer: '', comments: '', score: 0 },
+      { id: 'pest_11', question: 'Do you perform qualification for the used materials?', answer: '', comments: '', score: 0 }
+    ],
+    fireAndSafetyQuestions: [
+      { id: 'fire_1', question: 'Has the company established and maintained documented procedures for traceability of visit reports?', answer: '', comments: '', score: 0 },
+      { id: 'fire_2', question: 'Are the used detection devices qualified?', answer: '', comments: '', score: 0 },
+      { id: 'fire_3', question: 'Do you have procedure for visual examination of devices for damage at the time of receipt?', answer: '', comments: '', score: 0 },
+      { id: 'fire_4', question: 'Is controlled storage conditions maintained as required?', answer: '', comments: '', score: 0 },
+      { id: 'fire_5', question: 'Are devices distribution records maintained?', answer: '', comments: '', score: 0 },
+      { id: 'fire_6', question: 'Do you perform qualification for the used devices/items?', answer: '', comments: '', score: 0 }
+    ],
+    generalWasteQuestions: [
+      { id: 'waste_1', question: 'Do you have the ability to perform the service during all week days?', answer: '', comments: '', score: 0 },
+      { id: 'waste_2', question: 'Are the collected wastes handled safely?', answer: '', comments: '', score: 0 },
+      { id: 'waste_3', question: 'Are the wastes collected in a dedicated area?', answer: '', comments: '', score: 0 },
+      { id: 'waste_4', question: 'Has the company an established and maintained procedures for traceability of requested orders?', answer: '', comments: '', score: 0 }
+    ],
+    printingQuestions: [
+      { id: 'print_1', question: 'Has the company an established and maintained procedures for traceability of requested orders and delivery notes?', answer: '', comments: '', score: 0 },
+      { id: 'print_2', question: 'Do you have a procedure for checking the received materials against the requested specifications?', answer: '', comments: '', score: 0 },
+      { id: 'print_3', question: 'Do you have a procedure for in-process control and check?', answer: '', comments: '', score: 0 },
+      { id: 'print_4', question: 'Do you have a procedure for finished products check after printing?', answer: '', comments: '', score: 0 },
+      { id: 'print_5', question: 'Are materials kept at required storage condition?', answer: '', comments: '', score: 0 },
+      { id: 'print_6', question: 'Do you have a validated computerized system?', answer: '', comments: '', score: 0 },
+      { id: 'print_7', question: 'Do you use stock rotation system (FIFO)?', answer: '', comments: '', score: 0 },
+      { id: 'print_8', question: 'Do you have procedure for visual examination of materials for damage at the time of receipt?', answer: '', comments: '', score: 0 },
+      { id: 'print_9', question: 'Is controlled storage conditions maintained as required?', answer: '', comments: '', score: 0 },
+      { id: 'print_10', question: 'Do you perform qualification for the used materials?', answer: '', comments: '', score: 0 }
+    ],
+    computerSystemValidationQuestions: [
+      { id: 'csv_1', question: 'Does the company complies to 21CFR part 11 regulations or EU GMP Annex 11', answer: '', comments: '', score: 0 },
+      { id: 'csv_2', question: 'Does the company use risk based validation approach in line with GAMP 5', answer: '', comments: '', score: 0 },
+      { id: 'csv_3', question: 'Access management and system/software security is available', answer: '', comments: '', score: 0 },
+      { id: 'csv_4', question: 'Controls in place for audit trails, electronic records & signatures', answer: '', comments: '', score: 0 },
+      { id: 'csv_5', question: 'Does the company has a robust back-up and restore process', answer: '', comments: '', score: 0 },
+      { id: 'csv_6', question: 'Does the company has data retention process', answer: '', comments: '', score: 0 },
+      { id: 'csv_7', question: 'Does the company has contingency strategies in place for delays & system failures', answer: '', comments: '', score: 0 },
+      { id: 'csv_8', question: 'Does the company provide post validation support', answer: '', comments: '', score: 0 },
+      { id: 'csv_9', question: 'Does the company has process improvement plans in place', answer: '', comments: '', score: 0 },
+      { id: 'csv_10', question: 'Maintenance system in place for all hardware used', answer: '', comments: '', score: 0 }
+    ],
+    performanceQuestions: [
+      { id: 'perf_1', question: 'How were the service provider\'s activities performed during the last two years?', comments: '', score: 0 },
+      { id: 'perf_2', question: 'How was the response performed during the last two years?', comments: '', score: 0 },
+      { id: 'perf_3', question: 'How did the service provider handle the complaints, if any?', comments: '', score: 0 },
+      { id: 'perf_4', question: 'Is there any opened complaints or any pended CAPA?', comments: '', score: 0 }
+    ],
+    auditReportCAPAAcceptance: '',
+    finalQualificationStatus: '',
+    serviceProviderName: '',
+    serviceProviderDesignation: '',
+    serviceProviderDate: '',
+    cigalahQAName: '',
+    cigalahQADate: '',
+    qaManagerName: '',
+    qaManagerDate: '',
+    conclusionRecommendations: ''
   });
 
   const handleInputChange = (field: keyof ServiceProviderData, value: any) => {
@@ -247,7 +301,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
   };
 
   const handleQuestionChange = (
-    section: 'personnelQuestions' | 'complaintsQuestions' | 'operationsQuestions',
+    section: 'personnelQuestions' | 'complaintsQuestions' | 'temperatureQualificationQuestions' | 'maintenanceQuestions' | 'destructionQuestions' | 'pestControlQuestions' | 'fireAndSafetyQuestions' | 'generalWasteQuestions' | 'printingQuestions' | 'computerSystemValidationQuestions',
     id: string,
     field: keyof QualitySystemQuestion,
     value: any
@@ -260,11 +314,77 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
     }));
   };
 
-  const calculateSectionScore = (questions: QualitySystemQuestion[]): { total: number; percentage: number } => {
+  const handlePerformanceQuestionChange = (
+    id: string,
+    field: keyof PerformanceQuestion,
+    value: any
+  ) => {
+    setFormData(prev => ({
+      ...prev,
+      performanceQuestions: prev.performanceQuestions.map(q =>
+        q.id === id ? { ...q, [field]: value } : q
+      )
+    }));
+  };
+
+  const calculateSectionScore = (questions: QualitySystemQuestion[]): { total: number; percentage: number; maxScore: number } => {
     const maxScore = questions.length * 5;
     const totalScore = questions.reduce((sum, q) => sum + q.score, 0);
     const percentage = maxScore > 0 ? (totalScore / maxScore) * 100 : 0;
-    return { total: totalScore, percentage };
+    return { total: totalScore, percentage, maxScore };
+  };
+
+  const calculatePerformanceScore = (questions: PerformanceQuestion[]): { total: number; percentage: number; maxScore: number } => {
+    const maxScore = questions.length * 5;
+    const totalScore = questions.reduce((sum, q) => sum + q.score, 0);
+    const percentage = maxScore > 0 ? (totalScore / maxScore) * 100 : 0;
+    return { total: totalScore, percentage, maxScore };
+  };
+
+  const getCurrentOperationsQuestions = () => {
+    switch (formData.selectedServiceType) {
+      case 'temperature_qualification':
+        return formData.temperatureQualificationQuestions;
+      case 'maintenance':
+        return formData.maintenanceQuestions;
+      case 'destruction':
+        return formData.destructionQuestions;
+      case 'pest_control':
+        return formData.pestControlQuestions;
+      case 'fire_safety':
+        return formData.fireAndSafetyQuestions;
+      case 'general_waste':
+        return formData.generalWasteQuestions;
+      case 'printing':
+        return formData.printingQuestions;
+      case 'computer_system_validation':
+        return formData.computerSystemValidationQuestions;
+      default:
+        return formData.temperatureQualificationQuestions;
+    }
+  };
+
+  const getCurrentOperationsSectionName = () => {
+    switch (formData.selectedServiceType) {
+      case 'temperature_qualification':
+        return 'temperatureQualificationQuestions';
+      case 'maintenance':
+        return 'maintenanceQuestions';
+      case 'destruction':
+        return 'destructionQuestions';
+      case 'pest_control':
+        return 'pestControlQuestions';
+      case 'fire_safety':
+        return 'fireAndSafetyQuestions';
+      case 'general_waste':
+        return 'generalWasteQuestions';
+      case 'printing':
+        return 'printingQuestions';
+      case 'computer_system_validation':
+        return 'computerSystemValidationQuestions';
+      default:
+        return 'temperatureQualificationQuestions';
+    }
   };
 
   const handleSubmit = () => {
@@ -274,14 +394,23 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
 
   const personnelScore = calculateSectionScore(formData.personnelQuestions);
   const complaintsScore = calculateSectionScore(formData.complaintsQuestions);
-  const operationsScore = calculateSectionScore(formData.operationsQuestions);
+  const operationsScore = calculateSectionScore(getCurrentOperationsQuestions());
+  const performanceScore = calculatePerformanceScore(formData.performanceQuestions);
+  
   const sectionBPercentage = (personnelScore.percentage + complaintsScore.percentage) / 2;
+  const sectionCPercentage = operationsScore.percentage;
+  const sectionDPercentage = performanceScore.percentage;
+  const overallQualificationPercentage = (sectionBPercentage + sectionCPercentage + sectionDPercentage) / 3;
 
   return (
     <PageContainer title="Service Providers Questionnaire" description="Healthcare Division Service Providers Questionnaire">
       <Breadcrumb title="Service Providers Questionnaire" items={BCrumb} />
       
       <ParentCard title="Healthcare Division - Service Provider's Questionnaire">
+        <Typography variant="body2" sx={{ mb: 2, fontStyle: 'italic', color: 'text.secondary' }}>
+          Code#: QA-SOP-FRM-016.001/06 | Scoring section to be filled by Cigalah only
+        </Typography>
+        
         <Box component="form" sx={{ mt: 2 }}>
           
           {/* Section A - Service Provider Details */}
@@ -463,9 +592,11 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                         <CustomTextField
                           variant="outlined"
                           fullWidth
+                          multiline
+                          rows={2}
+                          placeholder="Describe certificates or attach files"
                           value={formData.sfdaCertificates}
                           onChange={(e) => handleInputChange('sfdaCertificates', e.target.value)}
-                          placeholder="Certificate details or file references"
                         />
                       </Box>
                     )}
@@ -490,9 +621,11 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                         <CustomTextField
                           variant="outlined"
                           fullWidth
+                          multiline
+                          rows={2}
+                          placeholder="Describe certificates or attach files"
                           value={formData.isoCertificates}
                           onChange={(e) => handleInputChange('isoCertificates', e.target.value)}
-                          placeholder="Certificate details or file references"
                         />
                       </Box>
                     )}
@@ -602,6 +735,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                                 rows={2}
                                 value={question.comments}
                                 onChange={(e) => handleQuestionChange('personnelQuestions', question.id, 'comments', e.target.value)}
+                                placeholder="To be filled by Cigalah"
                               />
                             </TableCell>
                             <TableCell>
@@ -611,6 +745,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                                 inputProps={{ min: 1, max: 5 }}
                                 value={question.score}
                                 onChange={(e) => handleQuestionChange('personnelQuestions', question.id, 'score', parseInt(e.target.value) || 0)}
+                                placeholder="1-5"
                               />
                             </TableCell>
                           </TableRow>
@@ -620,7 +755,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                           <TableCell align="center"><strong>{personnelScore.total}</strong></TableCell>
                         </TableRow>
                         <TableRow>
-                          <TableCell colSpan={5} align="right"><strong>Score Percentage:</strong></TableCell>
+                          <TableCell colSpan={5} align="right"><strong>Score Percentage = (Total Score/{personnelScore.maxScore})*100:</strong></TableCell>
                           <TableCell align="center"><strong>{personnelScore.percentage.toFixed(1)}%</strong></TableCell>
                         </TableRow>
                       </TableBody>
@@ -672,6 +807,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                                 rows={2}
                                 value={question.comments}
                                 onChange={(e) => handleQuestionChange('complaintsQuestions', question.id, 'comments', e.target.value)}
+                                placeholder="To be filled by Cigalah"
                               />
                             </TableCell>
                             <TableCell>
@@ -681,6 +817,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                                 inputProps={{ min: 1, max: 5 }}
                                 value={question.score}
                                 onChange={(e) => handleQuestionChange('complaintsQuestions', question.id, 'score', parseInt(e.target.value) || 0)}
+                                placeholder="1-5"
                               />
                             </TableCell>
                           </TableRow>
@@ -690,7 +827,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                           <TableCell align="center"><strong>{complaintsScore.total}</strong></TableCell>
                         </TableRow>
                         <TableRow>
-                          <TableCell colSpan={5} align="right"><strong>Score Percentage:</strong></TableCell>
+                          <TableCell colSpan={5} align="right"><strong>Score Percentage = (Total Score/{complaintsScore.maxScore})*100:</strong></TableCell>
                           <TableCell align="center"><strong>{complaintsScore.percentage.toFixed(1)}%</strong></TableCell>
                         </TableRow>
                       </TableBody>
@@ -699,7 +836,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                   
                   <Box sx={{ mt: 2, p: 2, backgroundColor: '#f5f5f5', borderRadius: 1 }}>
                     <Typography variant="h6">
-                      Section B Percentage = {sectionBPercentage.toFixed(1)}%
+                      Section B percentage = (Score percentage of 2.0 + Score percentage of 3.0)/2 = {sectionBPercentage.toFixed(1)}%
                     </Typography>
                   </Box>
                 </Grid>
@@ -711,7 +848,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
           <Accordion>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography variant="h6" sx={{ color: 'primary.main' }}>
-                Section C - Operations (Temperature qualification, monitoring and calibration service)
+                Section C - Operations
               </Typography>
             </AccordionSummary>
             <AccordionDetails>
@@ -719,9 +856,24 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                 Only one of the below section is applicable
               </Typography>
               
-              <Typography variant="h6" sx={{ mb: 2 }}>
-                1.0 For Temperature qualification, monitoring and calibration service:
-              </Typography>
+              <Box sx={{ mb: 3 }}>
+                <CustomFormLabel>Select Service Type:</CustomFormLabel>
+                <FormControl fullWidth>
+                  <CustomSelect
+                    value={formData.selectedServiceType}
+                    onChange={(e) => handleInputChange('selectedServiceType', e.target.value)}
+                  >
+                    <MenuItem value="temperature_qualification">1.0 Temperature qualification, monitoring and calibration service</MenuItem>
+                    <MenuItem value="maintenance">2.0 Maintenance service</MenuItem>
+                    <MenuItem value="destruction">3.0 Destruction service</MenuItem>
+                    <MenuItem value="pest_control">4.0 Pest Control service</MenuItem>
+                    <MenuItem value="fire_safety">5.0 Fire and safety service</MenuItem>
+                    <MenuItem value="general_waste">6.0 General Waste service</MenuItem>
+                    <MenuItem value="printing">7.0 Printing service</MenuItem>
+                    <MenuItem value="computer_system_validation">8.0 Computer System Validation service</MenuItem>
+                  </CustomSelect>
+                </FormControl>
+              </Box>
               
               <TableContainer component={Paper}>
                 <Table>
@@ -736,25 +888,25 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {formData.operationsQuestions.map((question) => (
+                    {getCurrentOperationsQuestions().map((question) => (
                       <TableRow key={question.id}>
                         <TableCell>{question.question}</TableCell>
                         <TableCell align="center">
                           <CustomRadio
                             checked={question.answer === 'yes'}
-                            onChange={() => handleQuestionChange('operationsQuestions', question.id, 'answer', 'yes')}
+                            onChange={() => handleQuestionChange(getCurrentOperationsSectionName() as any, question.id, 'answer', 'yes')}
                           />
                         </TableCell>
                         <TableCell align="center">
                           <CustomRadio
                             checked={question.answer === 'no'}
-                            onChange={() => handleQuestionChange('operationsQuestions', question.id, 'answer', 'no')}
+                            onChange={() => handleQuestionChange(getCurrentOperationsSectionName() as any, question.id, 'answer', 'no')}
                           />
                         </TableCell>
                         <TableCell align="center">
                           <CustomRadio
                             checked={question.answer === 'na'}
-                            onChange={() => handleQuestionChange('operationsQuestions', question.id, 'answer', 'na')}
+                            onChange={() => handleQuestionChange(getCurrentOperationsSectionName() as any, question.id, 'answer', 'na')}
                           />
                         </TableCell>
                         <TableCell>
@@ -763,7 +915,8 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                             multiline
                             rows={2}
                             value={question.comments}
-                            onChange={(e) => handleQuestionChange('operationsQuestions', question.id, 'comments', e.target.value)}
+                            onChange={(e) => handleQuestionChange(getCurrentOperationsSectionName() as any, question.id, 'comments', e.target.value)}
+                            placeholder="To be filled by Cigalah"
                           />
                         </TableCell>
                         <TableCell>
@@ -772,7 +925,8 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                             type="number"
                             inputProps={{ min: 1, max: 5 }}
                             value={question.score}
-                            onChange={(e) => handleQuestionChange('operationsQuestions', question.id, 'score', parseInt(e.target.value) || 0)}
+                            onChange={(e) => handleQuestionChange(getCurrentOperationsSectionName() as any, question.id, 'score', parseInt(e.target.value) || 0)}
+                            placeholder="1-5"
                           />
                         </TableCell>
                       </TableRow>
@@ -782,12 +936,250 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                       <TableCell align="center"><strong>{operationsScore.total}</strong></TableCell>
                     </TableRow>
                     <TableRow>
-                      <TableCell colSpan={5} align="right"><strong>Section C Percentage:</strong></TableCell>
+                      <TableCell colSpan={5} align="right"><strong>Section C Percentage = (Total Score/{operationsScore.maxScore})*100:</strong></TableCell>
                       <TableCell align="center"><strong>{operationsScore.percentage.toFixed(1)}%</strong></TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
               </TableContainer>
+            </AccordionDetails>
+          </Accordion>
+
+          {/* Section D - Performance Evaluation */}
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6" sx={{ color: 'primary.main' }}>
+                Section D - Performance Evaluation
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <TableContainer component={Paper}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={{ minWidth: 400 }}>Question</TableCell>
+                      <TableCell sx={{ minWidth: 300 }}>Comments</TableCell>
+                      <TableCell align="center">Score (1-5)</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {formData.performanceQuestions.map((question) => (
+                      <TableRow key={question.id}>
+                        <TableCell>{question.question}</TableCell>
+                        <TableCell>
+                          <CustomTextField
+                            size="small"
+                            multiline
+                            rows={3}
+                            fullWidth
+                            value={question.comments}
+                            onChange={(e) => handlePerformanceQuestionChange(question.id, 'comments', e.target.value)}
+                            placeholder="To be filled by Cigalah"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <CustomTextField
+                            size="small"
+                            type="number"
+                            inputProps={{ min: 1, max: 5 }}
+                            value={question.score}
+                            onChange={(e) => handlePerformanceQuestionChange(question.id, 'score', parseInt(e.target.value) || 0)}
+                            placeholder="1-5"
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    <TableRow>
+                      <TableCell colSpan={2} align="right"><strong>Total Score:</strong></TableCell>
+                      <TableCell align="center"><strong>{performanceScore.total}</strong></TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell colSpan={2} align="right"><strong>Score Percentage = (Total Score/{performanceScore.maxScore})*100:</strong></TableCell>
+                      <TableCell align="center"><strong>{performanceScore.percentage.toFixed(1)}%</strong></TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </AccordionDetails>
+          </Accordion>
+
+          {/* Final Qualification and Approval Section */}
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6" sx={{ color: 'primary.main' }}>
+                Final Qualification and Approval
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Grid container spacing={3}>
+                <Grid item xs={12}>
+                  <Box sx={{ p: 2, backgroundColor: '#e3f2fd', borderRadius: 1, mb: 3 }}>
+                    <Typography variant="h6" sx={{ mb: 1 }}>
+                      Service Provider Qualification Percentage
+                    </Typography>
+                    <Typography variant="body1">
+                      (Section B Score percentage + Section C percentage + Section D percentage) / 3 = <strong>{overallQualificationPercentage.toFixed(1)}%</strong>
+                    </Typography>
+                  </Box>
+                </Grid>
+                
+                <Grid item xs={12}>
+                  <CustomFormLabel>Audit report CAPA Acceptance along with evidence (By QA Manager Only)</CustomFormLabel>
+                  <FormControl component="fieldset">
+                    <RadioGroup
+                      row
+                      value={formData.auditReportCAPAAcceptance}
+                      onChange={(e) => handleInputChange('auditReportCAPAAcceptance', e.target.value)}
+                    >
+                      <FormControlLabel value="yes" control={<CustomRadio />} label="Yes" />
+                      <FormControlLabel value="no" control={<CustomRadio />} label="No" />
+                      <FormControlLabel value="na" control={<CustomRadio />} label="N/A" />
+                    </RadioGroup>
+                  </FormControl>
+                </Grid>
+                
+                <Grid item xs={12}>
+                  <CustomFormLabel>Based upon the qualification system the following is the final qualification status for the service provider:</CustomFormLabel>
+                  <FormControl component="fieldset">
+                    <RadioGroup
+                      value={formData.finalQualificationStatus}
+                      onChange={(e) => handleInputChange('finalQualificationStatus', e.target.value)}
+                    >
+                      <FormControlLabel value="qualified_2years" control={<CustomRadio />} label="Qualified, re-evaluation in 2 years" />
+                      <FormControlLabel value="approved_1year" control={<CustomRadio />} label="Approved & Qualified, needs to be re-evaluated in 1 year" />
+                      <FormControlLabel value="not_accepted" control={<CustomRadio />} label="Not Accepted" />
+                    </RadioGroup>
+                  </FormControl>
+                </Grid>
+              </Grid>
+            </AccordionDetails>
+          </Accordion>
+
+          {/* Sign-off Section */}
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6" sx={{ color: 'primary.main' }}>
+                Sign-off
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Typography variant="body2" sx={{ mb: 3, fontStyle: 'italic' }}>
+                I hereby confirm that the information provided in this questionnaire is complete and accurate to the best of my knowledge and ability.
+              </Typography>
+              
+              <TableContainer component={Paper}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Role</TableCell>
+                      <TableCell>Name</TableCell>
+                      <TableCell>Designation</TableCell>
+                      <TableCell>Signature</TableCell>
+                      <TableCell>Date</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell><strong>Filled By (Service Provider)</strong></TableCell>
+                      <TableCell>
+                        <CustomTextField
+                          size="small"
+                          value={formData.serviceProviderName}
+                          onChange={(e) => handleInputChange('serviceProviderName', e.target.value)}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <CustomTextField
+                          size="small"
+                          value={formData.serviceProviderDesignation}
+                          onChange={(e) => handleInputChange('serviceProviderDesignation', e.target.value)}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
+                          [Digital Signature]
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <CustomTextField
+                          size="small"
+                          type="date"
+                          value={formData.serviceProviderDate}
+                          onChange={(e) => handleInputChange('serviceProviderDate', e.target.value)}
+                        />
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell><strong>Checked By (Cigalah QA)</strong></TableCell>
+                      <TableCell>
+                        <CustomTextField
+                          size="small"
+                          value={formData.cigalahQAName}
+                          onChange={(e) => handleInputChange('cigalahQAName', e.target.value)}
+                        />
+                      </TableCell>
+                      <TableCell>Quality Assurance</TableCell>
+                      <TableCell>
+                        <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
+                          [Digital Signature]
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <CustomTextField
+                          size="small"
+                          type="date"
+                          value={formData.cigalahQADate}
+                          onChange={(e) => handleInputChange('cigalahQADate', e.target.value)}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
+              
+              <Box sx={{ mt: 3 }}>
+                <CustomFormLabel>Quality Assurance Cigalah: Conclusion and recommendations</CustomFormLabel>
+                <CustomTextField
+                  variant="outlined"
+                  fullWidth
+                  multiline
+                  rows={4}
+                  value={formData.conclusionRecommendations}
+                  onChange={(e) => handleInputChange('conclusionRecommendations', e.target.value)}
+                  placeholder="Enter conclusion and recommendations..."
+                />
+              </Box>
+              
+              <Box sx={{ mt: 3 }}>
+                <CustomFormLabel>Final Approval By:</CustomFormLabel>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} md={6}>
+                    <CustomTextField
+                      variant="outlined"
+                      fullWidth
+                      placeholder="QA Manager Name"
+                      value={formData.qaManagerName}
+                      onChange={(e) => handleInputChange('qaManagerName', e.target.value)}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <CustomTextField
+                      variant="outlined"
+                      fullWidth
+                      type
+
+
+="date"
+                      placeholder="Signature and date"
+                      value={formData.qaManagerDate}
+                      onChange={(e) => handleInputChange('qaManagerDate', e.target.value)}
+                    />
+                  </Grid>
+                </Grid>
+                <Typography variant="body2" sx={{ mt: 1, fontStyle: 'italic' }}>
+                  Cigalah QA Manager
+                </Typography>
+              </Box>
             </AccordionDetails>
           </Accordion>
 

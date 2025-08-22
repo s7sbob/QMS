@@ -122,9 +122,39 @@ const Menuitems: MenuitemsType[] = [
   },
   {
     id: uniqueId(),
+    title: 'Customer Complaint Logbook',
+    icon: IconFileDescription,
+    href: '/forms/customer-complaint-logbook',
+  },
+  {
+    id: uniqueId(),
+    title: 'Customer Complaint Trend Analysis',
+    icon: IconFileDescription,
+    href: '/forms/customer-complaint-trend-analysis',
+  },
+  {
+    id: uniqueId(),
     title: 'Risk Assessment Report',
     icon: IconFileDescription,
     href: '/forms/risk-assessment',
+  },
+  {
+    id: uniqueId(),
+    title: 'Risk Assessment Follow Up',
+    icon: IconFileDescription,
+    href: '/forms/risk-assessment-follow-up',
+  },
+  {
+    id: uniqueId(),
+    title: 'QRM Minutes of Meeting',
+    icon: IconFileDescription,
+    href: '/forms/qrm-minutes-of-meeting',
+  },
+  {
+    id: uniqueId(),
+    title: 'Risk Notification Form',
+    icon: IconFileDescription,
+    href: '/forms/risk-notification',
   },
   {
     id: uniqueId(),
