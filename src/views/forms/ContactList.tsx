@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Grid,
   Box,
   Typography,
   Button,
@@ -22,7 +21,6 @@ import Breadcrumb from 'src/layouts/full/shared/breadcrumb/Breadcrumb';
 import PageContainer from 'src/components/container/PageContainer';
 
 import CustomTextField from 'src/components/forms/theme-elements/CustomTextField';
-import CustomFormLabel from 'src/components/forms/theme-elements/CustomFormLabel';
 import ParentCard from 'src/components/shared/ParentCard';
 
 const BCrumb = [
@@ -138,7 +136,7 @@ const ContactList: React.FC = () => {
                           <CustomTextField
                             size="small"
                             value={contact.supplierName}
-                            onChange={(e) => handleContactChange(contact.id, 'supplierName', e.target.value)}
+                            onChange={(e: { target: { value: string; }; }) => handleContactChange(contact.id, 'supplierName', e.target.value)}
                             placeholder="Enter supplier name"
                           />
                         </TableCell>
@@ -146,7 +144,7 @@ const ContactList: React.FC = () => {
                           <CustomTextField
                             size="small"
                             value={contact.qaHeadName}
-                            onChange={(e) => handleContactChange(contact.id, 'qaHeadName', e.target.value)}
+                            onChange={(e: { target: { value: string; }; }) => handleContactChange(contact.id, 'qaHeadName', e.target.value)}
                             placeholder="Enter QA head name"
                           />
                         </TableCell>
@@ -155,7 +153,7 @@ const ContactList: React.FC = () => {
                             size="small"
                             type="email"
                             value={contact.emailAddress}
-                            onChange={(e) => handleContactChange(contact.id, 'emailAddress', e.target.value)}
+                            onChange={(e: { target: { value: string; }; }) => handleContactChange(contact.id, 'emailAddress', e.target.value)}
                             placeholder="Enter email address"
                           />
                         </TableCell>
@@ -163,7 +161,7 @@ const ContactList: React.FC = () => {
                           <CustomTextField
                             size="small"
                             value={contact.contactNumber}
-                            onChange={(e) => handleContactChange(contact.id, 'contactNumber', e.target.value)}
+                            onChange={(e: { target: { value: string; }; }) => handleContactChange(contact.id, 'contactNumber', e.target.value)}
                             placeholder="Enter contact number"
                           />
                         </TableCell>

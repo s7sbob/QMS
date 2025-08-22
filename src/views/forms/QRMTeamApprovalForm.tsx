@@ -14,9 +14,7 @@ import {
   TableRow,
   Paper,
   IconButton,
-  Stack,
-  Divider
-} from '@mui/material';
+  Stack} from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
 
 import Breadcrumb from 'src/layouts/full/shared/breadcrumb/Breadcrumb';
@@ -141,7 +139,7 @@ const QRMTeamApprovalForm: React.FC = () => {
                       variant="outlined"
                       fullWidth
                       value={formData.riskAnalysisReportNo}
-                      onChange={(e) => handleInputChange('riskAnalysisReportNo', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('riskAnalysisReportNo', e.target.value)}
                       placeholder="-------/-------"
                     />
                   </Grid>
@@ -194,14 +192,14 @@ const QRMTeamApprovalForm: React.FC = () => {
                             <CustomTextField
                               size="small"
                               value={member.serialNo}
-                              onChange={(e) => handleTeamMemberChange(member.id, 'serialNo', e.target.value)}
+                              onChange={(e: { target: { value: string; }; }) => handleTeamMemberChange(member.id, 'serialNo', e.target.value)}
                             />
                           </TableCell>
                           <TableCell>
                             <CustomTextField
                               size="small"
                               value={member.personName}
-                              onChange={(e) => handleTeamMemberChange(member.id, 'personName', e.target.value)}
+                              onChange={(e: { target: { value: string; }; }) => handleTeamMemberChange(member.id, 'personName', e.target.value)}
                               placeholder="Enter person name"
                             />
                           </TableCell>
@@ -209,7 +207,7 @@ const QRMTeamApprovalForm: React.FC = () => {
                             <CustomTextField
                               size="small"
                               value={member.areaOfExpertise}
-                              onChange={(e) => handleTeamMemberChange(member.id, 'areaOfExpertise', e.target.value)}
+                              onChange={(e: { target: { value: string; }; }) => handleTeamMemberChange(member.id, 'areaOfExpertise', e.target.value)}
                               placeholder="Enter area of expertise"
                             />
                           </TableCell>
@@ -217,7 +215,7 @@ const QRMTeamApprovalForm: React.FC = () => {
                             <CustomTextField
                               size="small"
                               value={member.signature}
-                              onChange={(e) => handleTeamMemberChange(member.id, 'signature', e.target.value)}
+                              onChange={(e: { target: { value: string; }; }) => handleTeamMemberChange(member.id, 'signature', e.target.value)}
                               placeholder="Signature"
                             />
                           </TableCell>
@@ -254,7 +252,7 @@ const QRMTeamApprovalForm: React.FC = () => {
                       variant="outlined"
                       fullWidth
                       value={formData.qaManagerName}
-                      onChange={(e) => handleInputChange('qaManagerName', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('qaManagerName', e.target.value)}
                     />
                   </Grid>
                   
@@ -265,7 +263,7 @@ const QRMTeamApprovalForm: React.FC = () => {
                       variant="outlined"
                       fullWidth
                       value={formData.qaManagerSignature}
-                      onChange={(e) => handleInputChange('qaManagerSignature', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('qaManagerSignature', e.target.value)}
                     />
                   </Grid>
                   
