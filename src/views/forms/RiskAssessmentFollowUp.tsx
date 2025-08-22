@@ -30,7 +30,6 @@ import PageContainer from 'src/components/container/PageContainer';
 import CustomTextField from 'src/components/forms/theme-elements/CustomTextField';
 import CustomFormLabel from 'src/components/forms/theme-elements/CustomFormLabel';
 import CustomRadio from 'src/components/forms/theme-elements/CustomRadio';
-import ParentCard from 'src/components/shared/ParentCard';
 
 const BCrumb = [
   {
@@ -169,7 +168,6 @@ const RiskAssessmentFollowUp: React.FC = () => {
     <PageContainer title="Risk Assessment Follow up" description="Healthcare Division Risk Assessment Follow up">
       <Breadcrumb title="Risk Assessment Follow up" items={BCrumb} />
       
-      <ParentCard title="Healthcare Division - Risk Assessment Follow up">
         <Typography variant="body2" sx={{ mb: 2, fontStyle: 'italic', color: 'text.secondary' }}>
           Code#: QA-SOP-FRM-012.002/03
         </Typography>
@@ -184,7 +182,7 @@ const RiskAssessmentFollowUp: React.FC = () => {
                 variant="outlined"
                 fullWidth
                 value={formData.riskAssessmentReportNo}
-                onChange={(e) => handleInputChange('riskAssessmentReportNo', e.target.value)}
+                onChange={(e: { target: { value: any; }; }) => handleInputChange('riskAssessmentReportNo', e.target.value)}
               />
             </Grid>
             <Grid item xs={12} md={4}>
@@ -194,7 +192,7 @@ const RiskAssessmentFollowUp: React.FC = () => {
                 variant="outlined"
                 fullWidth
                 value={formData.department}
-                onChange={(e) => handleInputChange('department', e.target.value)}
+                onChange={(e: { target: { value: any; }; }) => handleInputChange('department', e.target.value)}
               />
             </Grid>
             <Grid item xs={12} md={4}>
@@ -217,7 +215,7 @@ const RiskAssessmentFollowUp: React.FC = () => {
                 multiline
                 rows={2}
                 value={formData.process}
-                onChange={(e) => handleInputChange('process', e.target.value)}
+                onChange={(e: { target: { value: any; }; }) => handleInputChange('process', e.target.value)}
               />
             </Grid>
           </Grid>
@@ -268,7 +266,7 @@ const RiskAssessmentFollowUp: React.FC = () => {
                           <CustomTextField
                             size="small"
                             value={entry.riskNumber}
-                            onChange={(e) => handleEntryChange(entry.id, 'riskNumber', e.target.value)}
+                            onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'riskNumber', e.target.value)}
                             placeholder="Risk #"
                           />
                         </TableCell>
@@ -278,7 +276,7 @@ const RiskAssessmentFollowUp: React.FC = () => {
                             multiline
                             rows={2}
                             value={entry.riskDescription}
-                            onChange={(e) => handleEntryChange(entry.id, 'riskDescription', e.target.value)}
+                            onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'riskDescription', e.target.value)}
                             placeholder="Risk description"
                           />
                         </TableCell>
@@ -288,7 +286,7 @@ const RiskAssessmentFollowUp: React.FC = () => {
                             multiline
                             rows={2}
                             value={entry.riskImpact}
-                            onChange={(e) => handleEntryChange(entry.id, 'riskImpact', e.target.value)}
+                            onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'riskImpact', e.target.value)}
                             placeholder="Risk impact"
                           />
                         </TableCell>
@@ -298,7 +296,7 @@ const RiskAssessmentFollowUp: React.FC = () => {
                             multiline
                             rows={2}
                             value={entry.controlMeasures}
-                            onChange={(e) => handleEntryChange(entry.id, 'controlMeasures', e.target.value)}
+                            onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'controlMeasures', e.target.value)}
                             placeholder="Control measures"
                           />
                         </TableCell>
@@ -307,7 +305,7 @@ const RiskAssessmentFollowUp: React.FC = () => {
                             size="small"
                             type="number"
                             value={entry.probabilityAfter}
-                            onChange={(e) => handleEntryChange(entry.id, 'probabilityAfter', e.target.value)}
+                            onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'probabilityAfter', e.target.value)}
                             placeholder="Prob."
                           />
                         </TableCell>
@@ -316,7 +314,7 @@ const RiskAssessmentFollowUp: React.FC = () => {
                             size="small"
                             type="number"
                             value={entry.severityAfter}
-                            onChange={(e) => handleEntryChange(entry.id, 'severityAfter', e.target.value)}
+                            onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'severityAfter', e.target.value)}
                             placeholder="Sev."
                           />
                         </TableCell>
@@ -325,7 +323,7 @@ const RiskAssessmentFollowUp: React.FC = () => {
                             size="small"
                             type="number"
                             value={entry.detectabilityAfter}
-                            onChange={(e) => handleEntryChange(entry.id, 'detectabilityAfter', e.target.value)}
+                            onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'detectabilityAfter', e.target.value)}
                             placeholder="Det."
                           />
                         </TableCell>
@@ -333,7 +331,7 @@ const RiskAssessmentFollowUp: React.FC = () => {
                           <CustomTextField
                             size="small"
                             value={entry.riskClassAfter}
-                            onChange={(e) => handleEntryChange(entry.id, 'riskClassAfter', e.target.value)}
+                            onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'riskClassAfter', e.target.value)}
                             placeholder="Class"
                           />
                         </TableCell>
@@ -341,7 +339,7 @@ const RiskAssessmentFollowUp: React.FC = () => {
                           <CustomTextField
                             size="small"
                             value={entry.riskPriorityAfter}
-                            onChange={(e) => handleEntryChange(entry.id, 'riskPriorityAfter', e.target.value)}
+                            onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'riskPriorityAfter', e.target.value)}
                             placeholder="Priority"
                           />
                         </TableCell>
@@ -350,7 +348,7 @@ const RiskAssessmentFollowUp: React.FC = () => {
                             size="small"
                             type="number"
                             value={entry.rpnAfter}
-                            onChange={(e) => handleEntryChange(entry.id, 'rpnAfter', e.target.value)}
+                            onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'rpnAfter', e.target.value)}
                             placeholder="RPN"
                           />
                         </TableCell>
@@ -368,7 +366,7 @@ const RiskAssessmentFollowUp: React.FC = () => {
                             <CustomTextField
                               size="small"
                               value={entry.reportNumberAccepted}
-                              onChange={(e) => handleEntryChange(entry.id, 'reportNumberAccepted', e.target.value)}
+                              onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'reportNumberAccepted', e.target.value)}
                               placeholder="If yes, Report #"
                               sx={{ mt: 1 }}
                             />
@@ -388,7 +386,7 @@ const RiskAssessmentFollowUp: React.FC = () => {
                             <CustomTextField
                               size="small"
                               value={entry.reportNumberReassess}
-                              onChange={(e) => handleEntryChange(entry.id, 'reportNumberReassess', e.target.value)}
+                              onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'reportNumberReassess', e.target.value)}
                               placeholder="If yes, Report #"
                               sx={{ mt: 1 }}
                             />
@@ -435,7 +433,7 @@ const RiskAssessmentFollowUp: React.FC = () => {
                         <CustomTextField
                           size="small"
                           value={formData.processOwnerName}
-                          onChange={(e) => handleInputChange('processOwnerName', e.target.value)}
+                          onChange={(e: { target: { value: any; }; }) => handleInputChange('processOwnerName', e.target.value)}
                         />
                       </TableCell>
                       <TableCell>
@@ -443,7 +441,7 @@ const RiskAssessmentFollowUp: React.FC = () => {
                           size="small"
                           type="date"
                           value={formData.processOwnerSignDate}
-                          onChange={(e) => handleInputChange('processOwnerSignDate', e.target.value)}
+                          onChange={(e: { target: { value: any; }; }) => handleInputChange('processOwnerSignDate', e.target.value)}
                         />
                       </TableCell>
                     </TableRow>
@@ -453,7 +451,7 @@ const RiskAssessmentFollowUp: React.FC = () => {
                         <CustomTextField
                           size="small"
                           value={formData.departmentManagerName}
-                          onChange={(e) => handleInputChange('departmentManagerName', e.target.value)}
+                          onChange={(e: { target: { value: any; }; }) => handleInputChange('departmentManagerName', e.target.value)}
                         />
                       </TableCell>
                       <TableCell>
@@ -461,7 +459,7 @@ const RiskAssessmentFollowUp: React.FC = () => {
                           size="small"
                           type="date"
                           value={formData.departmentManagerSignDate}
-                          onChange={(e) => handleInputChange('departmentManagerSignDate', e.target.value)}
+                          onChange={(e: { target: { value: any; }; }) => handleInputChange('departmentManagerSignDate', e.target.value)}
                         />
                       </TableCell>
                     </TableRow>
@@ -471,7 +469,7 @@ const RiskAssessmentFollowUp: React.FC = () => {
                         <CustomTextField
                           size="small"
                           value={formData.qaAssociateName}
-                          onChange={(e) => handleInputChange('qaAssociateName', e.target.value)}
+                          onChange={(e: { target: { value: any; }; }) => handleInputChange('qaAssociateName', e.target.value)}
                         />
                       </TableCell>
                       <TableCell>
@@ -479,7 +477,7 @@ const RiskAssessmentFollowUp: React.FC = () => {
                           size="small"
                           type="date"
                           value={formData.qaAssociateSignDate}
-                          onChange={(e) => handleInputChange('qaAssociateSignDate', e.target.value)}
+                          onChange={(e: { target: { value: any; }; }) => handleInputChange('qaAssociateSignDate', e.target.value)}
                         />
                       </TableCell>
                     </TableRow>
@@ -489,7 +487,7 @@ const RiskAssessmentFollowUp: React.FC = () => {
                         <CustomTextField
                           size="small"
                           value={formData.qaManagerName}
-                          onChange={(e) => handleInputChange('qaManagerName', e.target.value)}
+                          onChange={(e: { target: { value: any; }; }) => handleInputChange('qaManagerName', e.target.value)}
                         />
                       </TableCell>
                       <TableCell>
@@ -497,7 +495,7 @@ const RiskAssessmentFollowUp: React.FC = () => {
                           size="small"
                           type="date"
                           value={formData.qaManagerSignDate}
-                          onChange={(e) => handleInputChange('qaManagerSignDate', e.target.value)}
+                          onChange={(e: { target: { value: any; }; }) => handleInputChange('qaManagerSignDate', e.target.value)}
                         />
                       </TableCell>
                     </TableRow>
@@ -528,7 +526,6 @@ const RiskAssessmentFollowUp: React.FC = () => {
           </Stack>
 
         </Box>
-      </ParentCard>
     </PageContainer>
   );
 };

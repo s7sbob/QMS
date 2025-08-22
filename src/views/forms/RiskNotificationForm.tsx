@@ -27,8 +27,7 @@ import PageContainer from 'src/components/container/PageContainer';
 
 import CustomTextField from 'src/components/forms/theme-elements/CustomTextField';
 import CustomFormLabel from 'src/components/forms/theme-elements/CustomFormLabel';
-import CustomSelect from 'src/components/forms/theme-elements/CustomSelect';
-import ParentCard from 'src/components/shared/ParentCard';
+
 
 const BCrumb = [
   {
@@ -167,7 +166,6 @@ const RiskNotificationForm: React.FC = () => {
     <PageContainer title="Risk Notification Form" description="Healthcare Division Risk notification form">
       <Breadcrumb title="Risk Notification Form" items={BCrumb} />
       
-      <ParentCard title="Healthcare Division - Risk notification form">
         <Typography variant="body2" sx={{ mb: 2, fontStyle: 'italic', color: 'text.secondary' }}>
           Code#: QA-SOP-FRM-012.006/02
         </Typography>
@@ -193,7 +191,7 @@ const RiskNotificationForm: React.FC = () => {
                 variant="outlined"
                 fullWidth
                 value={formData.department}
-                onChange={(e) => handleInputChange('department', e.target.value)}
+                onChange={(e: { target: { value: any; }; }) => handleInputChange('department', e.target.value)}
               />
             </Grid>
             <Grid item xs={12} md={6}>
@@ -203,7 +201,7 @@ const RiskNotificationForm: React.FC = () => {
                 variant="outlined"
                 fullWidth
                 value={formData.process}
-                onChange={(e) => handleInputChange('process', e.target.value)}
+                onChange={(e: { target: { value: any; }; }) => handleInputChange('process', e.target.value)}
               />
             </Grid>
             <Grid item xs={12} md={6}>
@@ -213,7 +211,7 @@ const RiskNotificationForm: React.FC = () => {
                 variant="outlined"
                 fullWidth
                 value={formData.riskAssessmentReportNo}
-                onChange={(e) => handleInputChange('riskAssessmentReportNo', e.target.value)}
+                onChange={(e: { target: { value: any; }; }) => handleInputChange('riskAssessmentReportNo', e.target.value)}
                 placeholder="-------/-------"
               />
             </Grid>
@@ -282,7 +280,7 @@ const RiskNotificationForm: React.FC = () => {
                           <CustomTextField
                             size="small"
                             value={entry.riskNumber}
-                            onChange={(e) => handleEntryChange(entry.id, 'riskNumber', e.target.value)}
+                            onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'riskNumber', e.target.value)}
                             placeholder="Risk #"
                           />
                         </TableCell>
@@ -292,7 +290,7 @@ const RiskNotificationForm: React.FC = () => {
                             multiline
                             rows={2}
                             value={entry.riskDescription}
-                            onChange={(e) => handleEntryChange(entry.id, 'riskDescription', e.target.value)}
+                            onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'riskDescription', e.target.value)}
                             placeholder="Risk description"
                           />
                         </TableCell>
@@ -300,7 +298,7 @@ const RiskNotificationForm: React.FC = () => {
                           <CustomTextField
                             size="small"
                             value={entry.riskClass}
-                            onChange={(e) => handleEntryChange(entry.id, 'riskClass', e.target.value)}
+                            onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'riskClass', e.target.value)}
                             placeholder="Class"
                           />
                         </TableCell>
@@ -310,7 +308,7 @@ const RiskNotificationForm: React.FC = () => {
                             multiline
                             rows={2}
                             value={entry.riskImpact}
-                            onChange={(e) => handleEntryChange(entry.id, 'riskImpact', e.target.value)}
+                            onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'riskImpact', e.target.value)}
                             placeholder="Risk impact"
                           />
                         </TableCell>
@@ -319,7 +317,7 @@ const RiskNotificationForm: React.FC = () => {
                             size="small"
                             type="number"
                             value={entry.rpn}
-                            onChange={(e) => handleEntryChange(entry.id, 'rpn', e.target.value)}
+                            onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'rpn', e.target.value)}
                             placeholder="RPN"
                           />
                           {entry.rpn && (
@@ -407,7 +405,7 @@ const RiskNotificationForm: React.FC = () => {
                         <CustomTextField
                           size="small"
                           value={formData.preparedByName}
-                          onChange={(e) => handleInputChange('preparedByName', e.target.value)}
+                          onChange={(e: { target: { value: any; }; }) => handleInputChange('preparedByName', e.target.value)}
                         />
                       </TableCell>
                       <TableCell>
@@ -415,7 +413,7 @@ const RiskNotificationForm: React.FC = () => {
                           size="small"
                           type="date"
                           value={formData.preparedBySignDate}
-                          onChange={(e) => handleInputChange('preparedBySignDate', e.target.value)}
+                          onChange={(e: { target: { value: any; }; }) => handleInputChange('preparedBySignDate', e.target.value)}
                         />
                       </TableCell>
                     </TableRow>
@@ -425,7 +423,7 @@ const RiskNotificationForm: React.FC = () => {
                         <CustomTextField
                           size="small"
                           value={formData.reviewedByName}
-                          onChange={(e) => handleInputChange('reviewedByName', e.target.value)}
+                          onChange={(e: { target: { value: any; }; }) => handleInputChange('reviewedByName', e.target.value)}
                         />
                       </TableCell>
                       <TableCell>
@@ -433,7 +431,7 @@ const RiskNotificationForm: React.FC = () => {
                           size="small"
                           type="date"
                           value={formData.reviewedBySignDate}
-                          onChange={(e) => handleInputChange('reviewedBySignDate', e.target.value)}
+                          onChange={(e: { target: { value: any; }; }) => handleInputChange('reviewedBySignDate', e.target.value)}
                         />
                       </TableCell>
                     </TableRow>
@@ -443,7 +441,7 @@ const RiskNotificationForm: React.FC = () => {
                         <CustomTextField
                           size="small"
                           value={formData.qaManagerName}
-                          onChange={(e) => handleInputChange('qaManagerName', e.target.value)}
+                          onChange={(e: { target: { value: any; }; }) => handleInputChange('qaManagerName', e.target.value)}
                         />
                       </TableCell>
                       <TableCell>
@@ -451,7 +449,7 @@ const RiskNotificationForm: React.FC = () => {
                           size="small"
                           type="date"
                           value={formData.qaManagerSignDate}
-                          onChange={(e) => handleInputChange('qaManagerSignDate', e.target.value)}
+                          onChange={(e: { target: { value: any; }; }) => handleInputChange('qaManagerSignDate', e.target.value)}
                         />
                       </TableCell>
                     </TableRow>
@@ -482,7 +480,6 @@ const RiskNotificationForm: React.FC = () => {
           </Stack>
 
         </Box>
-      </ParentCard>
     </PageContainer>
   );
 };

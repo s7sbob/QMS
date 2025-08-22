@@ -26,7 +26,6 @@ import PageContainer from 'src/components/container/PageContainer';
 
 import CustomTextField from 'src/components/forms/theme-elements/CustomTextField';
 import CustomFormLabel from 'src/components/forms/theme-elements/CustomFormLabel';
-import ParentCard from 'src/components/shared/ParentCard';
 
 const BCrumb = [
   {
@@ -165,7 +164,6 @@ const QRMMinutesOfMeeting: React.FC = () => {
     <PageContainer title="QRM Minutes of Meeting" description="Healthcare Division QRM minutes of meeting form">
       <Breadcrumb title="QRM Minutes of Meeting" items={BCrumb} />
       
-      <ParentCard title="Healthcare Division - QRM minutes of meeting form">
         <Typography variant="body2" sx={{ mb: 2, fontStyle: 'italic', color: 'text.secondary' }}>
           Code #: QA-SOP-FRM-012.004/02
         </Typography>
@@ -180,7 +178,7 @@ const QRMMinutesOfMeeting: React.FC = () => {
                 variant="outlined"
                 fullWidth
                 value={formData.riskAnalysisReportNo}
-                onChange={(e) => handleInputChange('riskAnalysisReportNo', e.target.value)}
+                onChange={(e: { target: { value: any; }; }) => handleInputChange('riskAnalysisReportNo', e.target.value)}
                 placeholder="-------/-------"
               />
             </Grid>
@@ -238,7 +236,7 @@ const QRMMinutesOfMeeting: React.FC = () => {
                             rows={3}
                             fullWidth
                             value={minute.minuteDescription}
-                            onChange={(e) => handleMinuteChange(minute.id, 'minuteDescription', e.target.value)}
+                            onChange={(e: { target: { value: any; }; }) => handleMinuteChange(minute.id, 'minuteDescription', e.target.value)}
                             placeholder="Enter meeting minute details..."
                           />
                         </TableCell>
@@ -300,7 +298,7 @@ const QRMMinutesOfMeeting: React.FC = () => {
                           <CustomTextField
                             size="small"
                             value={attendee.personName}
-                            onChange={(e) => handleAttendeeChange(attendee.id, 'personName', e.target.value)}
+                            onChange={(e: { target: { value: any; }; }) => handleAttendeeChange(attendee.id, 'personName', e.target.value)}
                             placeholder="Enter person name"
                           />
                         </TableCell>
@@ -308,7 +306,7 @@ const QRMMinutesOfMeeting: React.FC = () => {
                           <CustomTextField
                             size="small"
                             value={attendee.areaOfExpertise}
-                            onChange={(e) => handleAttendeeChange(attendee.id, 'areaOfExpertise', e.target.value)}
+                            onChange={(e: { target: { value: any; }; }) => handleAttendeeChange(attendee.id, 'areaOfExpertise', e.target.value)}
                             placeholder="Enter area of expertise"
                           />
                         </TableCell>
@@ -316,7 +314,7 @@ const QRMMinutesOfMeeting: React.FC = () => {
                           <CustomTextField
                             size="small"
                             value={attendee.signature}
-                            onChange={(e) => handleAttendeeChange(attendee.id, 'signature', e.target.value)}
+                            onChange={(e: { target: { value: any; }; }) => handleAttendeeChange(attendee.id, 'signature', e.target.value)}
                             placeholder="Signature"
                           />
                         </TableCell>
@@ -378,7 +376,6 @@ const QRMMinutesOfMeeting: React.FC = () => {
           </Stack>
 
         </Box>
-      </ParentCard>
     </PageContainer>
   );
 };

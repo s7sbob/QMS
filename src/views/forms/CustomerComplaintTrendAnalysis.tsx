@@ -23,8 +23,7 @@ import PageContainer from 'src/components/container/PageContainer';
 
 import CustomTextField from 'src/components/forms/theme-elements/CustomTextField';
 import CustomFormLabel from 'src/components/forms/theme-elements/CustomFormLabel';
-import CustomSelect from 'src/components/forms/theme-elements/CustomSelect';
-import ParentCard from 'src/components/shared/ParentCard';
+
 
 const BCrumb = [
   {
@@ -123,7 +122,6 @@ const CustomerComplaintTrendAnalysis: React.FC = () => {
     <PageContainer title="Customer Complaint Trend Analysis" description="Customer Complaint Trend Analysis">
       <Breadcrumb title="Customer Complaint Trend Analysis" items={BCrumb} />
       
-      <ParentCard title="Customer Complaint Trend Analysis">
         <Typography variant="body2" sx={{ mb: 2, fontStyle: 'italic', color: 'text.secondary' }}>
           Code #: QA-SOP-FRM-007.004/01
         </Typography>
@@ -139,7 +137,7 @@ const CustomerComplaintTrendAnalysis: React.FC = () => {
                 fullWidth
                 type="number"
                 value={formData.year}
-                onChange={(e) => handleInputChange('year', e.target.value)}
+                onChange={(e: { target: { value: any; }; }) => handleInputChange('year', e.target.value)}
               />
             </Grid>
           </Grid>
@@ -186,7 +184,7 @@ const CustomerComplaintTrendAnalysis: React.FC = () => {
                           <CustomTextField
                             size="small"
                             value={entry.complaintNumber}
-                            onChange={(e) => handleEntryChange(entry.id, 'complaintNumber', e.target.value)}
+                            onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'complaintNumber', e.target.value)}
                             placeholder="Enter complaint no"
                           />
                         </TableCell>
@@ -194,7 +192,7 @@ const CustomerComplaintTrendAnalysis: React.FC = () => {
                           <CustomTextField
                             size="small"
                             value={entry.productName}
-                            onChange={(e) => handleEntryChange(entry.id, 'productName', e.target.value)}
+                            onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'productName', e.target.value)}
                             placeholder="Enter product name"
                           />
                         </TableCell>
@@ -202,7 +200,7 @@ const CustomerComplaintTrendAnalysis: React.FC = () => {
                           <CustomTextField
                             size="small"
                             value={entry.supplierName}
-                            onChange={(e) => handleEntryChange(entry.id, 'supplierName', e.target.value)}
+                            onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'supplierName', e.target.value)}
                             placeholder="Enter supplier name"
                           />
                         </TableCell>
@@ -212,7 +210,7 @@ const CustomerComplaintTrendAnalysis: React.FC = () => {
                             multiline
                             rows={2}
                             value={entry.rootCause}
-                            onChange={(e) => handleEntryChange(entry.id, 'rootCause', e.target.value)}
+                            onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'rootCause', e.target.value)}
                             placeholder="Enter root cause"
                           />
                         </TableCell>
@@ -220,7 +218,7 @@ const CustomerComplaintTrendAnalysis: React.FC = () => {
                           <CustomTextField
                             size="small"
                             value={entry.classification}
-                            onChange={(e) => handleEntryChange(entry.id, 'classification', e.target.value)}
+                            onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'classification', e.target.value)}
                             placeholder="Enter classification"
                           />
                         </TableCell>
@@ -228,7 +226,7 @@ const CustomerComplaintTrendAnalysis: React.FC = () => {
                           <CustomTextField
                             size="small"
                             value={entry.occurrence}
-                            onChange={(e) => handleEntryChange(entry.id, 'occurrence', e.target.value)}
+                            onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'occurrence', e.target.value)}
                             placeholder="Enter occurrence"
                           />
                         </TableCell>
@@ -285,7 +283,6 @@ const CustomerComplaintTrendAnalysis: React.FC = () => {
           </Stack>
 
         </Box>
-      </ParentCard>
     </PageContainer>
   );
 };
