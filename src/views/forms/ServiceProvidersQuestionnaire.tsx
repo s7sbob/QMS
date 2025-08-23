@@ -9,7 +9,6 @@ import {
   Button,
   Card,
   CardContent,
-  Divider,
   Table,
   TableBody,
   TableCell,
@@ -21,10 +20,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Checkbox,
-  Select,
-  MenuItem,
-  InputLabel
+  MenuItem
 } from '@mui/material';
 import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 
@@ -35,7 +31,7 @@ import CustomTextField from 'src/components/forms/theme-elements/CustomTextField
 import CustomFormLabel from 'src/components/forms/theme-elements/CustomFormLabel';
 import CustomRadio from 'src/components/forms/theme-elements/CustomRadio';
 import CustomSelect from 'src/components/forms/theme-elements/CustomSelect';
-import ParentCard from 'src/components/shared/ParentCard';
+
 
 const BCrumb = [
   {
@@ -272,7 +268,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
       { id: 'perf_3', question: 'How did the service provider handle the complaints, if any?', comments: '', score: 0 },
       { id: 'perf_4', question: 'Is there any opened complaints or any pended CAPA?', comments: '', score: 0 }
     ],
-    auditReportCAPAAcceptance: '',
+    auditReportCAPAAcceptance: "na",
     finalQualificationStatus: '',
     serviceProviderName: '',
     serviceProviderDesignation: '',
@@ -406,7 +402,6 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
     <PageContainer title="Service Providers Questionnaire" description="Healthcare Division Service Providers Questionnaire">
       <Breadcrumb title="Service Providers Questionnaire" items={BCrumb} />
       
-      <ParentCard title="Healthcare Division - Service Provider's Questionnaire">
         <Typography variant="body2" sx={{ mb: 2, fontStyle: 'italic', color: 'text.secondary' }}>
           Code#: QA-SOP-FRM-016.001/06 | Scoring section to be filled by Cigalah only
         </Typography>
@@ -429,7 +424,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                     variant="outlined"
                     fullWidth
                     value={formData.companyName}
-                    onChange={(e) => handleInputChange('companyName', e.target.value)}
+                    onChange={(e: { target: { value: any; }; }) => handleInputChange('companyName', e.target.value)}
                   />
                 </Grid>
                 
@@ -442,7 +437,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                     multiline
                     rows={3}
                     value={formData.address}
-                    onChange={(e) => handleInputChange('address', e.target.value)}
+                    onChange={(e: { target: { value: any; }; }) => handleInputChange('address', e.target.value)}
                   />
                 </Grid>
                 
@@ -454,7 +449,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                     fullWidth
                     type="email"
                     value={formData.genericEmail}
-                    onChange={(e) => handleInputChange('genericEmail', e.target.value)}
+                    onChange={(e: { target: { value: any; }; }) => handleInputChange('genericEmail', e.target.value)}
                   />
                 </Grid>
                 
@@ -475,7 +470,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                                   variant="outlined"
                                   fullWidth
                                   value={person.name}
-                                  onChange={(e) => handleContactPersonChange(index, 'name', e.target.value)}
+                                  onChange={(e: { target: { value: string; }; }) => handleContactPersonChange(index, 'name', e.target.value)}
                                 />
                               </Grid>
                               <Grid item xs={12}>
@@ -484,7 +479,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                                   variant="outlined"
                                   fullWidth
                                   value={person.position}
-                                  onChange={(e) => handleContactPersonChange(index, 'position', e.target.value)}
+                                  onChange={(e: { target: { value: string; }; }) => handleContactPersonChange(index, 'position', e.target.value)}
                                 />
                               </Grid>
                               <Grid item xs={12}>
@@ -494,7 +489,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                                   fullWidth
                                   type="email"
                                   value={person.email}
-                                  onChange={(e) => handleContactPersonChange(index, 'email', e.target.value)}
+                                  onChange={(e: { target: { value: string; }; }) => handleContactPersonChange(index, 'email', e.target.value)}
                                 />
                               </Grid>
                               <Grid item xs={12}>
@@ -503,7 +498,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                                   variant="outlined"
                                   fullWidth
                                   value={person.phone}
-                                  onChange={(e) => handleContactPersonChange(index, 'phone', e.target.value)}
+                                  onChange={(e: { target: { value: string; }; }) => handleContactPersonChange(index, 'phone', e.target.value)}
                                 />
                               </Grid>
                             </Grid>
@@ -565,7 +560,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                               multiline
                               rows={3}
                               value={formData.qualitySystemDescription}
-                              onChange={(e) => handleInputChange('qualitySystemDescription', e.target.value)}
+                              onChange={(e: { target: { value: any; }; }) => handleInputChange('qualitySystemDescription', e.target.value)}
                             />
                           </Box>
                         )}
@@ -596,7 +591,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                           rows={2}
                           placeholder="Describe certificates or attach files"
                           value={formData.sfdaCertificates}
-                          onChange={(e) => handleInputChange('sfdaCertificates', e.target.value)}
+                          onChange={(e: { target: { value: any; }; }) => handleInputChange('sfdaCertificates', e.target.value)}
                         />
                       </Box>
                     )}
@@ -625,7 +620,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                           rows={2}
                           placeholder="Describe certificates or attach files"
                           value={formData.isoCertificates}
-                          onChange={(e) => handleInputChange('isoCertificates', e.target.value)}
+                          onChange={(e: { target: { value: any; }; }) => handleInputChange('isoCertificates', e.target.value)}
                         />
                       </Box>
                     )}
@@ -734,7 +729,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                                 multiline
                                 rows={2}
                                 value={question.comments}
-                                onChange={(e) => handleQuestionChange('personnelQuestions', question.id, 'comments', e.target.value)}
+                                onChange={(e: { target: { value: any; }; }) => handleQuestionChange('personnelQuestions', question.id, 'comments', e.target.value)}
                                 placeholder="To be filled by Cigalah"
                               />
                             </TableCell>
@@ -744,7 +739,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                                 type="number"
                                 inputProps={{ min: 1, max: 5 }}
                                 value={question.score}
-                                onChange={(e) => handleQuestionChange('personnelQuestions', question.id, 'score', parseInt(e.target.value) || 0)}
+                                onChange={(e: { target: { value: string; }; }) => handleQuestionChange('personnelQuestions', question.id, 'score', parseInt(e.target.value) || 0)}
                                 placeholder="1-5"
                               />
                             </TableCell>
@@ -806,7 +801,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                                 multiline
                                 rows={2}
                                 value={question.comments}
-                                onChange={(e) => handleQuestionChange('complaintsQuestions', question.id, 'comments', e.target.value)}
+                                onChange={(e: { target: { value: any; }; }) => handleQuestionChange('complaintsQuestions', question.id, 'comments', e.target.value)}
                                 placeholder="To be filled by Cigalah"
                               />
                             </TableCell>
@@ -816,7 +811,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                                 type="number"
                                 inputProps={{ min: 1, max: 5 }}
                                 value={question.score}
-                                onChange={(e) => handleQuestionChange('complaintsQuestions', question.id, 'score', parseInt(e.target.value) || 0)}
+                                onChange={(e: { target: { value: string; }; }) => handleQuestionChange('complaintsQuestions', question.id, 'score', parseInt(e.target.value) || 0)}
                                 placeholder="1-5"
                               />
                             </TableCell>
@@ -861,7 +856,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                 <FormControl fullWidth>
                   <CustomSelect
                     value={formData.selectedServiceType}
-                    onChange={(e) => handleInputChange('selectedServiceType', e.target.value)}
+                    onChange={(e: { target: { value: any; }; }) => handleInputChange('selectedServiceType', e.target.value)}
                   >
                     <MenuItem value="temperature_qualification">1.0 Temperature qualification, monitoring and calibration service</MenuItem>
                     <MenuItem value="maintenance">2.0 Maintenance service</MenuItem>
@@ -915,7 +910,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                             multiline
                             rows={2}
                             value={question.comments}
-                            onChange={(e) => handleQuestionChange(getCurrentOperationsSectionName() as any, question.id, 'comments', e.target.value)}
+                            onChange={(e: { target: { value: any; }; }) => handleQuestionChange(getCurrentOperationsSectionName() as any, question.id, 'comments', e.target.value)}
                             placeholder="To be filled by Cigalah"
                           />
                         </TableCell>
@@ -925,7 +920,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                             type="number"
                             inputProps={{ min: 1, max: 5 }}
                             value={question.score}
-                            onChange={(e) => handleQuestionChange(getCurrentOperationsSectionName() as any, question.id, 'score', parseInt(e.target.value) || 0)}
+                            onChange={(e: { target: { value: string; }; }) => handleQuestionChange(getCurrentOperationsSectionName() as any, question.id, 'score', parseInt(e.target.value) || 0)}
                             placeholder="1-5"
                           />
                         </TableCell>
@@ -973,7 +968,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                             rows={3}
                             fullWidth
                             value={question.comments}
-                            onChange={(e) => handlePerformanceQuestionChange(question.id, 'comments', e.target.value)}
+                            onChange={(e: { target: { value: any; }; }) => handlePerformanceQuestionChange(question.id, 'comments', e.target.value)}
                             placeholder="To be filled by Cigalah"
                           />
                         </TableCell>
@@ -983,7 +978,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                             type="number"
                             inputProps={{ min: 1, max: 5 }}
                             value={question.score}
-                            onChange={(e) => handlePerformanceQuestionChange(question.id, 'score', parseInt(e.target.value) || 0)}
+                            onChange={(e: { target: { value: string; }; }) => handlePerformanceQuestionChange(question.id, 'score', parseInt(e.target.value) || 0)}
                             placeholder="1-5"
                           />
                         </TableCell>
@@ -1085,14 +1080,14 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                         <CustomTextField
                           size="small"
                           value={formData.serviceProviderName}
-                          onChange={(e) => handleInputChange('serviceProviderName', e.target.value)}
+                          onChange={(e: { target: { value: any; }; }) => handleInputChange('serviceProviderName', e.target.value)}
                         />
                       </TableCell>
                       <TableCell>
                         <CustomTextField
                           size="small"
                           value={formData.serviceProviderDesignation}
-                          onChange={(e) => handleInputChange('serviceProviderDesignation', e.target.value)}
+                          onChange={(e: { target: { value: any; }; }) => handleInputChange('serviceProviderDesignation', e.target.value)}
                         />
                       </TableCell>
                       <TableCell>
@@ -1105,7 +1100,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                           size="small"
                           type="date"
                           value={formData.serviceProviderDate}
-                          onChange={(e) => handleInputChange('serviceProviderDate', e.target.value)}
+                          onChange={(e: { target: { value: any; }; }) => handleInputChange('serviceProviderDate', e.target.value)}
                         />
                       </TableCell>
                     </TableRow>
@@ -1115,7 +1110,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                         <CustomTextField
                           size="small"
                           value={formData.cigalahQAName}
-                          onChange={(e) => handleInputChange('cigalahQAName', e.target.value)}
+                          onChange={(e: { target: { value: any; }; }) => handleInputChange('cigalahQAName', e.target.value)}
                         />
                       </TableCell>
                       <TableCell>Quality Assurance</TableCell>
@@ -1129,7 +1124,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                           size="small"
                           type="date"
                           value={formData.cigalahQADate}
-                          onChange={(e) => handleInputChange('cigalahQADate', e.target.value)}
+                          onChange={(e: { target: { value: any; }; }) => handleInputChange('cigalahQADate', e.target.value)}
                         />
                       </TableCell>
                     </TableRow>
@@ -1145,7 +1140,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                   multiline
                   rows={4}
                   value={formData.conclusionRecommendations}
-                  onChange={(e) => handleInputChange('conclusionRecommendations', e.target.value)}
+                  onChange={(e: { target: { value: any; }; }) => handleInputChange('conclusionRecommendations', e.target.value)}
                   placeholder="Enter conclusion and recommendations..."
                 />
               </Box>
@@ -1159,7 +1154,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
                       fullWidth
                       placeholder="QA Manager Name"
                       value={formData.qaManagerName}
-                      onChange={(e) => handleInputChange('qaManagerName', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('qaManagerName', e.target.value)}
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
@@ -1172,7 +1167,7 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
 ="date"
                       placeholder="Signature and date"
                       value={formData.qaManagerDate}
-                      onChange={(e) => handleInputChange('qaManagerDate', e.target.value)}
+                      onChange={(e: { target: { value: any; }; }) => handleInputChange('qaManagerDate', e.target.value)}
                     />
                   </Grid>
                 </Grid>
@@ -1204,7 +1199,6 @@ const ServiceProvidersQuestionnaire: React.FC = () => {
           </Stack>
 
         </Box>
-      </ParentCard>
     </PageContainer>
   );
 };

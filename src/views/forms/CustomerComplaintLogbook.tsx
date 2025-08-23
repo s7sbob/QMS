@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Grid,
   Box,
   Typography,
   Button,
@@ -25,9 +24,7 @@ import Breadcrumb from 'src/layouts/full/shared/breadcrumb/Breadcrumb';
 import PageContainer from 'src/components/container/PageContainer';
 
 import CustomTextField from 'src/components/forms/theme-elements/CustomTextField';
-import CustomFormLabel from 'src/components/forms/theme-elements/CustomFormLabel';
-import CustomSelect from 'src/components/forms/theme-elements/CustomSelect';
-import ParentCard from 'src/components/shared/ParentCard';
+
 
 const BCrumb = [
   {
@@ -120,7 +117,6 @@ const CustomerComplaintLogbook: React.FC = () => {
     <PageContainer title="Customer Complaint Logbook" description="Healthcare Division Customer Complaint Logbook">
       <Breadcrumb title="Customer Complaint Logbook" items={BCrumb} />
       
-      <ParentCard title="Healthcare Division - Customer Complaint Logbook">
         <Typography variant="body2" sx={{ mb: 2, fontStyle: 'italic', color: 'text.secondary' }}>
           Code #: QA-SOP-FRM-007.002/03
         </Typography>
@@ -167,7 +163,7 @@ const CustomerComplaintLogbook: React.FC = () => {
                             <CustomTextField
                               size="small"
                               value={entry.complaintNumber}
-                              onChange={(e) => handleEntryChange(entry.id, 'complaintNumber', e.target.value)}
+                              onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'complaintNumber', e.target.value)}
                               placeholder="Enter complaint #"
                             />
                           </TableCell>
@@ -183,7 +179,7 @@ const CustomerComplaintLogbook: React.FC = () => {
                             <CustomTextField
                               size="small"
                               value={entry.complaintSource}
-                              onChange={(e) => handleEntryChange(entry.id, 'complaintSource', e.target.value)}
+                              onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'complaintSource', e.target.value)}
                               placeholder="Enter source"
                             />
                           </TableCell>
@@ -191,7 +187,7 @@ const CustomerComplaintLogbook: React.FC = () => {
                             <CustomTextField
                               size="small"
                               value={entry.productDescription}
-                              onChange={(e) => handleEntryChange(entry.id, 'productDescription', e.target.value)}
+                              onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'productDescription', e.target.value)}
                               placeholder="Enter product description"
                             />
                           </TableCell>
@@ -199,7 +195,7 @@ const CustomerComplaintLogbook: React.FC = () => {
                             <CustomTextField
                               size="small"
                               value={entry.batchNumber}
-                              onChange={(e) => handleEntryChange(entry.id, 'batchNumber', e.target.value)}
+                              onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'batchNumber', e.target.value)}
                               placeholder="Enter batch #"
                             />
                           </TableCell>
@@ -209,7 +205,7 @@ const CustomerComplaintLogbook: React.FC = () => {
                               multiline
                               rows={2}
                               value={entry.complaintDescription}
-                              onChange={(e) => handleEntryChange(entry.id, 'complaintDescription', e.target.value)}
+                              onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'complaintDescription', e.target.value)}
                               placeholder="Enter complaint description"
                             />
                           </TableCell>
@@ -219,7 +215,7 @@ const CustomerComplaintLogbook: React.FC = () => {
                               multiline
                               rows={2}
                               value={entry.actionsTaken}
-                              onChange={(e) => handleEntryChange(entry.id, 'actionsTaken', e.target.value)}
+                              onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'actionsTaken', e.target.value)}
                               placeholder="Enter actions taken"
                             />
                           </TableCell>
@@ -227,7 +223,7 @@ const CustomerComplaintLogbook: React.FC = () => {
                             <CustomTextField
                               size="small"
                               value={entry.capaNumber}
-                              onChange={(e) => handleEntryChange(entry.id, 'capaNumber', e.target.value)}
+                              onChange={(e: { target: { value: any; }; }) => handleEntryChange(entry.id, 'capaNumber', e.target.value)}
                               placeholder="Enter CAPA #"
                             />
                           </TableCell>
@@ -294,7 +290,6 @@ const CustomerComplaintLogbook: React.FC = () => {
           </Stack>
 
         </Box>
-      </ParentCard>
     </PageContainer>
   );
 };
