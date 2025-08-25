@@ -1,14 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import {
-  Box,
   Grid,
   Stack,
   Typography,
-  TextField,
-  Button,
-  Card,
-  CardContent,
   Checkbox,
   FormControlLabel,
 } from '@mui/material';
@@ -93,33 +88,31 @@ const RecallChecklist: React.FC = () => {
             <CustomFormLabel htmlFor="requestDate">Date</CustomFormLabel>
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <DatePicker
-                format="dd/MM/yyyy"
                 value={requestDate}
-                onChange={(newValue) => setRequestDate(newValue)}
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                  },
-                }}
+                onChange={(newValue: Date | null) => setRequestDate(newValue)}
+                renderInput={(params) => <CustomTextField {...params} fullWidth />}
               />
             </LocalizationProvider>
           </Grid>
 
           <Grid item xs={12}>
             <Typography variant="h6" mt={3} mb={2}>Checklist Items</Typography>
-            {checklist.map((item) => (
-              <FormControlLabel
-                key={item.id}
-                control={
-                  <Checkbox
-                    checked={item.checked}
-                    onChange={() => handleCheckboxChange(item.id)}
-                    name={`checkbox-${item.id}`}
+            <Grid container spacing={1}>
+              {checklist.map((item) => (
+                <Grid item xs={12} key={item.id}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={item.checked}
+                        onChange={() => handleCheckboxChange(item.id)}
+                        name={`checkbox-${item.id}`}
+                      />
+                    }
+                    label={`${item.id}. ${item.text}`}
                   />
-                }
-                label={`${item.id}. ${item.text}`}
-              />
-            ))}
+                </Grid>
+              ))}
+            </Grid>
           </Grid>
 
           <Grid item xs={12}>
@@ -133,27 +126,17 @@ const RecallChecklist: React.FC = () => {
               <CustomFormLabel htmlFor="preparedBySignDate">Signature/Date:</CustomFormLabel>
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <DatePicker
-                  format="dd/MM/yyyy"
                   value={preparedBySignDate}
-                  onChange={(newValue) => setPreparedBySignDate(newValue)}
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                    },
-                  }}
+                  onChange={(newValue: Date | null) => setPreparedBySignDate(newValue)}
+                  renderInput={(params) => <CustomTextField {...params} fullWidth />}
                 />
               </LocalizationProvider>
               <CustomFormLabel htmlFor="qaManagerApprovalSignDate">Signature/Date:</CustomFormLabel>
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <DatePicker
-                  format="dd/MM/yyyy"
                   value={qaManagerApprovalSignDate}
-                  onChange={(newValue) => setQaManagerApprovalSignDate(newValue)}
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                    },
-                  }}
+                  onChange={(newValue: Date | null) => setQaManagerApprovalSignDate(newValue)}
+                  renderInput={(params) => <CustomTextField {...params} fullWidth />}
                 />
               </LocalizationProvider>
             </Stack>
@@ -170,5 +153,3 @@ const RecallChecklist: React.FC = () => {
 };
 
 export default RecallChecklist;
-
-

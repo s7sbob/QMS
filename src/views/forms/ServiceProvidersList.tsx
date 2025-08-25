@@ -1,14 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import {
-  Box,
   Grid,
   Stack,
   Typography,
-  TextField,
   Button,
-  Card,
-  CardContent,
   Table,
   TableBody,
   TableCell,
@@ -71,6 +67,11 @@ const ServiceProvidersList: React.FC = () => {
     });
   };
 
+  const handleRemoveEntry = (index: number) => {
+    const updatedEntries = entries.filter((_, i) => i !== index);
+    setEntries(updatedEntries);
+  };
+
   return (
     <PageContainer title="Service Providers List" description="Service Providers List Form">
       <Breadcrumb title="Service Providers List" items={BCrumb} />
@@ -90,14 +91,9 @@ const ServiceProvidersList: React.FC = () => {
             <CustomFormLabel htmlFor="date">Date</CustomFormLabel>
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <DatePicker
-                format="dd/MM/yyyy"
                 value={date}
-                onChange={(newValue) => setDate(newValue)}
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                  },
-                }}
+                onChange={(newValue: Date | null) => setDate(newValue)}
+                renderInput={(params) => <CustomTextField {...params} fullWidth />}
               />
             </LocalizationProvider>
           </Grid>
@@ -118,7 +114,7 @@ const ServiceProvidersList: React.FC = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {entries.map((entry) => (
+                  {entries.map((entry, index) => (
                     <TableRow key={entry.sn}>
                       <TableCell>{entry.sn}</TableCell>
                       <TableCell>{entry.serviceProviderName}</TableCell>
@@ -127,7 +123,12 @@ const ServiceProvidersList: React.FC = () => {
                       <TableCell>{entry.contactPersonsInformation}</TableCell>
                       <TableCell>{entry.percentage}</TableCell>
                       <TableCell>
-                        <Button variant="outlined" color="error" size="small">
+                        <Button 
+                          variant="outlined" 
+                          color="error" 
+                          size="small" 
+                          onClick={() => handleRemoveEntry(index)}
+                        >
                           Remove
                         </Button>
                       </TableCell>
@@ -147,16 +148,11 @@ const ServiceProvidersList: React.FC = () => {
                     <TableCell>
                       <LocalizationProvider dateAdapter={AdapterDateFns}>
                         <DatePicker
-                          format="dd/MM/yyyy"
                           value={newEntry.serviceQualificationDate}
-                          onChange={(newValue) =>
+                          onChange={(newValue: Date | null) =>
                             setNewEntry({ ...newEntry, serviceQualificationDate: newValue })
                           }
-                          slotProps={{
-                            textField: {
-                              fullWidth: true,
-                            },
-                          }}
+                          renderInput={(params) => <CustomTextField {...params} fullWidth />}
                         />
                       </LocalizationProvider>
                     </TableCell>
@@ -222,5 +218,3 @@ const ServiceProvidersList: React.FC = () => {
 };
 
 export default ServiceProvidersList;
-
-
