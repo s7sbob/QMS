@@ -186,6 +186,42 @@ const Menuitems: MenuitemsType[] = [
     icon: IconFileDescription,
     href: '/forms/simple-test',
   },
+  {
+    id: uniqueId(),
+    title: 'Service Providers List',
+    icon: IconFileDescription,
+    href: '/forms/service-providers-list',
+  },
+  {
+    id: uniqueId(),
+    title: 'Recall Notification Letter',
+    icon: IconFileDescription,
+    href: '/forms/recall-notification-letter',
+  },
+  {
+    id: uniqueId(),
+    title: 'Report of Recall Request',
+    icon: IconFileDescription,
+    href: '/forms/report-of-recall-request',
+  },
+  {
+    id: uniqueId(),
+    title: 'Recall Checklist',
+    icon: IconFileDescription,
+    href: '/forms/recall-checklist',
+  },
+  {
+    id: uniqueId(),
+    title: 'Risk Plan',
+    icon: IconFileDescription,
+    href: '/forms/risk-plan',
+  },
+  {
+    id: uniqueId(),
+    title: 'Risk Template',
+    icon: IconFileDescription,
+    href: '/forms/risk-template',
+  },
 
   // {
   //   id: uniqueId(),
