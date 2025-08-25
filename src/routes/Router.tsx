@@ -51,6 +51,14 @@ const ContactList = Loadable(lazy(() => import('../views/forms/ContactList')));
 const QRMTeamApprovalForm = Loadable(lazy(() => import('../views/forms/QRMTeamApprovalForm')));
 const SimpleTestForm = Loadable(lazy(() => import('../views/forms/SimpleTestForm')));
 
+// New forms
+const ServiceProvidersList = Loadable(lazy(() => import('../views/forms/ServiceProvidersList')));
+const RecallNotificationLetter = Loadable(lazy(() => import('../views/forms/RecallNotificationLetter')));
+const ReportOfRecallRequest = Loadable(lazy(() => import('../views/forms/ReportOfRecallRequest')));
+const RecallChecklist = Loadable(lazy(() => import('../views/forms/RecallChecklist')));
+const RiskPlan = Loadable(lazy(() => import('../views/forms/RiskPlan')));
+const RiskTemplate = Loadable(lazy(() => import('../views/forms/RiskTemplate')));
+
 // authentication
 const Login = Loadable(lazy(() => import('../views/authentication/auth/Login')));
 const Register2 = Loadable(lazy(() => import('../views/authentication/auth/Register')));
@@ -112,6 +120,14 @@ const Router = [
       { path: '/forms/recall-logbook', element: <RecallLogbook /> },
       { path: '/forms/contact-list', element: <ContactList /> },
       { path: '/forms/qrm-team-approval', element: <QRMTeamApprovalForm /> },
+
+      // New forms routes
+      { path: '/forms/service-providers-list', element: <ServiceProvidersList /> },
+      { path: '/forms/recall-notification-letter', element: <RecallNotificationLetter /> },
+      { path: '/forms/report-of-recall-request', element: <ReportOfRecallRequest /> },
+      { path: '/forms/recall-checklist', element: <RecallChecklist /> },
+      { path: '/forms/risk-plan', element: <RiskPlan /> },
+      { path: '/forms/risk-template', element: <RiskTemplate /> },
 
       // لو كتب أي شيء مش معروف نوجهه لصفحة 404
       { path: '*', element: <Navigate to="/auth/404" /> },
