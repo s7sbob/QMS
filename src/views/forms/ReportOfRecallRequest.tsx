@@ -1,14 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import {
-  Box,
   Grid,
   Stack,
   Typography,
-  TextField,
-  Button,
-  Card,
-  CardContent,
   RadioGroup,
   FormControlLabel,
   Radio,
@@ -82,14 +77,9 @@ const ReportOfRecallRequest: React.FC = () => {
             <CustomFormLabel htmlFor="requestDate">Date</CustomFormLabel>
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <DatePicker
-                format="dd/MM/yyyy"
                 value={requestDate}
-                onChange={(newValue) => setRequestDate(newValue)}
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                  },
-                }}
+                onChange={(newValue: Date | null) => setRequestDate(newValue)}
+                renderInput={(params) => <CustomTextField {...params} fullWidth />}
               />
             </LocalizationProvider>
           </Grid>
@@ -197,14 +187,9 @@ const ReportOfRecallRequest: React.FC = () => {
             <CustomFormLabel htmlFor="expiryDate">Expiry Date</CustomFormLabel>
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <DatePicker
-                format="dd/MM/yyyy"
                 value={expiryDate}
-                onChange={(newValue) => setExpiryDate(newValue)}
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                  },
-                }}
+                onChange={(newValue: Date | null) => setExpiryDate(newValue)}
+                renderInput={(params) => <CustomTextField {...params} fullWidth />}
               />
             </LocalizationProvider>
           </Grid>
@@ -274,14 +259,9 @@ const ReportOfRecallRequest: React.FC = () => {
             <CustomFormLabel htmlFor="finalDecisionDate">Date</CustomFormLabel>
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <DatePicker
-                format="dd/MM/yyyy"
                 value={finalDecisionDate}
-                onChange={(newValue) => setFinalDecisionDate(newValue)}
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                  },
-                }}
+                onChange={(newValue: Date | null) => setFinalDecisionDate(newValue)}
+                renderInput={(params) => <CustomTextField {...params} fullWidth />}
               />
             </LocalizationProvider>
           </Grid>
@@ -311,27 +291,17 @@ const ReportOfRecallRequest: React.FC = () => {
               <CustomFormLabel htmlFor="preparedBySignDate">Signature/Date:</CustomFormLabel>
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <DatePicker
-                  format="dd/MM/yyyy"
                   value={preparedBySignDate}
-                  onChange={(newValue) => setPreparedBySignDate(newValue)}
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                    },
-                  }}
+                  onChange={(newValue: Date | null) => setPreparedBySignDate(newValue)}
+                  renderInput={(params) => <CustomTextField {...params} fullWidth />}
                 />
               </LocalizationProvider>
               <CustomFormLabel htmlFor="qaManagerApprovalSignDate">Signature/Date:</CustomFormLabel>
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <DatePicker
-                  format="dd/MM/yyyy"
                   value={qaManagerApprovalSignDate}
-                  onChange={(newValue) => setQaManagerApprovalSignDate(newValue)}
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                    },
-                  }}
+                  onChange={(newValue: Date | null) => setQaManagerApprovalSignDate(newValue)}
+                  renderInput={(params) => <CustomTextField {...params} fullWidth />}
                 />
               </LocalizationProvider>
             </Stack>
@@ -348,5 +318,3 @@ const ReportOfRecallRequest: React.FC = () => {
 };
 
 export default ReportOfRecallRequest;
-
-

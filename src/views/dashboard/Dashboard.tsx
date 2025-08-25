@@ -63,7 +63,7 @@ const Dashboard = () => {
       path: '/change-control'
     },
     {
-      title: 'VENDOR QUALIFICATION',
+      title: 'Vendor / customer management',
       icon: BusinessOutlinedIcon,
       path: '/vendor'
     },
