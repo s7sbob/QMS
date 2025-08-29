@@ -16,7 +16,7 @@ interface MenuitemsType {
   variant?: string;
   external?: boolean;
 }
-import { IconUserCircle, IconCertificate, IconHierarchy, IconFileDescription } from '@tabler/icons-react';
+import { IconUserCircle, IconCertificate, IconHierarchy } from '@tabler/icons-react';
 
 const Menuitems: MenuitemsType[] = [
   {

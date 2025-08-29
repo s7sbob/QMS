@@ -1,6 +1,6 @@
 // src/components/SplitFormsList.tsx
 import React from 'react';
-import { Grid, Card, CardContent, Typography, styled, Chip, Box, Theme, Paper, Divider } from '@mui/material';
+import { Grid, Card, CardContent, Typography, styled, Chip, Box, Theme, Paper } from '@mui/material';
 import { Link } from 'react-router-dom';
 import PageContainer from 'src/components/container/PageContainer';
 import { DashboardModule, FormSection, FormItem } from '../types/dashboard.types';
@@ -52,7 +52,6 @@ const SplitFormsList: React.FC<SplitFormsListProps> = ({ module }) => {
     );
   }
 
-  const totalForms = module.sections.reduce((total, section) => total + section.forms.length, 0);
 
   return (
     <PageContainer title={module.title} description={module.description}>
