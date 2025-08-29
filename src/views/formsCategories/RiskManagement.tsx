@@ -1,11 +1,11 @@
-// src/pages/DocumentationForms.tsx
+// src/pages/RiskManagement.tsx
 import React from 'react';
 import FormsList from 'src/components/FormsList';
 import { getModuleById } from 'src/config/dashboardConfig';
 
-const DocumentationForms: React.FC = () => {
-  const module = getModuleById('documentation-control');
+const RiskManagement: React.FC = () => {
+  const module = getModuleById('risk-assessment');
   return <FormsList module={module} />;
 };
 
-export default DocumentationForms;
+export default RiskManagement;

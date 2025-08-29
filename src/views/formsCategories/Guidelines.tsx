@@ -1,11 +1,11 @@
-// src/pages/DocumentationForms.tsx
+// src/pages/Guidelines.tsx
 import React from 'react';
 import FormsList from 'src/components/FormsList';
 import { getModuleById } from 'src/config/dashboardConfig';
 
-const DocumentationForms: React.FC = () => {
-  const module = getModuleById('documentation-control');
+const Guidelines: React.FC = () => {
+  const module = getModuleById('guidelines');
   return <FormsList module={module} />;
 };
 
-export default DocumentationForms;
+export default Guidelines;
