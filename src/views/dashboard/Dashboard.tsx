@@ -35,12 +35,12 @@ const Dashboard = () => {
     {
       title: 'DOCUMENTATION CONTROL',
       icon: ArticleOutlinedIcon,
-      path: '/documentation-control'
+      path: '/documentation-forms'
     },
     {
       title: 'DEVIATION, NON-CONFORMITY AND CAPA SYSTEM',
       icon: ErrorOutlineOutlinedIcon,
-      path: '/deviation-system'
+      path: '/deviation-capa-forms'
     },
     {
       title: 'RISK ASSESSMENT MANAGEMENT',
@@ -50,7 +50,7 @@ const Dashboard = () => {
     {
       title: 'TRAINING EMPLOYEES',
       icon: SchoolOutlinedIcon,
-      path: '/training'
+      path: '/training-forms'
     },
     {
       title: 'VALIDATION & QUALIFICATION',
@@ -60,7 +60,7 @@ const Dashboard = () => {
     {
       title: 'CHANGE CONTROL',
       icon: SystemUpdateAltOutlinedIcon,
-      path: '/change-control'
+      path: '/change-control-forms'
     },
     {
       title: 'Vendor / customer management',
@@ -75,7 +75,7 @@ const Dashboard = () => {
     {
       title: 'AUDITING INTERNAL/EXTERNAL',
       icon: FindInPageOutlinedIcon,
-      path: '/audit'
+      path: '/auditing-forms'
     },
     {
       title: 'AI SUPPORT',

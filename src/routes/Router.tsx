@@ -59,6 +59,13 @@ const RecallChecklist = Loadable(lazy(() => import('../views/forms/RecallCheckli
 const RiskPlan = Loadable(lazy(() => import('../views/forms/RiskPlan')));
 const RiskTemplate = Loadable(lazy(() => import('../views/forms/RiskTemplate')));
 
+// **** New module pages ****
+const DocumentationForms = Loadable(lazy(() => import('../views/formsCategories/DocumentationForms')));
+const DeviationCAPAForms = Loadable(lazy(() => import('../views/formsCategories/DeviationCAPAForms')));
+const ChangeControlForms = Loadable(lazy(() => import('../views/formsCategories/ChangeControlForms')));
+// const TrainingForms = Loadable(lazy(() => import('../views/formsCategories/TrainingForms')));
+const AuditingForms = Loadable(lazy(() => import('../views/formsCategories/AuditingForms')));
+
 // authentication
 const Login = Loadable(lazy(() => import('../views/authentication/auth/Login')));
 const Register2 = Loadable(lazy(() => import('../views/authentication/auth/Register')));
@@ -81,9 +88,7 @@ const BlogPost = Loadable(lazy(() => import('../views/pages/frontend-pages/BlogP
 
 const Router = [
   {
-    // جميع هذه المسارات نريد حمايتها بالتوكن
     path: '/',
-    // نغلف الـ FullLayout بـ AuthGuard
     element: <FullLayout />,
     children: [
       { path: '/', element: <Dashboard /> },
@@ -101,6 +106,13 @@ const Router = [
       { path: '/ITManagementPage', element: <ITManagementPage /> },
       { path: '/SOPFullDocument', element: <SOPFullDocument /> },
       { path: '/documentation-control/Request_Form', element: <NewDocumentRequestForm /> },
+
+      // مسارات الصفحات الجديدة لكل قسم
+      { path: '/documentation-forms', element: <DocumentationForms /> },
+      { path: '/deviation-capa-forms', element: <DeviationCAPAForms /> },
+      { path: '/change-control-forms', element: <ChangeControlForms /> },
+      // { path: '/training-forms', element: <TrainingForms /> },
+      { path: '/auditing-forms', element: <AuditingForms /> },
 
       {
         path: '/all-notifications',
@@ -129,12 +141,10 @@ const Router = [
       { path: '/forms/risk-plan', element: <RiskPlan /> },
       { path: '/forms/risk-template', element: <RiskTemplate /> },
 
-      // لو كتب أي شيء مش معروف نوجهه لصفحة 404
       { path: '*', element: <Navigate to="/auth/404" /> },
     ],
   },
   {
-    // هذه المسارات لا نريد حمايتها (صفحات لوجن و ريجستر وغيرها)
     path: '/',
     element: <BlankLayout />,
     children: [
