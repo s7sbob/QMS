@@ -1,14 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import {
-  Box,
   Grid,
   Stack,
   Typography,
-  TextField,
   Button,
-  Card,
-  CardContent,
   Table,
   TableBody,
   TableCell,
@@ -194,14 +190,9 @@ const RiskTemplate: React.FC = () => {
                 <CustomFormLabel htmlFor="preparedBySignDate">Sig. / Date</CustomFormLabel>
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                   <DatePicker
-                    format="dd/MM/yyyy"
                     value={preparedBy.signDate}
-                    onChange={(newValue) => handlePersonSignatureChange('preparedBy', 'signDate', newValue)}
-                    slotProps={{
-                      textField: {
-                        fullWidth: true,
-                      },
-                    }}
+                    onChange={(newValue: Date | null) => handlePersonSignatureChange('preparedBy', 'signDate', newValue)}
+                    renderInput={(params) => <CustomTextField {...params} fullWidth />}
                   />
                 </LocalizationProvider>
               </Grid>
@@ -226,14 +217,9 @@ const RiskTemplate: React.FC = () => {
                 <CustomFormLabel htmlFor="reviewedBySignDate">Sig. / Date</CustomFormLabel>
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                   <DatePicker
-                    format="dd/MM/yyyy"
                     value={reviewedBy.signDate}
-                    onChange={(newValue) => handlePersonSignatureChange('reviewedBy', 'signDate', newValue)}
-                    slotProps={{
-                      textField: {
-                        fullWidth: true,
-                      },
-                    }}
+                    onChange={(newValue: Date | null) => handlePersonSignatureChange('reviewedBy', 'signDate', newValue)}
+                    renderInput={(params) => <CustomTextField {...params} fullWidth />}
                   />
                 </LocalizationProvider>
               </Grid>
@@ -258,14 +244,9 @@ const RiskTemplate: React.FC = () => {
                 <CustomFormLabel htmlFor="approvedBySignDate">Sig. / Date</CustomFormLabel>
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                   <DatePicker
-                    format="dd/MM/yyyy"
                     value={approvedBy.signDate}
-                    onChange={(newValue) => handlePersonSignatureChange('approvedBy', 'signDate', newValue)}
-                    slotProps={{
-                      textField: {
-                        fullWidth: true,
-                      },
-                    }}
+                    onChange={(newValue: Date | null) => handlePersonSignatureChange('approvedBy', 'signDate', newValue)}
+                    renderInput={(params) => <CustomTextField {...params} fullWidth />}
                   />
                 </LocalizationProvider>
               </Grid>
@@ -493,18 +474,13 @@ const RiskTemplate: React.FC = () => {
                       <TableCell>
                         <LocalizationProvider dateAdapter={AdapterDateFns}>
                           <DatePicker
-                            format="dd/MM/yyyy"
                             value={entry.issueDate}
-                            onChange={(newValue) => {
+                            onChange={(newValue: Date | null) => {
                               const updatedEntries = [...changeHistoryEntries];
                               updatedEntries[index].issueDate = newValue;
                               setChangeHistoryEntries(updatedEntries);
                             }}
-                            slotProps={{
-                              textField: {
-                                fullWidth: true,
-                              },
-                            }}
+                            renderInput={(params) => <CustomTextField {...params} fullWidth />}
                           />
                         </LocalizationProvider>
                       </TableCell>
@@ -561,5 +537,3 @@ const RiskTemplate: React.FC = () => {
 };
 
 export default RiskTemplate;
-
-

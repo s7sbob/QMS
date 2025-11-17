@@ -9,7 +9,7 @@ import { UserContext } from 'src/context/UserContext';
 const Profile: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const navigate = useNavigate();
-  
+
   // استخدام الـ context مع state محلي لمزامنة التحديثات تلقائيًا
   const userContext = useContext(UserContext);
   const [user, setUser] = useState(userContext);
@@ -27,14 +27,28 @@ const Profile: React.FC = () => {
   };
 
   // استخدام userRole مباشرة من الـ context لعرض المسمى الوظيفي
-  const jobTitle =     user?.Users_Departments_Users_Departments_User_IdToUser_Data?.[0]?.job_title || 'Job Title';
+  const jobTitle =
+    user?.Users_Departments_Users_Departments_User_IdToUser_Data?.[0]?.job_title || 'Job Title';
 
-
-  const handleLogout = () => {
+  const handleLogout = async () => {
     try {
-      // إزالة كل الكوكيز
+      // 1. Clear all cookies you set manually
       Cookies.remove('user', { path: '' });
       Cookies.remove('token', { path: '' });
+
+      // 2. Clear localStorage and sessionStorage
+      localStorage.removeItem('token');
+      sessionStorage.removeItem('token');
+      localStorage.clear();
+      sessionStorage.clear();
+
+      // 3. Call backend logout API to clear httpOnly cookie
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include', // important so cookies are sent
+      });
+
+      // 4. Redirect to login page
       navigate('/auth/login');
     } catch (error) {
       console.error('Logout error:', error);

@@ -51,6 +51,32 @@ interface SopHeader {
   Doc_Title_en: string;
 }
 
+const normalizeApiArray = <T,>(payload: unknown): T[] => {
+  if (Array.isArray(payload)) {
+    return payload as T[];
+  }
+  if (
+    payload &&
+    typeof payload === 'object' &&
+    Array.isArray((payload as { data?: unknown }).data)
+  ) {
+    return (payload as { data: T[] }).data;
+  }
+  return [];
+};
+
+const extractUsersArray = (payload: unknown): DeptUser[] => {
+  if (
+    payload &&
+    typeof payload === 'object' &&
+    'users' in payload &&
+    (payload as { users: unknown }).users !== undefined
+  ) {
+    return normalizeApiArray<DeptUser>((payload as { users: unknown }).users);
+  }
+  return normalizeApiArray<DeptUser>(payload);
+};
+
 const DistributionForm: React.FC = () => {
   const user = useContext<IUser | null>(UserContext);
   const compId = user?.compId;
@@ -79,7 +105,7 @@ const DistributionForm: React.FC = () => {
   useEffect(() => {
     axiosServices
       .get<SopHeader[]>('/api/sopheader/getAllSopHeaders')
-      .then(res => setHeaders(res.data || []))
+      .then(res => setHeaders(normalizeApiArray<SopHeader>(res.data)))
       .catch(err => console.error('Error loading headers:', err));
   }, []);
 
@@ -88,7 +114,7 @@ const DistributionForm: React.FC = () => {
     if (!compId) return;
     axiosServices
       .get<Department[]>(`/api/department/compdepartments/${compId}`)
-      .then(res => setDepartments(res.data || []))
+      .then(res => setDepartments(normalizeApiArray<Department>(res.data)))
       .catch(err => console.error('Error loading departments:', err));
   }, [compId]);
 
@@ -112,27 +138,45 @@ const DistributionForm: React.FC = () => {
     field: keyof Omit<CopyDetail, 'copyNumber'>,
     value: string
   ) => {
-    const updated = [...formData.copies];
-    (updated[index] as any)[field] = value;
-    setFormData(prev => ({ ...prev, copies: updated }));
+    setFormData(prev => {
+      const updated = prev.copies.map((copy, idx) => {
+        if (idx !== index) return copy;
+        const nextCopy: CopyDetail = {
+          ...copy,
+          [field]: value,
+        } as CopyDetail;
+        if (field === 'departmentId') {
+          nextCopy.receivedBy = '';
+        }
+        return nextCopy;
+      });
+      return { ...prev, copies: updated };
+    });
 
-    if (field === 'departmentId') {
-      // reset receivedBy
-      updated[index].receivedBy = '';
-      setFormData(prev => ({ ...prev, copies: updated }));
-      // fetch users for this department
-      axiosServices
-        .get<{ users: DeptUser[] }>(`/api/department/getdepartment/${value}`)
-        .then(res => {
-          const users = res.data.users || [];
-          setCopyUsers(prev => {
-            const arr = [...prev];
-            arr[index] = users;
-            return arr;
-          });
-        })
-        .catch(err => console.error('Error loading dept users:', err));
+    if (field !== 'departmentId') {
+      return;
     }
+
+    if (!value) {
+      setCopyUsers(prev => {
+        const arr = [...prev];
+        arr[index] = [];
+        return arr;
+      });
+      return;
+    }
+
+    axiosServices
+      .get(`/api/department/getdepartment/${value}`)
+      .then(res => {
+        const users = extractUsersArray(res.data);
+        setCopyUsers(prev => {
+          const arr = [...prev];
+          arr[index] = users;
+          return arr;
+        });
+      })
+      .catch(err => console.error('Error loading dept users:', err));
   };
 
   const addCopyDetail = () => {
