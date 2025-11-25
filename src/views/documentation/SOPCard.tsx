@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent, Typography, Box, Chip, Stack, CardActionArea } from '@mui/material';
 import { IconFileText } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
+import axiosServices from 'src/utils/axiosServices';
 
 export interface SopStatus {
   Id: string;
@@ -37,6 +38,19 @@ interface SOPCardProps {
   sop: SopHeader;
 }
 
+// Status names that should open in Request Form instead of SOP Full Document
+// These statuses indicate the document is in the request/approval workflow
+const REQUEST_FORM_STATUS_NAMES = [
+  'request for new creation',
+  'request for new creation approved',
+  'request for new creation rejected',
+  'request for new creation rejected by qa manager',
+  'new request',
+  'approved',
+  'rejected',
+  'rejected by qa manager',
+];
+
 const SOPCard: React.FC<SOPCardProps> = ({ sop }) => {
   const navigate = useNavigate();
 
@@ -48,11 +62,55 @@ const SOPCard: React.FC<SOPCardProps> = ({ sop }) => {
     "4": "success",   // Reviewed
     "5": "secondary", // Under Final Audit
     "6": "primary",   // Released
+    "8": "info",      // New Request
+    "12": "success",  // Approved
+    "13": "error",    // Rejected
+    "14": "error",    // Rejected by QA Manager
   };
 
-  const handleClick = () => {
-    // Navigate to the details page with the headerId in the query string
-    navigate(`/sopFullDocument?headerId=${sop.Id}`);
+  const handleClick = async () => {
+    // Check if status requires opening in Request Form (check by name, case-insensitive)
+    const statusName = sop.Sop_Status.Name_en?.toLowerCase() || '';
+    const shouldOpenRequestForm = REQUEST_FORM_STATUS_NAMES.some(
+      (name) => statusName.includes(name.toLowerCase()) || name.toLowerCase().includes(statusName)
+    );
+
+    console.log('SOPCard handleClick:', {
+      sopId: sop.Id,
+      statusId: sop.Sop_Status.Id,
+      statusName: sop.Sop_Status.Name_en,
+      statusNameLower: statusName,
+      shouldOpenRequestForm,
+    });
+
+    if (shouldOpenRequestForm) {
+      try {
+        // Get the docRequestForm by SOP Header ID
+        const response = await axiosServices.get(`/api/docrequest-form/bysopheader/${sop.Id}`);
+        if (response.data && response.data.Id) {
+          // Navigate to Request Form with the docRequestForm ID
+          console.log('Navigating to existing request form:', response.data.Id);
+          navigate(`/documentation-control/Request_Form/${response.data.Id}`);
+        } else {
+          // If no request form found, navigate to Request Form to create new
+          console.log('No request form found, navigating to create new request');
+          navigate(`/documentation-control/Request_Form?headerId=${sop.Id}`);
+        }
+      } catch (error: any) {
+        console.error('Error fetching doc request form:', error);
+        // If 404 (no request form exists), navigate to Request Form to create new
+        if (error.response?.status === 404) {
+          console.log('404 - No request form exists, navigating to create new request');
+          navigate(`/documentation-control/Request_Form?headerId=${sop.Id}`);
+        } else {
+          // For other errors, fallback to SOP Full Document
+          navigate(`/sopFullDocument?headerId=${sop.Id}`);
+        }
+      }
+    } else {
+      // Navigate to the details page with the headerId in the query string
+      navigate(`/sopFullDocument?headerId=${sop.Id}`);
+    }
   };
 
   return (

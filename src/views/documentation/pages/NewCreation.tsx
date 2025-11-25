@@ -234,10 +234,10 @@ const NewCreation: React.FC = () => {
   /* ───────────────────────────── واجهة تحميل المستخدم ───────────────────── */
   if (!user || !compId) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-        <CircularProgress />
-        <Typography variant="h6" sx={{ ml: 2 }}>
-          جاري تحميل بيانات المستخدم…
+      <Box sx={{ width: '100%', height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+        <CircularProgress size={50} />
+        <Typography variant="h6" mt={2} color="primary">
+          Loading user data...
         </Typography>
       </Box>
     );

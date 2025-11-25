@@ -18,6 +18,7 @@ import {
   MenuItem,
   InputLabel,
   FormControl,
+  CircularProgress,
 } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
 import { IconPencil, IconDeviceFloppy, IconTrash } from '@tabler/icons-react';
@@ -66,6 +67,7 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user }) => {
   const [roles, setRoles] = useState<Role[]>([]);
   const [departments, setDepartments] = useState<DepartmentOption[]>([]);
   const [departmentAssignments, setDepartmentAssignments] = useState<DepartmentAssignment[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
   // When a user is selected, prefill the editedUser state
   useEffect(() => {
@@ -105,24 +107,22 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user }) => {
 
   // Load companies and roles on component mount
   useEffect(() => {
-    const loadCompanies = async () => {
+    const loadData = async () => {
+      setLoading(true);
       try {
-        const { data } = await axiosServices.get('/api/companies/getAllCompanies');
-        setCompanies(data);
+        const [companiesRes, rolesRes] = await Promise.all([
+          axiosServices.get('/api/companies/getAllCompanies'),
+          axiosServices.get('/api/userroles/getAll'),
+        ]);
+        setCompanies(companiesRes.data);
+        setRoles(rolesRes.data);
       } catch (error) {
-        console.error('Error fetching companies:', error);
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
       }
     };
-    const loadRoles = async () => {
-      try {
-        const { data } = await axiosServices.get('/api/userroles/getAll');
-        setRoles(data);
-      } catch (error) {
-        console.error('Error fetching roles:', error);
-      }
-    };
-    loadCompanies();
-    loadRoles();
+    loadData();
   }, []);
 
   // When the company changes, load the corresponding departments
@@ -240,6 +240,17 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user }) => {
     const newAssignments = departmentAssignments.filter((_, i) => i !== index);
     setDepartmentAssignments(newAssignments);
   };
+
+  if (loading) {
+    return (
+      <Box sx={{ width: '100%', height: '50vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+        <CircularProgress size={50} />
+        <Typography variant="h6" mt={2} color="primary">
+          Loading user details...
+        </Typography>
+      </Box>
+    );
+  }
 
   if (!user || !editedUser) {
     return (

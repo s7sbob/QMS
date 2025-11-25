@@ -18,5 +18,108 @@
     "Notes": "ملاحظات",
     "Calendar": "التقويم",
     "Email": "بريد إلكتروني",
-    "Tickets": "تذاكر"
+    "Tickets": "تذاكر",
+
+    "documentRequest": {
+        "title": "طلب مستند جديد",
+        "viewTitle": "عرض طلب المستند",
+        "requestNumber": "رقم الطلب",
+        "documentType": "نوع المستند",
+        "department": "القسم",
+        "documentTitleEn": "عنوان المستند (إنجليزي)",
+        "documentTitleAr": "عنوان المستند (عربي)",
+        "purposeEn": "الغرض (إنجليزي)",
+        "purposeAr": "الغرض (عربي)",
+        "scopeEn": "النطاق (إنجليزي)",
+        "scopeAr": "النطاق (عربي)",
+        "qaComment": "تعليق QA",
+        "loading": "جاري التحميل...",
+        "noDepartments": "لا توجد أقسام",
+        "requestedBy": "طلب من",
+        "reviewedBy": "مراجعة من",
+        "name": "الاسم",
+        "designation": "المنصب",
+        "signature": "التوقيع",
+        "date": "التاريخ",
+        "qaManagerApproval": "موافقة مدير QA",
+        "docOfficerApproval": "موافقة مسؤول الوثائق",
+        "requestStatus": "حالة الطلب",
+        "requestRejected": "تم رفض الطلب"
+    },
+
+    "buttons": {
+        "submit": "إرسال",
+        "cancel": "إلغاء",
+        "approve": "موافقة",
+        "reject": "رفض",
+        "saveChanges": "حفظ التعديلات",
+        "sendRequest": "إرسال الطلب"
+    },
+
+    "status": {
+        "newRequest": "طلب جديد",
+        "submitted": "تم الإرسال",
+        "managerReview": "مراجعة المدير",
+        "qaManagerReview": "مراجعة QA Manager",
+        "qaOfficerApproval": "موافقة QA Officer",
+        "rejected": "مرفوض",
+        "rejectedByQAManager": "مرفوض من QA Manager",
+        "undefined": "غير محدد"
+    },
+
+    "docTypes": {
+        "sop": "إجراء تشغيل معياري (SOP)",
+        "mu": "دليل إدارة الجودة (MU)",
+        "smf": "ملف الموقع الرئيسي (SMF)",
+        "pr": "بروتوكول (PR)",
+        "pl": "خطة (PL)",
+        "pc": "سياسة (PC)",
+        "st": "دراسة (ST)",
+        "wi": "تعليمات العمل (WI)",
+        "other": "أخرى"
+    },
+
+    "messages": {
+        "success": "تم",
+        "error": "خطأ",
+        "savingData": "جاري حفظ البيانات...",
+        "dataSavedSuccess": "تم حفظ البيانات بنجاح!",
+        "failedFetchRequest": "فشل في جلب بيانات الطلب",
+        "requestApprovedSuccess": "تمت الموافقة على الطلب بنجاح",
+        "requestRejectedSuccess": "تم رفض الطلب بنجاح",
+        "statusUpdatedSuccess": "تم تحديث حالة الطلب بنجاح",
+        "errorUpdatingStatus": "حدث خطأ أثناء تحديث الحالة",
+        "errorSaving": "حدث خطأ أثناء الحفظ",
+        "loadingUserData": "جاري تحميل بيانات المستخدم...",
+        "failedCreateDocument": "فشل في إنشاء المستند",
+        "savingPurpose": "جاري حفظ الغرض...",
+        "savingScope": "جاري حفظ نطاق التطبيق...",
+        "updatingRequest": "جاري تحديث بيانات الطلب...",
+        "updatingDocument": "جاري تحديث بيانات المستند...",
+        "creatingRequest": "جاري إنشاء طلب المستند...",
+        "sendingNotifications": "جاري إرسال الإشعارات...",
+        "creatingDocument": "جاري إنشاء المستند...",
+        "loadingData": "جاري تحميل البيانات..."
+    },
+
+    "roles": {
+        "qaAssociate": "QA Associate",
+        "deptManager": "مدير القسم",
+        "qaManager": "QA Manager",
+        "qaOfficer": "QA Officer",
+        "requester": "مقدم الطلب"
+    },
+
+    "common": {
+        "language": "اللغة",
+        "english": "الإنجليزية",
+        "arabic": "العربية",
+        "dashboard": "لوحة التحكم",
+        "documentation": "الوثائق",
+        "documentationControl": "التحكم في الوثائق",
+        "settings": "الإعدادات",
+        "logout": "تسجيل الخروج",
+        "login": "تسجيل الدخول",
+        "welcome": "مرحباً"
+    }
 }

@@ -18,5 +18,108 @@
     "Notes": "Notes",
     "Calendar": "Calendar",
     "Email": "Email",
-    "Tickets": "Tickets"
+    "Tickets": "Tickets",
+
+    "documentRequest": {
+        "title": "New Document Request",
+        "viewTitle": "View Document Request",
+        "requestNumber": "Request Number",
+        "documentType": "Document Type",
+        "department": "Department",
+        "documentTitleEn": "Document Title (English)",
+        "documentTitleAr": "Document Title (Arabic)",
+        "purposeEn": "Purpose (English)",
+        "purposeAr": "Purpose (Arabic)",
+        "scopeEn": "Scope (English)",
+        "scopeAr": "Scope (Arabic)",
+        "qaComment": "QA Comment",
+        "loading": "Loading...",
+        "noDepartments": "No departments",
+        "requestedBy": "Requested By",
+        "reviewedBy": "Reviewed By",
+        "name": "Name",
+        "designation": "Designation",
+        "signature": "Signature",
+        "date": "Date",
+        "qaManagerApproval": "QA Manager Approval",
+        "docOfficerApproval": "Document Officer Approval",
+        "requestStatus": "Request Status",
+        "requestRejected": "Request Rejected"
+    },
+
+    "buttons": {
+        "submit": "Submit",
+        "cancel": "Cancel",
+        "approve": "Approve",
+        "reject": "Reject",
+        "saveChanges": "Save Changes",
+        "sendRequest": "Send Request"
+    },
+
+    "status": {
+        "newRequest": "New Request",
+        "submitted": "Submitted",
+        "managerReview": "Manager Review",
+        "qaManagerReview": "QA Manager Review",
+        "qaOfficerApproval": "QA Officer Approval",
+        "rejected": "Rejected",
+        "rejectedByQAManager": "Rejected by QA Manager",
+        "undefined": "Undefined"
+    },
+
+    "docTypes": {
+        "sop": "Standard Operating Procedure (SOP)",
+        "mu": "Quality Manual (MU)",
+        "smf": "Site Master File (SMF)",
+        "pr": "Protocol (PR)",
+        "pl": "Plan (PL)",
+        "pc": "Policy (PC)",
+        "st": "Study (ST)",
+        "wi": "Work Instruction (WI)",
+        "other": "Other"
+    },
+
+    "messages": {
+        "success": "Success",
+        "error": "Error",
+        "savingData": "Saving data...",
+        "dataSavedSuccess": "Data saved successfully!",
+        "failedFetchRequest": "Failed to fetch request data",
+        "requestApprovedSuccess": "Request approved successfully",
+        "requestRejectedSuccess": "Request rejected successfully",
+        "statusUpdatedSuccess": "Status updated successfully",
+        "errorUpdatingStatus": "Error updating status",
+        "errorSaving": "Error saving",
+        "loadingUserData": "Loading user data...",
+        "failedCreateDocument": "Failed to create document",
+        "savingPurpose": "Saving Purpose...",
+        "savingScope": "Saving Scope...",
+        "updatingRequest": "Updating request data...",
+        "updatingDocument": "Updating document data...",
+        "creatingRequest": "Creating document request...",
+        "sendingNotifications": "Sending notifications...",
+        "creatingDocument": "Creating document...",
+        "loadingData": "Loading data..."
+    },
+
+    "roles": {
+        "qaAssociate": "QA Associate",
+        "deptManager": "Department Manager",
+        "qaManager": "QA Manager",
+        "qaOfficer": "QA Officer",
+        "requester": "Requester"
+    },
+
+    "common": {
+        "language": "Language",
+        "english": "English",
+        "arabic": "Arabic",
+        "dashboard": "Dashboard",
+        "documentation": "Documentation",
+        "documentationControl": "Documentation Control",
+        "settings": "Settings",
+        "logout": "Logout",
+        "login": "Login",
+        "welcome": "Welcome"
+    }
 }

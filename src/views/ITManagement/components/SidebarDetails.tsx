@@ -1,8 +1,9 @@
 // src/views/ITManagement/components/SidebarDetails.tsx
 
 import React from 'react';
-import { Box, Button, Divider, List, ListItem, ListItemText, ListItemSecondaryAction, Typography, IconButton } from '@mui/material';
+import { Box, Button, Divider, List, ListItem, ListItemText, ListItemSecondaryAction, ListItemAvatar, Avatar, Typography, IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import PersonIcon from '@mui/icons-material/Person';
 import { ICompany, IDepartment, SelectedItemType, statusToText } from '../types';
 import { findDepartmentNameById } from '../utils/findDepartmentName';
 
@@ -93,6 +94,17 @@ const SidebarDetails: React.FC<Props> = ({
             <List>
               {dept.users.map((u) => (
                 <ListItem key={u.Id}>
+                  <ListItemAvatar>
+                    <Avatar
+                      src={u.avatarUrl || u.Img_url || u.userImg_Url || ''}
+                      alt={`${u.FName || ''} ${u.LName || ''}`}
+                      sx={{ width: 40, height: 40 }}
+                    >
+                      {!u.avatarUrl && !u.Img_url && !u.userImg_Url && (
+                        u.FName ? u.FName.charAt(0).toUpperCase() : <PersonIcon />
+                      )}
+                    </Avatar>
+                  </ListItemAvatar>
                   <ListItemText
                     primary={`${u.FName || ''} ${u.LName || ''}`}
                     secondary={

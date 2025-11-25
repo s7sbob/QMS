@@ -28,6 +28,9 @@ export function statusToText(isActive: number): string {
     End_Date?: string | null;
     Job_Title: string;
     User_Role: string | null;
+    avatarUrl?: string | null;
+    Img_url?: string | null;
+    userImg_Url?: string | null;
   }
   
   /** واجهة القسم */

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from 'react';
-import { Box, Grid, Stack, Pagination, Typography, Alert } from '@mui/material';
+import { Box, Grid, Stack, Pagination, Typography, Alert, CircularProgress } from '@mui/material';
 import PageContainer from 'src/components/container/PageContainer';
 import SOPCard, { SopHeader } from './SOPCard';
 import SOPFilter, { FilterValues, StatusOption, DepartmentOption } from './SOPFilter';
@@ -169,9 +169,12 @@ const DocumentationControl: React.FC = () => {
           <Grid container spacing={3}>
             {loading ? (
               <Grid item xs={12}>
-                <Typography variant="h6" textAlign="center" sx={{ py: 4 }}>
-                  Loading SOP documents...
-                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', py: 8 }}>
+                  <CircularProgress size={50} />
+                  <Typography variant="h6" mt={2} color="primary">
+                    Loading SOP documents...
+                  </Typography>
+                </Box>
               </Grid>
             ) : error ? (
               <Grid item xs={12}>

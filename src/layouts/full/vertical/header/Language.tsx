@@ -3,7 +3,7 @@
 import React from 'react';
 import { Avatar, IconButton, Menu, MenuItem, Typography, Stack } from '@mui/material';
 import { useSelector, useDispatch } from 'src/store/Store';
-import { setLanguage } from 'src/store/customizer/CustomizerSlice';
+import { setLanguage, setDir } from 'src/store/customizer/CustomizerSlice';
 import FlagEn from 'src/assets/images/flag/icon-flag-en.svg';
 import FlagFr from 'src/assets/images/flag/icon-flag-fr.svg';
 import FlagCn from 'src/assets/images/flag/icon-flag-cn.svg';
@@ -17,22 +17,26 @@ const Languages = [
     flagname: 'English (UK)',
     icon: FlagEn,
     value: 'en',
+    dir: 'ltr',
   },
   {
     flagname: '中国人 (Chinese)',
     icon: FlagCn,
     value: 'ch',
+    dir: 'ltr',
   },
   {
     flagname: 'français (French)',
     icon: FlagFr,
     value: 'fr',
+    dir: 'ltr',
   },
 
   {
     flagname: 'عربي (Arabic)',
     icon: FlagSa,
     value: 'ar',
+    dir: 'rtl',
   },
 ];
 
@@ -52,6 +56,12 @@ const Language = () => {
   };
   useEffect(() => {
     i18n.changeLanguage(customizer.isLanguage);
+    // Set initial direction based on saved language
+    const savedLang = Languages.find((lang) => lang.value === customizer.isLanguage);
+    if (savedLang) {
+      dispatch(setDir(savedLang.dir));
+      document.dir = savedLang.dir;
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -82,7 +92,13 @@ const Language = () => {
           <MenuItem
             key={index}
             sx={{ py: 2, px: 3 }}
-            onClick={() => dispatch(setLanguage(option.value))}
+            onClick={() => {
+              dispatch(setLanguage(option.value));
+              dispatch(setDir(option.dir));
+              i18n.changeLanguage(option.value);
+              document.dir = option.dir;
+              handleClose();
+            }}
           >
             <Stack direction="row" spacing={1} alignItems="center">
               <Avatar src={option.icon} alt={option.icon} sx={{ width: 20, height: 20 }} />

@@ -8,6 +8,7 @@ import {
   TextField,
   InputAdornment,
   IconButton,
+  CircularProgress,
 } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
@@ -18,6 +19,7 @@ const AuthLogin: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleClickShowPassword = () => {
@@ -31,6 +33,7 @@ const AuthLogin: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const response = await loginApi({ UserName: username, Password: password });
       console.log('Login success:', response);
@@ -45,6 +48,8 @@ const AuthLogin: React.FC = () => {
     } catch (error: any) {
       console.error('Login error:', error);
       alert('اسم المستخدم أو كلمة المرور غير صحيحة!');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -58,6 +63,7 @@ const AuthLogin: React.FC = () => {
           fullWidth
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+          disabled={loading}
         />
         <TextField
           required
@@ -67,6 +73,7 @@ const AuthLogin: React.FC = () => {
           fullWidth
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          disabled={loading}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
@@ -75,6 +82,7 @@ const AuthLogin: React.FC = () => {
                   onMouseDown={handleMouseDownPassword}
                   edge="end"
                   aria-label="toggle password visibility"
+                  disabled={loading}
                 >
                   {showPassword ? <VisibilityOff /> : <Visibility />}
                 </IconButton>
@@ -86,7 +94,11 @@ const AuthLogin: React.FC = () => {
           <Typography
             component={Link}
             to="/auth/forgot-password"
-            sx={{ textDecoration: 'none', color: 'primary.main' }}
+            sx={{
+              textDecoration: 'none',
+              color: loading ? 'text.disabled' : 'primary.main',
+              pointerEvents: loading ? 'none' : 'auto',
+            }}
           >
             Forgot Password?
           </Typography>
@@ -94,8 +106,16 @@ const AuthLogin: React.FC = () => {
       </Stack>
 
       <Box mt={3}>
-        <Button type="submit" color="primary" variant="contained" size="large" fullWidth>
-          Sign In
+        <Button
+          type="submit"
+          color="primary"
+          variant="contained"
+          size="large"
+          fullWidth
+          disabled={loading}
+          startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
+        >
+          {loading ? 'Signing In...' : 'Sign In'}
         </Button>
       </Box>
     </Box>

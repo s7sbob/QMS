@@ -1,7 +1,7 @@
 // src/views/documentation/pages/DistributionFormPrintView.tsx
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Button, Box } from '@mui/material';
+import { Button, Box, CircularProgress, Typography } from '@mui/material';
 import { IconPrinter } from '@tabler/icons-react';
 import axiosServices from 'src/utils/axiosServices';
 import DistributionFormTemplate from '../components/DistributionFormTemplate';
@@ -213,7 +213,14 @@ const DistributionFormPrintView: React.FC = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <Box sx={{ width: '100%', height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+        <CircularProgress size={50} />
+        <Typography variant="h6" mt={2} color="primary">
+          Loading data...
+        </Typography>
+      </Box>
+    );
   }
 
   if (!formData || !sopHeaderData) {

@@ -149,6 +149,7 @@ const Router = [
       // { path: '/documentation-control/extra_copy_request', element: <Extra_Copy_Request /> },
       { path: '/documentation-control/master_document_list', element: <MasterDocumentList /> },
       { path: '/documentation-control/Request_Form', element: <NewDocumentRequestForm /> },
+      { path: '/documentation-control/Request_Form/:id', element: <NewDocumentRequestForm /> },
       { path: '/documentation-control/signature_list', element: <ApprovedSignaturesList /> },
 
       // DEVIATION, NON-CONFORMITY AND CAPA SYSTEM
