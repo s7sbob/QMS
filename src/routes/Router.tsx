@@ -38,6 +38,9 @@ const CancellationForm = Loadable(
 const Distribution_form = Loadable(
   lazy(() => import('../views/documentation/pages/DistributionForm')),
 );
+const DistributionFormPrintView = Loadable(
+  lazy(() => import('../views/documentation/pages/DistributionFormPrintView')),
+);
 
 const Users_Page = Loadable(lazy(() => import('../views/Users-Page/Users')));
 
@@ -140,6 +143,7 @@ const Router = [
       // Documentation Control Forms
       { path: '/documentation-control', element: <Documentation_Control /> },
       { path: '/documentation-control/distribution_form', element: <Distribution_form /> },
+      { path: '/documentation-control/distribution-form-print', element: <DistributionFormPrintView /> },
       { path: '/documentation-control/Document_Revision_Checklist', element: <Document_Revision_Checklist /> },
       { path: '/documentation-control/CancellationForm', element: <CancellationForm /> },
       // { path: '/documentation-control/extra_copy_request', element: <Extra_Copy_Request /> },
