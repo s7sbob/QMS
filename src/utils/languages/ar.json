@@ -33,6 +33,11 @@
         "scopeEn": "النطاق (إنجليزي)",
         "scopeAr": "النطاق (عربي)",
         "qaComment": "تعليق QA",
+        "documentOption": "خيار المستند",
+        "mergeWithExisting": "دمج مع كود مستند موجود",
+        "newDocument": "جديد",
+        "selectSopCode": "اختر كود SOP موجود",
+        "noSopCodes": "لا توجد أكواد SOP متاحة",
         "loading": "جاري التحميل...",
         "noDepartments": "لا توجد أقسام",
         "requestedBy": "طلب من",
@@ -57,13 +62,12 @@
     },
 
     "status": {
-        "newRequest": "طلب جديد",
-        "submitted": "تم الإرسال",
-        "managerReview": "مراجعة المدير",
-        "qaManagerReview": "مراجعة QA Manager",
-        "qaOfficerApproval": "موافقة QA Officer",
-        "rejected": "مرفوض",
-        "rejectedByQAManager": "مرفوض من QA Manager",
+        "newRequest": "طلب إنشاء جديد",
+        "reviewed": "تم مراجعه طلب الانشاء",
+        "approvedByDeptManager": "تم الموافقه علي الإنشاء بواسطه رئيس القسم",
+        "rejectedByDeptManager": "تم الرفض بواسطه رئيس القسم",
+        "rejectedByQAManager": "تم الرفض بواسطه مدير الجوده",
+        "approvedByQAManager": "تم الموافقه علي الإنشاء بواسطه مدير الجوده",
         "undefined": "غير محدد"
     },
 
@@ -99,7 +103,19 @@
         "creatingRequest": "جاري إنشاء طلب المستند...",
         "sendingNotifications": "جاري إرسال الإشعارات...",
         "creatingDocument": "جاري إنشاء المستند...",
-        "loadingData": "جاري تحميل البيانات..."
+        "loadingData": "جاري تحميل البيانات...",
+        "loadingDepartments": "جار التحميل...",
+        "noDepartments": "لا توجد أقسام",
+        "savingSopHeader": "جاري حفظ بيانات الوثيقة...",
+        "savingProcedure": "جاري حفظ الإجراء...",
+        "savingDefinitions": "جاري حفظ التعريفات...",
+        "savingResponsibilities": "جاري حفظ المسؤوليات...",
+        "savingReferences": "جاري حفظ المراجع...",
+        "savingAttachments": "جاري حفظ المرفقات...",
+        "sopCreatedSuccess": "تم إنشاء الوثيقة بنجاح!",
+        "sopUpdatedSuccess": "تم تحديث الوثيقة بنجاح!",
+        "noHeaderId": "لا يوجد معرف للوثيقة",
+        "userDataNotAvailable": "بيانات المستخدم غير متوفرة"
     },
 
     "roles": {

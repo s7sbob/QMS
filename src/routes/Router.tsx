@@ -41,6 +41,9 @@ const Distribution_form = Loadable(
 const DistributionFormPrintView = Loadable(
   lazy(() => import('../views/documentation/pages/DistributionFormPrintView')),
 );
+const DocumentRequestFormPrintView = Loadable(
+  lazy(() => import('../views/documentation/pages/DocumentRequestFormPrintView')),
+);
 
 const Users_Page = Loadable(lazy(() => import('../views/Users-Page/Users')));
 
@@ -150,6 +153,8 @@ const Router = [
       { path: '/documentation-control/master_document_list', element: <MasterDocumentList /> },
       { path: '/documentation-control/Request_Form', element: <NewDocumentRequestForm /> },
       { path: '/documentation-control/Request_Form/:id', element: <NewDocumentRequestForm /> },
+      { path: '/documentation-control/Request_Form_Print/:id', element: <DocumentRequestFormPrintView /> },
+      { path: '/documentation-control/Request_Form_Print', element: <DocumentRequestFormPrintView /> },
       { path: '/documentation-control/signature_list', element: <ApprovedSignaturesList /> },
 
       // DEVIATION, NON-CONFORMITY AND CAPA SYSTEM

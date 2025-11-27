@@ -33,6 +33,11 @@
         "scopeEn": "Scope (English)",
         "scopeAr": "Scope (Arabic)",
         "qaComment": "QA Comment",
+        "documentOption": "Document Option",
+        "mergeWithExisting": "Merge with existing document code",
+        "newDocument": "New",
+        "selectSopCode": "Select Existing SOP Code",
+        "noSopCodes": "No SOP codes available",
         "loading": "Loading...",
         "noDepartments": "No departments",
         "requestedBy": "Requested By",
@@ -57,13 +62,12 @@
     },
 
     "status": {
-        "newRequest": "New Request",
-        "submitted": "Submitted",
-        "managerReview": "Manager Review",
-        "qaManagerReview": "QA Manager Review",
-        "qaOfficerApproval": "QA Officer Approval",
-        "rejected": "Rejected",
-        "rejectedByQAManager": "Rejected by QA Manager",
+        "newRequest": "Request For New Creation",
+        "reviewed": "New Creation Request Reviewed",
+        "approvedByDeptManager": "New Creation Request Approved by Department Manager",
+        "rejectedByDeptManager": "New Creation Refused by Department Manager",
+        "rejectedByQAManager": "New Creation Refused by QA Manager",
+        "approvedByQAManager": "New Creation Accepted by QA Manager",
         "undefined": "Undefined"
     },
 
@@ -99,7 +103,19 @@
         "creatingRequest": "Creating document request...",
         "sendingNotifications": "Sending notifications...",
         "creatingDocument": "Creating document...",
-        "loadingData": "Loading data..."
+        "loadingData": "Loading data...",
+        "loadingDepartments": "Loading...",
+        "noDepartments": "No departments",
+        "savingSopHeader": "Saving SOP Header...",
+        "savingProcedure": "Saving Procedure...",
+        "savingDefinitions": "Saving Definitions...",
+        "savingResponsibilities": "Saving Responsibilities...",
+        "savingReferences": "Saving References...",
+        "savingAttachments": "Saving Attachments...",
+        "sopCreatedSuccess": "SOP created successfully!",
+        "sopUpdatedSuccess": "SOP updated successfully!",
+        "noHeaderId": "No Header ID found",
+        "userDataNotAvailable": "User data not available"
     },
 
     "roles": {

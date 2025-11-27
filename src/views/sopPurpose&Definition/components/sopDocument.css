@@ -1,48 +1,406 @@
-/* يمكنك تسميته كما تشاء مثلاً sopDocument.css */
+/* SOP Document A4 Pagination Styles */
 
-/* حاوية عامة للجدول */
+/* ===== A4 Page Dimensions ===== */
+:root {
+  --a4-width: 210mm;
+  --a4-height: 297mm;
+  --page-margin: 10mm;
+  --page-padding: 15px;
+  --page-gap: 20px;
+  --content-height: calc(var(--a4-height) - 40mm); /* Account for header/footer */
+}
+
+/* ===== Main Wrapper ===== */
+.sop-document-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--page-gap);
+  padding: 20px;
+  background-color: #e0e0e0;
+  min-height: 100vh;
+}
+
+/* ===== Individual A4 Page ===== */
+.sop-page {
+  width: var(--a4-width);
+  height: var(--a4-height);
+  min-height: var(--a4-height);
+  max-height: var(--a4-height);
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: var(--page-padding);
+  box-sizing: border-box;
+  position: relative;
+  page-break-after: always;
+  page-break-inside: avoid;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ===== COVER PAGE STYLES ===== */
+.sop-cover-page {
+  justify-content: space-between;
+}
+
+/* Cover Header Table Layout */
+.cover-header {
+  width: 100%;
+  border: 1px solid #000;
+  margin-bottom: 20px;
+}
+
+.cover-header-table {
+  display: flex;
+  width: 100%;
+}
+
+.cover-header-left,
+.cover-header-right {
+  width: 25%;
+  border-right: 1px solid #000;
+}
+
+.cover-header-right {
+  border-right: none;
+}
+
+.cover-header-center {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  border-right: 1px solid #000;
+}
+
+.cover-header-left table,
+.cover-header-right table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.cover-header-left td,
+.cover-header-right td {
+  border: 1px solid #000;
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
+.cover-header-left .label-en,
+.cover-header-right .label-en {
+  text-align: left;
+  font-weight: bold;
+}
+
+.cover-header-left .label-ar,
+.cover-header-right .label-ar {
+  text-align: right;
+  font-weight: bold;
+  direction: rtl;
+}
+
+.cover-header-left .value,
+.cover-header-right .value {
+  text-align: center;
+  background-color: #f5f5f5;
+}
+
+.cover-logo {
+  max-width: 180px;
+  height: auto;
+}
+
+.division-name {
+  font-size: 14px;
+  font-weight: bold;
+  margin-top: 5px;
+  color: #2e7d32;
+}
+
+/* Cover Title Section */
+.cover-title-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 30px 0;
+}
+
+.cover-title-box {
+  background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+  color: white;
+  padding: 30px 50px;
+  text-align: center;
+  border-radius: 4px;
+  width: 80%;
+}
+
+.cover-title-label {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.cover-title-en {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.cover-title-ar {
+  font-size: 22px;
+  font-weight: bold;
+  direction: rtl;
+}
+
+/* Cover Company Section */
+.cover-company-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 30px 0;
+}
+
+.cover-company-logo {
+  max-width: 250px;
+  height: auto;
+  margin-bottom: 15px;
+}
+
+.cover-company-division {
+  font-size: 28px;
+  font-weight: bold;
+  color: #1565c0;
+}
+
+/* Cover Footer Section */
+.cover-footer-section {
+  margin-top: auto;
+}
+
+/* ===== CONTENT PAGE STYLES ===== */
+.sop-content-page {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Content Page Header */
+.content-page-header {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid #000;
+  margin-bottom: 15px;
+  min-height: 60px;
+}
+
+.content-header-logo {
+  width: 15%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid #000;
+  padding: 5px;
+}
+
+.content-header-logo img {
+  max-width: 80px;
+  height: auto;
+}
+
+.content-header-title {
+  width: 60%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 8px 15px;
+  border-right: 1px solid #000;
+}
+
+.content-header-title-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+
+.content-header-title-row-ar {
+  display: flex;
+  gap: 10px;
+  direction: rtl;
+  justify-content: flex-start;
+}
+
+.title-label-en,
+.title-label-ar {
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.title-value-en,
+.title-value-ar {
+  font-size: 12px;
+}
+
+.content-header-info {
+  width: 25%;
+  padding: 5px;
+}
+
+.content-header-info table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.content-header-info td {
+  padding: 2px 5px;
+}
+
+.content-header-info .info-label {
+  font-weight: bold;
+  text-align: left;
+}
+
+.content-header-info .info-value {
+  text-align: left;
+}
+
+/* Content Area */
+.sop-content-area {
+  flex: 1;
+  overflow: hidden;
+  padding: 10px 0;
+}
+
+/* Ensure sections don't overflow */
+.sop-content-area > * {
+  max-width: 100%;
+  overflow-wrap: break-word;
+}
+
+/* Content Footer Section */
+.content-footer-section {
+  margin-top: auto;
+  padding-top: 10px;
+}
+
+/* ===== SECTION STYLES ===== */
+.sop-section {
+  margin-bottom: 15px;
+  page-break-inside: avoid;
+}
+
+.sop-section-header {
+  display: flex;
+  border: 1px solid #000;
+  background-color: #e3f2fd;
+  margin-bottom: 10px;
+}
+
+.sop-section-number {
+  width: 30px;
+  padding: 8px;
+  font-weight: bold;
+  border-right: 1px solid #000;
+  text-align: center;
+}
+
+.sop-section-title-en {
+  flex: 1;
+  padding: 8px 15px;
+  font-weight: bold;
+  border-right: 1px solid #000;
+}
+
+.sop-section-title-ar {
+  flex: 1;
+  padding: 8px 15px;
+  font-weight: bold;
+  text-align: right;
+  direction: rtl;
+}
+
+.sop-section-content {
+  display: flex;
+  border: 1px solid #000;
+  border-top: none;
+}
+
+.sop-section-content-en {
+  flex: 1;
+  padding: 10px 15px;
+  border-right: 1px solid #000;
+}
+
+.sop-section-content-ar {
+  flex: 1;
+  padding: 10px 15px;
+  text-align: right;
+  direction: rtl;
+}
+
+/* ===== PRINT STYLES ===== */
+@media print {
+  body, html {
+    margin: 0;
+    padding: 0;
+    background: white;
+  }
+
+  .sop-document-wrapper {
+    padding: 0;
+    gap: 0;
+    background: white;
+  }
+
+  .sop-page {
+    width: var(--a4-width);
+    height: var(--a4-height);
+    margin: 0;
+    padding: var(--page-margin);
+    box-shadow: none;
+    page-break-after: always;
+  }
+
+  .sop-page:last-child {
+    page-break-after: auto;
+  }
+
+  /* Hide non-printable elements */
+  .no-print {
+    display: none !important;
+  }
+}
+
+@page {
+  size: A4;
+  margin: 10mm;
+}
+
+/* ===== LEGACY TABLE SUPPORT ===== */
 .sop-wrapper {
   width: 210mm;
   margin: 0 auto;
 }
 
-/* الجدول نفسه */
 .sop-table {
   width: 100%;
   border-collapse: collapse;
-
-  /* لتعطيل أي هوامش في الطباعة */
   page-break-after: always;
 }
 
-/* تأكد من تكرار الهيدر في كل صفحة مطبوعة */
 .sop-table thead {
   display: table-header-group;
 }
 
-/* تأكد من تكرار الفوتر في كل صفحة مطبوعة */
 .sop-table tfoot {
   display: table-footer-group;
 }
 
-/* تصغير المسافات الفارغة */
 .sop-table th, .sop-table td {
   vertical-align: top;
-}
-
-/* إعدادات للـ A4 في وضع الطباعة */
-@media print {
-  body, html {
-    width: 210mm;
-    height: 297mm;
-    margin: 0;
-    padding: 0;
-  }
-  .sop-wrapper {
-    width: 210mm;
-    margin: 0 auto;
-  }
-  .sop-table {
-    page-break-after: always;
-  }
 }

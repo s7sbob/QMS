@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Container, Paper, Typography, List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, Box, CircularProgress, Button } from '@mui/material';
 import { IconTrash } from '@tabler/icons-react';
 import axiosServices from 'src/utils/axiosServices';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface NotificationItem {
   id: string;
@@ -18,6 +18,7 @@ interface NotificationItem {
 const AllNotifications: React.FC = () => {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const navigate = useNavigate();
 
   const fetchNotifications = async () => {
     try {
@@ -28,6 +29,35 @@ const AllNotifications: React.FC = () => {
       console.error("Error fetching notifications:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleNotificationClick = async (notification: NotificationItem) => {
+    // Mark notification as read if it's unread
+    if (!notification.isRead) {
+      try {
+        await axiosServices.patch(`/api/notifications/${notification.id}/markAsRead`);
+        // Update local state to reflect the read status immediately
+        setNotifications((prev) =>
+          prev.map((n) =>
+            n.id === notification.id ? { ...n, isRead: true } : n
+          )
+        );
+      } catch (error) {
+        console.error("Error marking notification as read:", error);
+      }
+    }
+
+    if (notification.data?.sopHeaderId) {
+      // If status is 16 (approved by QA Document Officer), open in New_Creation_SOP to complete remaining data
+      if (notification.data?.status === "16" || notification.data?.status === 16) {
+        navigate(`/documentation-control/New_Creation_SOP?headerId=${notification.data.sopHeaderId}`);
+      // If status is 17 (rejected by QA Document Officer), open in Document Request Form
+      } else if (notification.data?.status === "17" || notification.data?.status === 17) {
+        navigate(`/documentation-control/Request_Form?headerId=${notification.data.sopHeaderId}`);
+      } else {
+        navigate(`/SOPFullDocument?headerId=${notification.data.sopHeaderId}`);
+      }
     }
   };
 
@@ -50,10 +80,24 @@ const AllNotifications: React.FC = () => {
         ) : (
           <List>
             {notifications.map((notification) => (
-              <ListItem key={notification.id} divider>
+              <ListItem
+                key={notification.id}
+                divider
+                onClick={() => handleNotificationClick(notification)}
+                sx={{
+                  cursor: 'pointer',
+                  backgroundColor: !notification.isRead ? "rgba(0, 0, 0, 0.08)" : "inherit",
+                  '&:hover': {
+                    backgroundColor: !notification.isRead ? "rgba(0, 0, 0, 0.12)" : "rgba(0, 0, 0, 0.04)",
+                  }
+                }}
+              >
                 <ListItemText
                   primary={notification.message}
                   secondary={new Date(notification.createdAt).toLocaleString()}
+                  primaryTypographyProps={{
+                    fontWeight: !notification.isRead ? 600 : 400
+                  }}
                 />
                 <ListItemSecondaryAction>
                   <IconButton edge="end" color="error">

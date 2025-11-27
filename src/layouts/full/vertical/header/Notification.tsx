@@ -66,11 +66,34 @@ const Notifications: React.FC = () => {
   // حساب عدد الإشعارات غير المقروءة فقط
   const unreadCount = notifications.filter(notification => !notification.isRead).length;
 
-  const handleNotificationClick = (notification: NotificationItem) => {
+  const handleNotificationClick = async (notification: NotificationItem) => {
     handleClose();
-    // هنا يمكنك إجراء عملية تحديث حالة الإشعار إلى "مقروء" عبر API إذا لزم الأمر
+
+    // Mark notification as read if it's unread
+    if (!notification.isRead) {
+      try {
+        await axiosServices.patch(`/api/notifications/${notification.id}/markAsRead`);
+        // Update local state to reflect the read status immediately
+        setNotifications((prev) =>
+          prev.map((n) =>
+            n.id === notification.id ? { ...n, isRead: true } : n
+          )
+        );
+      } catch (error) {
+        console.error("Error marking notification as read:", error);
+      }
+    }
+
     if (notification.data?.sopHeaderId) {
-      navigate(`/SOPFullDocument?headerId=${notification.data.sopHeaderId}`);
+      // If status is 16 (approved by QA Document Officer), open in New_Creation_SOP to complete remaining data
+      if (notification.data?.status === "16" || notification.data?.status === 16) {
+        navigate(`/documentation-control/New_Creation_SOP?headerId=${notification.data.sopHeaderId}`);
+      // If status is 17 (rejected by QA Document Officer), open in Document Request Form
+      } else if (notification.data?.status === "17" || notification.data?.status === 17) {
+        navigate(`/documentation-control/Request_Form?headerId=${notification.data.sopHeaderId}`);
+      } else {
+        navigate(`/SOPFullDocument?headerId=${notification.data.sopHeaderId}`);
+      }
     }
   };
 

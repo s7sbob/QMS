@@ -54,4 +54,5 @@ export interface SopHeader {
   // خصائص إضافية للهيدر
   Version?: string;         // رقم الإصدار
   Page_Number?: string;     // رقم الصفحة (يمكن تحديثه أثناء التقسيم)
+  Content_Table?: string | null; // JSON string for table of contents
 }

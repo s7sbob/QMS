@@ -49,7 +49,13 @@ const REQUEST_FORM_STATUS_NAMES = [
   'approved',
   'rejected',
   'rejected by qa manager',
+  'approved by qa manager',
+  'approved by qa officer',
+  'rejected by qa officer',
 ];
+
+// Status IDs that should open in Request Form
+const REQUEST_FORM_STATUS_IDS = ['8', '12', '13', '14', '15',  '17'];
 
 const SOPCard: React.FC<SOPCardProps> = ({ sop }) => {
   const navigate = useNavigate();
@@ -63,25 +69,38 @@ const SOPCard: React.FC<SOPCardProps> = ({ sop }) => {
     "5": "secondary", // Under Final Audit
     "6": "primary",   // Released
     "8": "info",      // New Request
-    "12": "success",  // Approved
-    "13": "error",    // Rejected
+    "12": "success",  // Approved by Dept Manager
+    "13": "error",    // Rejected by Dept Manager
     "14": "error",    // Rejected by QA Manager
+    "15": "success",  // Approved by QA Manager
+    "16": "success",  // Approved by QA Officer
+    "17": "error",    // Rejected by QA Officer
   };
 
   const handleClick = async () => {
-    // Check if status requires opening in Request Form (check by name, case-insensitive)
+    // Check if status requires opening in Request Form (check by name or ID)
     const statusName = sop.Sop_Status.Name_en?.toLowerCase() || '';
-    const shouldOpenRequestForm = REQUEST_FORM_STATUS_NAMES.some(
-      (name) => statusName.includes(name.toLowerCase()) || name.toLowerCase().includes(statusName)
-    );
+    const statusId = sop.Sop_Status.Id;
 
     console.log('SOPCard handleClick:', {
       sopId: sop.Id,
       statusId: sop.Sop_Status.Id,
       statusName: sop.Sop_Status.Name_en,
       statusNameLower: statusName,
-      shouldOpenRequestForm,
     });
+
+    // Status 16 (Approved by Document Officer) - Open in New_Creation_SOP to complete remaining data
+    if (statusId === '16') {
+      console.log('Status 16 - Navigating to New_Creation_SOP');
+      navigate(`/documentation-control/New_Creation_SOP?headerId=${sop.Id}`);
+      return;
+    }
+
+    // Check by status ID first (more reliable), then by name
+    const shouldOpenRequestForm = REQUEST_FORM_STATUS_IDS.includes(statusId) ||
+      REQUEST_FORM_STATUS_NAMES.some(
+        (name) => statusName.includes(name.toLowerCase()) || name.toLowerCase().includes(statusName)
+      );
 
     if (shouldOpenRequestForm) {
       try {

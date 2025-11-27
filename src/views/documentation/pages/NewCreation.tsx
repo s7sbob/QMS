@@ -33,9 +33,11 @@ import { IconUpload, IconTrash } from '@tabler/icons-react';
 import axiosServices from 'src/utils/axiosServices';
 import { UserContext } from 'src/context/UserContext';
 import Swal from 'sweetalert2';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 import RichTextEditor from './components/RichTextEditor'; // ⬅️ الجديد
+import TableOfContentsEditor, { TableOfContentsEntry } from './components/TableOfContentsEditor';
 
 /* ╭──────────────────────────────────────────────────────────────╮
    │ أنواع البيانات                                               │
@@ -49,6 +51,7 @@ interface Department {
    │ المكوّن الرئيسي                                               │
    ╰──────────────────────────────────────────────────────────────╯ */
 const NewCreation: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const [attachments, setAttachments] = useState<File[]>([]);
   const user = useContext(UserContext);
   const compId = user?.compId || '';
@@ -57,6 +60,10 @@ const NewCreation: React.FC = () => {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [containTraining, setContainTraining] = useState(false);
+  const [searchParams] = useSearchParams();
+  const headerId = searchParams.get('headerId');
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [tableOfContents, setTableOfContents] = useState<TableOfContentsEntry[]>([]);
 
   const [formData, setFormData] = useState({
     titleAr: '',
@@ -106,6 +113,152 @@ const NewCreation: React.FC = () => {
     }
   }, [compId]);
 
+  /* ────────────────────────────── تحميل بيانات SOP الموجودة ───────────────────────────── */
+  useEffect(() => {
+    const loadExistingSopData = async () => {
+      if (!headerId) return;
+
+      setLoading(true);
+      setIsEditMode(true);
+      try {
+        // Load SOP header data
+        const headerRes = await axiosServices.get(`/api/sopheader/getSopHeaderById/${headerId}`);
+        const sopHeader = headerRes.data;
+
+        if (sopHeader) {
+          setSelectedDepartment(sopHeader.Dept_Id || '');
+          setFormData((prev) => ({
+            ...prev,
+            titleAr: sopHeader.Doc_Title_ar || '',
+            titleEn: sopHeader.Doc_Title_en || '',
+            documentType: sopHeader.doc_Type || 'SOP',
+          }));
+          // Load Table of Contents
+          if (sopHeader.Content_Table) {
+            try {
+              const tocData = JSON.parse(sopHeader.Content_Table);
+              setTableOfContents(tocData);
+            } catch (e) {
+              console.log('Error parsing Content_Table:', e);
+            }
+          }
+        }
+
+        // Load Purpose
+        try {
+          const purposeRes = await axiosServices.get(`/api/soppurpose/getAllHistory/${headerId}`);
+          if (purposeRes.data?.length > 0) {
+            const purpose = purposeRes.data[0];
+            setFormData((prev) => ({
+              ...prev,
+              purposeAr: purpose.Content_ar || '',
+              purposeEn: purpose.Content_en || '',
+            }));
+          }
+        } catch (e) { console.log('No purpose data'); }
+
+        // Load Definitions
+        try {
+          const defRes = await axiosServices.get(`/api/sopDefinition/getAllHistory/${headerId}`);
+          if (defRes.data?.length > 0) {
+            const def = defRes.data[0];
+            setFormData((prev) => ({
+              ...prev,
+              definitionsAr: def.Content_ar || '',
+              definitionsEn: def.Content_en || '',
+            }));
+          }
+        } catch (e) { console.log('No definitions data'); }
+
+        // Load Scope
+        try {
+          const scopeRes = await axiosServices.get(`/api/sopScope/getAllHistory/${headerId}`);
+          if (scopeRes.data?.length > 0) {
+            const scope = scopeRes.data[0];
+            setFormData((prev) => ({
+              ...prev,
+              scopeAr: scope.Content_ar || '',
+              scopeEn: scope.Content_en || '',
+            }));
+          }
+        } catch (e) { console.log('No scope data'); }
+
+        // Load Responsibility
+        try {
+          const resRes = await axiosServices.get(`/api/sopRes/getAllHistory/${headerId}`);
+          if (resRes.data?.length > 0) {
+            const res = resRes.data[0];
+            setFormData((prev) => ({
+              ...prev,
+              responsibilityAr: res.Content_ar || '',
+              responsibilityEn: res.Content_en || '',
+            }));
+          }
+        } catch (e) { console.log('No responsibility data'); }
+
+        // Load Safety Concerns
+        try {
+          const safetyRes = await axiosServices.get(`/api/sopSafetyConcerns/getAllHistory/${headerId}`);
+          if (safetyRes.data?.length > 0) {
+            const safety = safetyRes.data[0];
+            setFormData((prev) => ({
+              ...prev,
+              safetyConcernsAr: safety.Content_ar || '',
+              safetyConcernsEn: safety.Content_en || '',
+            }));
+          }
+        } catch (e) { console.log('No safety concerns data'); }
+
+        // Load Procedures
+        try {
+          const procRes = await axiosServices.get(`/api/sopProcedures/getAllHistory/${headerId}`);
+          if (procRes.data?.length > 0) {
+            const proc = procRes.data[0];
+            setFormData((prev) => ({
+              ...prev,
+              procedureAr: proc.Content_ar || '',
+              procedureEn: proc.Content_en || '',
+            }));
+          }
+        } catch (e) { console.log('No procedures data'); }
+
+        // Load References
+        try {
+          const refRes = await axiosServices.get(`/api/sopRefrences/getAllHistory/${headerId}`);
+          if (refRes.data?.length > 0) {
+            const ref = refRes.data[0];
+            setFormData((prev) => ({
+              ...prev,
+              referenceDocumentsAr: ref.Content_ar || '',
+              referenceDocumentsEn: ref.Content_en || '',
+            }));
+          }
+        } catch (e) { console.log('No references data'); }
+
+        // Load Critical Control Points
+        try {
+          const ccpRes = await axiosServices.get(`/api/sopCriticalControlPoints/getAllHistory/${headerId}`);
+          if (ccpRes.data?.length > 0) {
+            const ccp = ccpRes.data[0];
+            setFormData((prev) => ({
+              ...prev,
+              criticalPointsAr: ccp.Content_ar || '',
+              criticalPointsEn: ccp.Content_en || '',
+            }));
+          }
+        } catch (e) { console.log('No CCP data'); }
+
+      } catch (err) {
+        console.error('Error loading SOP data:', err);
+        Swal.fire('خطأ', 'حدث خطأ أثناء تحميل بيانات الـ SOP', 'error');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadExistingSopData();
+  }, [headerId]);
+
   /* ───────────────────────────── معالجات الإدخال ─────────────────────────── */
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -127,13 +280,15 @@ const NewCreation: React.FC = () => {
 
   /* ─────────────────────────── خريطة اسم القسم ──────────────────────────── */
   const getSectionName = (url: string) => {
-    if (url.includes('addSop-Definition')) return 'التعريفات';
-    if (url.includes('addSop-Purpose')) return 'الغرض';
-    if (url.includes('SopReponsibility-create')) return 'المسؤولية';
-    if (url.includes('addSop-Procedure')) return 'الإجراءات';
-    if (url.includes('addSop-Scope')) return 'مجال التطبيق';
-    if (url.includes('addsop-safety-concerns')) return 'اشتراطات السلامة';
-    if (url.includes('/sopRefrences/Create')) return 'الوثائق المرجعية';
+    const isArabic = i18n.language === 'ar';
+    if (url.includes('addSop-Definition')) return isArabic ? 'التعريفات' : 'Definitions';
+    if (url.includes('addSop-Purpose')) return isArabic ? 'الغرض' : 'Purpose';
+    if (url.includes('SopReponsibility-create')) return isArabic ? 'المسؤولية' : 'Responsibilities';
+    if (url.includes('addSop-Procedure')) return isArabic ? 'الإجراءات' : 'Procedure';
+    if (url.includes('addSop-Scope')) return isArabic ? 'مجال التطبيق' : 'Scope';
+    if (url.includes('addsop-safety-concerns')) return isArabic ? 'اشتراطات السلامة' : 'Safety Concerns';
+    if (url.includes('/sopRefrences/Create')) return isArabic ? 'الوثائق المرجعية' : 'References';
+    if (url.includes('addSop-CriticalControlPoint')) return isArabic ? 'نقاط التحكم الحرجة' : 'Critical Control Points';
     return url;
   };
 
@@ -142,21 +297,45 @@ const NewCreation: React.FC = () => {
     event.preventDefault();
     setSubmitLoading(true);
     try {
-      const headerPayload = {
-        Doc_Title_en: formData.titleEn,
-        Doc_Title_ar: formData.titleAr,
-        Com_Id: compId,
-        Dept_Id: selectedDepartment,
-        status: '1',
-        doc_Type: formData.documentType,
-      };
+      let sopHeaderId = headerId;
 
-      const headerRes = await axiosServices.post('/api/sopheader/addEditSopHeader', headerPayload);
-      const headerId = headerRes.data?.Id;
-      if (!headerId) throw new Error('لا يوجد Header Id');
+      if (isEditMode && headerId) {
+        // Update existing SOP header
+        setSubmitStatus(`⏳ ${t('messages.updatingDocument')}`);
+        const headerPayload = {
+          Id: headerId,
+          Doc_Title_en: formData.titleEn,
+          Doc_Title_ar: formData.titleAr,
+          Dept_Id: selectedDepartment,
+          doc_Type: formData.documentType,
+          Content_Table: tableOfContents.length > 0 ? JSON.stringify(tableOfContents) : null,
+        };
+        await axiosServices.post('/api/sopheader/addEditSopHeader', headerPayload);
+
+        // Update status to 8 (re-submitted for review)
+        await axiosServices.patch(`/api/sopheader/updateSopStatusByAssociate/${headerId}`, {
+          signedBy: user?.signUrl || '',
+          status: { newStatus: '8' },
+        });
+      } else {
+        // Create new SOP header
+        const headerPayload = {
+          Doc_Title_en: formData.titleEn,
+          Doc_Title_ar: formData.titleAr,
+          Com_Id: compId,
+          Dept_Id: selectedDepartment,
+          status: '1',
+          doc_Type: formData.documentType,
+          Content_Table: tableOfContents.length > 0 ? JSON.stringify(tableOfContents) : null,
+        };
+
+        const headerRes = await axiosServices.post('/api/sopheader/addEditSopHeader', headerPayload);
+        sopHeaderId = headerRes.data?.Id;
+        if (!sopHeaderId) throw new Error(t('messages.noHeaderId'));
+      }
 
       if (!user) {
-        Swal.fire('خطأ', 'بيانات المستخدم غير متوفرة', 'error');
+        Swal.fire(t('messages.error'), t('messages.userDataNotAvailable'), 'error');
         return;
       }
       const userId = user.Id;
@@ -198,36 +377,39 @@ const NewCreation: React.FC = () => {
 
       for (const s of sections) {
         if (s.en || s.ar) {
-          setSubmitStatus(`⏳ رفع قسم: ${getSectionName(s.url)}…`);
+          setSubmitStatus(`⏳ ${i18n.language === 'ar' ? 'رفع قسم:' : 'Saving section:'} ${getSectionName(s.url)}…`);
           await axiosServices.post(s.url, {
             Content_en: s.en,
             Content_ar: s.ar,
             Is_Current: 1,
             Is_Active: 1,
-            Sop_HeaderId: headerId,
+            Sop_HeaderId: sopHeaderId,
           });
         }
       }
 
       if (attachments.length) {
-        setSubmitStatus('⏳ رفع المرفقات…');
+        setSubmitStatus(`⏳ ${t('messages.savingAttachments')}`);
         const fd = new FormData();
         attachments.forEach((f) => fd.append('files', f));
-        fd.append('Sop_HeadId', headerId);
+        fd.append('Sop_HeadId', sopHeaderId!);
         fd.append('Crt_by', userId);
         await axiosServices.post('/api/files/upload', fd, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
       }
 
-      setSubmitStatus('🎉 تم إنشاء الـ SOP');
+      const successMessage = isEditMode ? t('messages.sopUpdatedSuccess') : t('messages.sopCreatedSuccess');
+      setSubmitStatus(`🎉 ${successMessage}`);
       await new Promise((r) => setTimeout(r, 500));
-      Swal.fire('تم', 'تم إنشاء الـ SOP بنجاح', 'success').then((r) => {
-        if (r.isConfirmed) navigate(`/SOPFullDocument?headerId=${headerId}`);
+      Swal.fire(t('messages.success'), successMessage, 'success').then((r) => {
+        if (r.isConfirmed) navigate(`/SOPFullDocument?headerId=${sopHeaderId}`);
       });
     } catch (err) {
       console.error(err);
-      Swal.fire('خطأ', 'حدث خطأ أثناء الحفظ', 'error');
+      Swal.fire(t('messages.error'), t('messages.errorSaving'), 'error');
+    } finally {
+      setSubmitLoading(false);
     }
   };
 
@@ -237,7 +419,7 @@ const NewCreation: React.FC = () => {
       <Box sx={{ width: '100%', height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
         <CircularProgress size={50} />
         <Typography variant="h6" mt={2} color="primary">
-          Loading user data...
+          {t('messages.loadingUserData')}
         </Typography>
       </Box>
     );
@@ -278,9 +460,8 @@ const NewCreation: React.FC = () => {
 
       <Paper sx={{ p: 4, m: 2 }}>
         <Box component="header" sx={{ textAlign: 'center', mb: 3 }}>
-          <Typography variant="h1">CREATION SOP</Typography>
-          <Typography variant="subtitle1">Standard Operating Procedure (SOP)</Typography>
-        </Box>
+          <Typography variant="h1">{isEditMode ? 'EDIT Documet' : 'CREATION New Document'}</Typography>
+          </Box>
 
         <Container>
           <form onSubmit={handleSubmit}>
@@ -301,7 +482,15 @@ const NewCreation: React.FC = () => {
                     label="نوع الوثيقة"
                     onChange={(e) => setFormData((p) => ({ ...p, documentType: e.target.value }))}
                   >
-                    <MenuItem value="SOP">SOP</MenuItem>
+                    <MenuItem value="SOP">{i18n.getFixedT('ar')('docTypes.sop')}</MenuItem>
+                    <MenuItem value="MU">{i18n.getFixedT('ar')('docTypes.mu')}</MenuItem>
+                    <MenuItem value="SMF">{i18n.getFixedT('ar')('docTypes.smf')}</MenuItem>
+                    <MenuItem value="PR">{i18n.getFixedT('ar')('docTypes.pr')}</MenuItem>
+                    <MenuItem value="PL">{i18n.getFixedT('ar')('docTypes.pl')}</MenuItem>
+                    <MenuItem value="PC">{i18n.getFixedT('ar')('docTypes.pc')}</MenuItem>
+                    <MenuItem value="ST">{i18n.getFixedT('ar')('docTypes.st')}</MenuItem>
+                    <MenuItem value="WI">{i18n.getFixedT('ar')('docTypes.wi')}</MenuItem>
+                    <MenuItem value="other">{i18n.getFixedT('ar')('docTypes.other')}</MenuItem>
                   </Select>
                 </FormControl>
 
@@ -336,7 +525,7 @@ const NewCreation: React.FC = () => {
                     onChange={(e) => setSelectedDepartment(e.target.value)}
                   >
                     {loading ? (
-                      <MenuItem disabled>جار التحميل…</MenuItem>
+                      <MenuItem disabled>{t('messages.loadingDepartments')}</MenuItem>
                     ) : departments.length ? (
                       departments.map((d) => (
                         <MenuItem key={d.Id} value={d.Id}>
@@ -344,7 +533,7 @@ const NewCreation: React.FC = () => {
                         </MenuItem>
                       ))
                     ) : (
-                      <MenuItem disabled>لا توجد أقسام</MenuItem>
+                      <MenuItem disabled>{t('messages.noDepartments')}</MenuItem>
                     )}
                   </Select>
                 </FormControl>
@@ -478,6 +667,15 @@ const NewCreation: React.FC = () => {
                   label="يتضمن تدريب"
                   sx={{ mt: 2 }}
                 />
+
+                {/* Table of Contents Editor */}
+                <Box sx={{ mt: 3, mb: 2 }}>
+                  <TableOfContentsEditor
+                    value={tableOfContents}
+                    onChange={setTableOfContents}
+                    language="ar"
+                  />
+                </Box>
               </Grid>
 
               {/* ───────────── English ───────────── */}
@@ -498,7 +696,15 @@ const NewCreation: React.FC = () => {
                       setFormData((p) => ({ ...p, documentType: e.target.value }))
                     }
                   >
-                    <MenuItem value="SOP">SOP</MenuItem>
+                    <MenuItem value="SOP">{i18n.getFixedT('en')('docTypes.sop')}</MenuItem>
+                    <MenuItem value="MU">{i18n.getFixedT('en')('docTypes.mu')}</MenuItem>
+                    <MenuItem value="SMF">{i18n.getFixedT('en')('docTypes.smf')}</MenuItem>
+                    <MenuItem value="PR">{i18n.getFixedT('en')('docTypes.pr')}</MenuItem>
+                    <MenuItem value="PL">{i18n.getFixedT('en')('docTypes.pl')}</MenuItem>
+                    <MenuItem value="PC">{i18n.getFixedT('en')('docTypes.pc')}</MenuItem>
+                    <MenuItem value="ST">{i18n.getFixedT('en')('docTypes.st')}</MenuItem>
+                    <MenuItem value="WI">{i18n.getFixedT('en')('docTypes.wi')}</MenuItem>
+                    <MenuItem value="other">{i18n.getFixedT('en')('docTypes.other')}</MenuItem>
                   </Select>
                 </FormControl>
 
@@ -531,7 +737,7 @@ const NewCreation: React.FC = () => {
                     onChange={(e) => setSelectedDepartment(e.target.value)}
                   >
                     {loading ? (
-                      <MenuItem disabled>Loading…</MenuItem>
+                      <MenuItem disabled>{t('messages.loadingDepartments')}</MenuItem>
                     ) : departments.length ? (
                       departments.map((d) => (
                         <MenuItem key={d.Id} value={d.Id}>
@@ -539,7 +745,7 @@ const NewCreation: React.FC = () => {
                         </MenuItem>
                       ))
                     ) : (
-                      <MenuItem disabled>No departments</MenuItem>
+                      <MenuItem disabled>{t('messages.noDepartments')}</MenuItem>
                     )}
                   </Select>
                 </FormControl>
@@ -666,7 +872,7 @@ const NewCreation: React.FC = () => {
                 cancel
               </Button>
               <Button variant="contained" type="submit">
-                submit
+                {isEditMode ? 'Update' : 'Submit'}
               </Button>
             </Box>
           </form>

@@ -25,6 +25,9 @@ import {
   Stepper,
   Step,
   StepLabel,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
 } from '@mui/material';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -32,6 +35,7 @@ import axiosServices from 'src/utils/axiosServices';
 import RichTextEditor from './components/RichTextEditor';
 import { UserContext, IUser } from 'src/context/UserContext';
 import Swal from 'sweetalert2';
+import { IconPrinter } from '@tabler/icons-react';
 
 interface RequestedBy {
   name: string;
@@ -127,19 +131,30 @@ const DocumentRequestManagement: React.FC = () => {
   const [docRequestForm, setDocRequestForm] = useState<DocRequestForm | null>(null);
   const [userRole, setUserRole] = useState<string>('');
   const [canEdit, setCanEdit] = useState(false);
+  const [documentOption, setDocumentOption] = useState<'new' | 'merge'>('new');
+  const [selectedSopCode, setSelectedSopCode] = useState<string>('');
+  const [sopCodes, setSopCodes] = useState<{ Id: string; Doc_Code: string; Doc_Title_en: string }[]>([]);
 
   // تحديد الخطوات والحالات
   const getStatusSteps = () => [
-    { label: t('status.newRequest'), status: 8 },
-    { label: t('status.submitted'), status: 9 },
-    { label: t('status.managerReview'), status: 10 },
-    { label: t('status.qaManagerReview'), status: 11 },
-    { label: t('status.qaOfficerApproval'), status: 12 },
-    { label: t('status.rejected'), status: 13 },
-    { label: t('status.rejectedByQAManager'), status: 14 },
+    { label: t('status.newRequest'), status: 8 },                    // Step 1: طلب إنشاء جديد
+    { label: t('status.reviewed'), status: 11 },                     // Step 1: تم مراجعه طلب الانشاء
+    { label: t('status.approvedByDeptManager'), status: 12 },        // Step 2: تم الموافقه بواسطه رئيس القسم
+    { label: t('status.rejectedByDeptManager'), status: 13 },        // Step 2: تم الرفض بواسطه رئيس القسم
+    { label: t('status.rejectedByQAManager'), status: 14 },          // Step 3: تم الرفض بواسطه مدير الجوده
+    { label: t('status.approvedByQAManager'), status: 15 },          // Step 3: تم الموافقه بواسطه مدير الجوده
+    { label: t('status.approvedByQAOfficer'), status: 16 },          // Step 4: تم الموافقه بواسطه مسؤول الجوده
+    { label: t('status.rejectedByQAOfficer'), status: 17 },          // Step 4: تم الرفض بواسطه مسؤول الجوده
   ];
 
   const getCurrentStepIndex = (status: number) => {
+    // For rejected by Dept Manager (13), show at step 1
+    if (status === 13) return 1;
+    // For rejected by QA Manager (14), show at step 2
+    if (status === 14) return 2;
+    // For rejected by QA Officer (17), show at step 3
+    if (status === 17) return 3;
+
     const steps = getStatusSteps();
     const index = steps.findIndex(step => step.status === status);
     return index >= 0 ? index : 0;
@@ -147,13 +162,14 @@ const DocumentRequestManagement: React.FC = () => {
 
   const getStatusColor = (status: number) => {
     switch (status) {
-      case 8: return 'info';
-      case 9: return 'warning';
-      case 10: return 'primary';
-      case 11: return 'secondary';
-      case 12: return 'success';
-      case 13:
-      case 14: return 'error';
+      case 8: return 'info';           // New Request
+      case 11: return 'warning';       // Reviewed
+      case 12: return 'success';       // Approved by Dept Manager
+      case 15: return 'success';       // Approved by QA Manager
+      case 16: return 'success';       // Approved by QA Officer
+      case 13:                         // Rejected by Dept Manager
+      case 14:                         // Rejected by QA Manager
+      case 17: return 'error';         // Rejected by QA Officer
       default: return 'default';
     }
   };
@@ -171,9 +187,11 @@ const DocumentRequestManagement: React.FC = () => {
     }
   }, [user]);
 
-  // تحميل البيانات الأساسية
+  // تحميل البيانات الأساسية - فقط عند إنشاء طلب جديد (بدون id و بدون docRequestForm)
   useEffect(() => {
-    if (user) {
+    // Only set current user data when creating NEW request (no id and no existing form data)
+    // For existing requests, data comes from API in loadRequestFormData
+    if (user && !id && !docRequestForm) {
       const currentDate = new Date().toISOString().split('T')[0];
       setForm(prev => ({
         ...prev,
@@ -183,27 +201,13 @@ const DocumentRequestManagement: React.FC = () => {
           signature: user.signUrl || '',
           date: currentDate,
         },
-        reviewed: {
-          name: user.managerName || '',
-          designation: 'Department Manager',
-          signature: user.managerSignature || '',
-          date: currentDate,
-        },
-        qaManager: {
-          name: user.qaManagerName || '',
-          designation: 'QA Manager',
-          signature: user.qaManagerSignature || '',
-          date: currentDate,
-        },
-        docOfficer: {
-          name: user.docOfficerName || '',
-          designation: 'QA Officer',
-          signature: user.docOfficerSignature || '',
-          date: currentDate,
-        },
+        // reviewed, qaManager, docOfficer should remain empty until approved
+        reviewed: { name: '', designation: 'Department Manager', signature: '', date: '' },
+        qaManager: { name: '', designation: 'QA Manager', signature: '', date: '' },
+        docOfficer: { name: '', designation: 'QA Officer', signature: '', date: '' },
       }));
     }
-  }, [user, userRole]);
+  }, [user, userRole, id, docRequestForm]);
 
   // تحميل الأقسام
   useEffect(() => {
@@ -228,6 +232,23 @@ const DocumentRequestManagement: React.FC = () => {
       console.warn('Invalid compId:', compId);
     }
   }, [compId]);
+
+  // Fetch SOP codes when "merge" option is selected
+  useEffect(() => {
+    const fetchSopCodes = async () => {
+      if (documentOption === 'merge' && compId) {
+        try {
+          const response = await axiosServices.get(`/api/sopheader/getAllSopHeaders?compId=${compId}`);
+          const data = response.data?.data || response.data || [];
+          setSopCodes(Array.isArray(data) ? data : []);
+        } catch (error) {
+          console.error('Error fetching SOP codes:', error);
+          setSopCodes([]);
+        }
+      }
+    };
+    fetchSopCodes();
+  }, [documentOption, compId]);
 
   // تحميل بيانات الطلب إذا كان هناك ID
   useEffect(() => {
@@ -335,8 +356,7 @@ const DocumentRequestManagement: React.FC = () => {
       if (userRole === 'QA Associate') {
         setCanEdit(true);
       }
-      // إذا لم يكن هناك ID، تحميل الطلبات الخاصة بالمستخدم
-      loadUserRequests();
+      // Always start with a fresh form when creating new request
     }
   }, [id, userRole, user?.Id]);
 
@@ -519,9 +539,33 @@ const DocumentRequestManagement: React.FC = () => {
     return false;
   };
 
-  // Should hide QA sections (for both Dept Manager viewing and QA Associate creating new)
+  // Should hide QA sections (for QA Associate and Dept Manager roles)
   const shouldHideQASections = (): boolean => {
-    return isDeptManagerViewingRequest() || isQAAssociateCreatingNew();
+    return userRole === 'QA Associate' || userRole === 'Dept Manager';
+  };
+
+  // Check if current user is QA Manager viewing a request at status 12 (approved by Dept Manager)
+  const isQAManagerViewingRequest = (): boolean => {
+    if (userRole !== 'QA Manager' || !docRequestForm || !id) return false;
+    // Check if the request is in status 12 (approved by dept manager, waiting for QA Manager)
+    return docRequestForm.Request_status === 12;
+  };
+
+  // Check if current user is QA Manager (for disabling certain sections)
+  const isQAManagerViewing = (): boolean => {
+    return userRole === 'QA Manager';
+  };
+
+  // Check if current user is QA Officer (for disabling certain sections)
+  const isQAOfficerViewing = (): boolean => {
+    return userRole === 'QA DocumentOfficer';
+  };
+
+  // Check if current user is QA Officer viewing a request at status 15 (approved by QA Manager)
+  const isQAOfficerViewingRequest = (): boolean => {
+    if (userRole !== 'QA DocumentOfficer' || !docRequestForm || !id) return false;
+    // Check if the request is in status 15 (approved by QA Manager, waiting for QA Officer)
+    return docRequestForm.Request_status === 15;
   };
 
   // Handle Dept Manager approval/rejection
@@ -531,20 +575,127 @@ const DocumentRequestManagement: React.FC = () => {
     setSubmitLoading(true);
     try {
       const newStatus = action === 'approve' ? 12 : 13;
+      const currentDate = new Date().toISOString();
 
-      // Update SOP header status
-      await axiosServices.post('/api/sopheader/addEditSopHeader', {
-        Id: docRequestForm.sop_HeaderId,
-        status: String(newStatus),
+      // Update SOP header status using the correct endpoint for manager
+      // Pass signature URL for the reviewed_by_sign field
+      await axiosServices.patch(`/api/sopheader/updateSopStatusByManager/${docRequestForm.sop_HeaderId}`, {
+        signedBy: user?.signUrl || '',
+        status: { newStatus: String(newStatus) },
       });
 
-      // Update doc request form status
+      // Update doc request form status with manager data
       await axiosServices.post('/api/docrequest-form/addEdit', {
         Id: docRequestForm.Id,
         Request_status: newStatus,
         Reviewed_by: user?.Id,
-        Reviewed_date: new Date().toISOString(),
+        Reviewed_date: currentDate,
       });
+
+      // Update local form state with manager data
+      setForm(prev => ({
+        ...prev,
+        reviewed: {
+          name: `${user?.FName || ''} ${user?.LName || ''}`.trim(),
+          designation: 'Department Manager',
+          signature: user?.signUrl || '',
+          date: new Date().toLocaleDateString(),
+        },
+      }));
+
+      const actionText = action === 'approve' ? 'تمت الموافقة على' : 'تم رفض';
+      Swal.fire('تم', `${actionText} الطلب بنجاح`, 'success').then(() => {
+        navigate(-1);
+      });
+    } catch (error) {
+      console.error('Error updating status:', error);
+      Swal.fire('خطأ', 'حدث خطأ أثناء تحديث الحالة', 'error');
+    } finally {
+      setSubmitLoading(false);
+    }
+  };
+
+  // Handle QA Manager approval/rejection
+  const handleQAManagerAction = async (action: 'approve' | 'reject') => {
+    if (!docRequestForm) return;
+
+    setSubmitLoading(true);
+    try {
+      const newStatus = action === 'approve' ? 15 : 14;
+      const currentDate = new Date().toISOString();
+
+      // Update SOP header status using the correct endpoint for manager
+      // Pass signature URL for the approved_by_sign field
+      await axiosServices.patch(`/api/sopheader/updateSopStatusByManager/${docRequestForm.sop_HeaderId}`, {
+        signedBy: user?.signUrl || '',
+        status: { newStatus: String(newStatus) },
+      });
+
+      // Update doc request form status with QA Manager data and QA comment
+      await axiosServices.post('/api/docrequest-form/addEdit', {
+        Id: docRequestForm.Id,
+        Request_status: newStatus,
+        QaMan_Id: user?.Id,
+        QaManApprove_Date: currentDate,
+        Qa_comment: form.qaComment,
+      });
+
+      // Update local form state with QA Manager data
+      setForm(prev => ({
+        ...prev,
+        qaManager: {
+          name: `${user?.FName || ''} ${user?.LName || ''}`.trim(),
+          designation: 'QA Manager',
+          signature: user?.signUrl || '',
+          date: new Date().toLocaleDateString(),
+        },
+      }));
+
+      const actionText = action === 'approve' ? 'تمت الموافقة على' : 'تم رفض';
+      Swal.fire('تم', `${actionText} الطلب بنجاح`, 'success').then(() => {
+        navigate(-1);
+      });
+    } catch (error) {
+      console.error('Error updating status:', error);
+      Swal.fire('خطأ', 'حدث خطأ أثناء تحديث الحالة', 'error');
+    } finally {
+      setSubmitLoading(false);
+    }
+  };
+
+  // Handle QA Officer approval/rejection
+  const handleQAOfficerAction = async (action: 'approve' | 'reject') => {
+    if (!docRequestForm) return;
+
+    setSubmitLoading(true);
+    try {
+      const newStatus = action === 'approve' ? 16 : 17;
+      const currentDate = new Date().toISOString();
+
+      // Update SOP header status
+      await axiosServices.patch(`/api/sopheader/updateSopStatusByManager/${docRequestForm.sop_HeaderId}`, {
+        signedBy: user?.signUrl || '',
+        status: { newStatus: String(newStatus) },
+      });
+
+      // Update doc request form status with QA Officer data
+      await axiosServices.post('/api/docrequest-form/addEdit', {
+        Id: docRequestForm.Id,
+        Request_status: newStatus,
+        QaDoc_officerId: user?.Id,
+        QaDoc_officerDate: currentDate,
+      });
+
+      // Update local form state with QA Officer data
+      setForm(prev => ({
+        ...prev,
+        docOfficer: {
+          name: `${user?.FName || ''} ${user?.LName || ''}`.trim(),
+          designation: 'QA Officer',
+          signature: user?.signUrl || '',
+          date: new Date().toLocaleDateString(),
+        },
+      }));
 
       const actionText = action === 'approve' ? 'تمت الموافقة على' : 'تم رفض';
       Swal.fire('تم', `${actionText} الطلب بنجاح`, 'success').then(() => {
@@ -563,7 +714,7 @@ const DocumentRequestManagement: React.FC = () => {
 
     setSubmitLoading(true);
     try {
-      const payload = {
+      const payload: any = {
         Id: docRequestForm.Id,
         Request_status: newStatus,
         ...additionalData,
@@ -576,13 +727,19 @@ const DocumentRequestManagement: React.FC = () => {
       } else if (userRole === 'QA Manager' && newStatus === 11) {
         payload.QaMan_Id = user?.Id;
         payload.QaManApprove_Date = new Date().toISOString();
-      } else if (userRole === 'QA Officer' && newStatus === 12) {
+      } else if (userRole === 'QA DocumentOfficer' && (newStatus === 16 || newStatus === 17)) {
         payload.QaDoc_officerId = user?.Id;
         payload.QaDoc_officerDate = new Date().toISOString();
+
+        // Update SOP header status first for QA DocumentOfficer
+        await axiosServices.patch(`/api/sopheader/updateSopStatusByManager/${docRequestForm.sop_HeaderId}`, {
+          signedBy: user?.signUrl || '',
+          status: { newStatus: String(newStatus) },
+        });
       }
 
       await axiosServices.post('/api/docrequest-form/addEdit', payload);
-      
+
       Swal.fire('تم', 'تم تحديث حالة الطلب بنجاح', 'success').then(() => {
         window.location.reload();
       });
@@ -678,6 +835,8 @@ const DocumentRequestManagement: React.FC = () => {
           Qa_comment: form.qaComment,
           Doc_type: form.docType,
           Request_status: 8,
+          Requested_by: user?.Id,
+          Request_date: new Date().toISOString(),
         };
         await axiosServices.post('/api/docrequest-form/addEdit', docRequestPayload);
 
@@ -723,6 +882,8 @@ const DocumentRequestManagement: React.FC = () => {
           Qa_comment: form.qaComment,
           Doc_type: form.docType,
           Request_status: 8,
+          Requested_by: user?.Id,
+          Request_date: new Date().toISOString(),
         };
 
         await axiosServices.post('/api/docrequest-form/addEdit', docRequestPayload);
@@ -820,16 +981,24 @@ const DocumentRequestManagement: React.FC = () => {
       );
     }
 
-    if (userRole === 'QA Officer' && status === 11) {
+    if (userRole === 'QA DocumentOfficer' && status === 15) {
       return (
         <Stack direction="row" spacing={2} justifyContent="center">
           <Button
             variant="contained"
             color="success"
-            onClick={() => handleStatusUpdate(12)}
+            onClick={() => handleStatusUpdate(16)}
             disabled={submitLoading}
           >
-            موافقة QA Officer
+            {t('accept')}
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => handleStatusUpdate(17)}
+            disabled={submitLoading}
+          >
+            {t('buttons.reject')}
           </Button>
         </Stack>
       );
@@ -914,11 +1083,38 @@ const DocumentRequestManagement: React.FC = () => {
             </Box>
 
             <Stepper activeStep={getCurrentStepIndex(docRequestForm.Request_status)} alternativeLabel>
-              {getStatusSteps().filter(step => ![13, 14].includes(step.status)).map((step) => (
-                <Step key={step.status}>
-                  <StepLabel>{step.label}</StepLabel>
-                </Step>
-              ))}
+              {getStatusSteps().filter(step => ![13, 14].includes(step.status)).map((step, index) => {
+                // Determine if this step should show error styling
+                const isRejectedByDeptManager = docRequestForm.Request_status === 13 && index <= 1;
+                const isRejectedByQAManager = docRequestForm.Request_status === 14 && index <= 2;
+                const showErrorStyle = isRejectedByDeptManager || isRejectedByQAManager;
+                const showErrorLabel = (docRequestForm.Request_status === 13 && index === 1) ||
+                                       (docRequestForm.Request_status === 14 && index === 2);
+
+                return (
+                  <Step
+                    key={step.status}
+                    sx={showErrorStyle ? {
+                      '& .MuiStepLabel-root .Mui-completed': {
+                        color: 'error.main',
+                      },
+                      '& .MuiStepLabel-root .Mui-active': {
+                        color: 'error.main',
+                      },
+                      '& .MuiStepIcon-root.Mui-completed': {
+                        color: 'error.main',
+                      },
+                      '& .MuiStepIcon-root.Mui-active': {
+                        color: 'error.main',
+                      },
+                    } : {}}
+                  >
+                    <StepLabel error={showErrorLabel}>
+                      {step.label}
+                    </StepLabel>
+                  </Step>
+                );
+              })}
             </Stepper>
 
             {[13, 14].includes(docRequestForm.Request_status) && (
@@ -931,15 +1127,34 @@ const DocumentRequestManagement: React.FC = () => {
 
         <form onSubmit={handleSubmit}>
           <Paper sx={{ p: 3 }}>
-            <Box textAlign="center" mb={3}>
-              <Typography variant="h4">
-                {id ? t('documentRequest.viewTitle') : t('documentRequest.title')}
-              </Typography>
-              {docRequestForm && (
-                <Typography variant="subtitle1" color="text.secondary">
-                  {t('documentRequest.requestNumber')}: {docRequestForm.RequestFrm_code}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
+              <Box sx={{ flex: 1 }} />
+              <Box textAlign="center" sx={{ flex: 2 }}>
+                <Typography variant="h4">
+                  {id ? t('documentRequest.viewTitle') : t('documentRequest.title')}
                 </Typography>
-              )}
+                {docRequestForm && (
+                  <Typography variant="subtitle1" color="text.secondary">
+                    {t('documentRequest.requestNumber')}: {docRequestForm.RequestFrm_code}
+                  </Typography>
+                )}
+              </Box>
+              <Box sx={{ flex: 1, textAlign: 'right' }}>
+                {(id || docRequestForm) && (
+                  <Button
+                    variant="outlined"
+                    startIcon={<IconPrinter />}
+                    onClick={() => {
+                      const printUrl = id
+                        ? `/documentation-control/Request_Form_Print/${id}`
+                        : `/documentation-control/Request_Form_Print?headerId=${docRequestForm?.sop_HeaderId}`;
+                      window.open(printUrl, '_blank');
+                    }}
+                  >
+                    {t('Print Preview')}
+                  </Button>
+                )}
+              </Box>
             </Box>
 
             {/* نوع المستند */}
@@ -1011,14 +1226,14 @@ const DocumentRequestManagement: React.FC = () => {
               </Grid>
             </Grid>
 
-            {/* الغرض والنطاق - للعرض فقط */}
+            {/* الغرض والنطاق - للعرض فقط للـ Dept Manager, QA Manager, QA Officer */}
             <Grid container spacing={2} mb={3}>
               <Grid item xs={12} md={6}>
                 <Typography fontWeight="bold" mb={1}>{t('documentRequest.purposeEn')}:</Typography>
                 <RichTextEditor
                   value={form.purposeEn}
                   onChange={(content: string) => setForm(prev => ({ ...prev, purposeEn: content }))}
-                  disabled={!canEdit}
+                  disabled={!canEdit || isDeptManagerViewingRequest() || isQAManagerViewing() || isQAOfficerViewing()}
                 />
               </Grid>
               <Grid item xs={12} md={6} sx={{ direction: 'rtl' }}>
@@ -1028,7 +1243,7 @@ const DocumentRequestManagement: React.FC = () => {
                   dir="rtl"
                   value={form.purposeAr}
                   onChange={(content: string) => setForm(prev => ({ ...prev, purposeAr: content }))}
-                  disabled={!canEdit}
+                  disabled={!canEdit || isDeptManagerViewingRequest() || isQAManagerViewing() || isQAOfficerViewing()}
                 />
               </Grid>
             </Grid>
@@ -1039,7 +1254,7 @@ const DocumentRequestManagement: React.FC = () => {
                 <RichTextEditor
                   value={form.scopeEn}
                   onChange={(content: string) => setForm(prev => ({ ...prev, scopeEn: content }))}
-                  disabled={!canEdit}
+                  disabled={!canEdit || isDeptManagerViewingRequest() || isQAManagerViewing() || isQAOfficerViewing()}
                 />
               </Grid>
               <Grid item xs={12} md={6} sx={{ direction: 'rtl' }}>
@@ -1049,7 +1264,7 @@ const DocumentRequestManagement: React.FC = () => {
                   dir="rtl"
                   value={form.scopeAr}
                   onChange={(content: string) => setForm(prev => ({ ...prev, scopeAr: content }))}
-                  disabled={!canEdit}
+                  disabled={!canEdit || isDeptManagerViewingRequest() || isQAManagerViewing() || isQAOfficerViewing()}
                 />
               </Grid>
             </Grid>
@@ -1162,6 +1377,9 @@ const DocumentRequestManagement: React.FC = () => {
               </Box>
             )}
 
+            {/* QA Manager Action Buttons - Hidden for QA Manager as per requirements */}
+            {/* Buttons are hidden when QA Manager views the form */}
+
             {/* Hide QA sections for Dept Manager viewing a request OR QA Associate creating new */}
             {!shouldHideQASections() && (
               <>
@@ -1174,6 +1392,85 @@ const DocumentRequestManagement: React.FC = () => {
                     disabled={!canEdit || (userRole !== 'QA Manager' && userRole !== 'QA Associate')}
                   />
                 </Box>
+
+                {/* QA Manager Accept/Reject Buttons */}
+                {isQAManagerViewing() && docRequestForm && (
+                  <Box sx={{ mt: 2, mb: 3 }}>
+                    <Stack direction="row" spacing={2} justifyContent="center">
+                      <Button
+                        variant="contained"
+                        color="success"
+                        size="large"
+                        onClick={() => handleQAManagerAction('approve')}
+                        disabled={submitLoading}
+                      >
+                        {t('accept')}
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="error"
+                        size="large"
+                        onClick={() => handleQAManagerAction('reject')}
+                        disabled={submitLoading}
+                      >
+                        {t('buttons.reject')}
+                      </Button>
+                    </Stack>
+                  </Box>
+                )}
+
+                {/* Document Option Radio Buttons */}
+                <Box mb={3}>
+                  <Typography fontWeight="bold" mb={1}>{t('documentRequest.documentOption')}:</Typography>
+                  <RadioGroup
+                    row
+                    value={documentOption}
+                    onChange={(e) => {
+                      setDocumentOption(e.target.value as 'new' | 'merge');
+                      if (e.target.value === 'new') {
+                        setSelectedSopCode('');
+                      }
+                    }}
+                  >
+                    <FormControlLabel
+                      value="merge"
+                      control={<Radio />}
+                      label={t('documentRequest.mergeWithExisting')}
+                      disabled={!canEdit && userRole !== 'QA Manager'}
+                    />
+                    <FormControlLabel
+                      value="new"
+                      control={<Radio />}
+                      label={t('documentRequest.newDocument')}
+                      disabled={!canEdit && userRole !== 'QA Manager'}
+                    />
+                  </RadioGroup>
+
+                  {/* Dropdown for selecting existing SOP code when merge is selected */}
+                  {documentOption === 'merge' && (
+                    <FormControl fullWidth sx={{ mt: 2 }}>
+                      <InputLabel id="sop-code-label">{t('documentRequest.selectSopCode')}</InputLabel>
+                      <Select
+                        labelId="sop-code-label"
+                        value={selectedSopCode}
+                        label={t('documentRequest.selectSopCode')}
+                        onChange={(e) => setSelectedSopCode(e.target.value)}
+                        disabled={!canEdit && userRole !== 'QA Manager'}
+                      >
+                        {sopCodes.length > 0 ? (
+                          sopCodes.map((sop) => (
+                            <MenuItem key={sop.Id} value={sop.Id}>
+                              {sop.Doc_Code} - {sop.Doc_Title_en}
+                            </MenuItem>
+                          ))
+                        ) : (
+                          <MenuItem disabled>{t('documentRequest.noSopCodes')}</MenuItem>
+                        )}
+                      </Select>
+                    </FormControl>
+                  )}
+                </Box>
+
 
                 {/* جدول موافقات QA */}
                 <TableContainer component={Paper} sx={{ mb: 4, bgcolor: '#f5f5f5' }}>
