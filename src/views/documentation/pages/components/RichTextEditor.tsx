@@ -77,8 +77,42 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   // Display value with Arabic numerals if language is Arabic
   const displayValue = language === 'ar' ? convertNumbersInHtml(value, true) : value;
 
+  // Track if we're currently updating to avoid infinite loops
+  const isUpdatingRef = useRef(false);
+  const lastValueRef = useRef<string>('');
+
+  // Sync editor content when value prop changes
+  useEffect(() => {
+    // Skip if value hasn't changed or we're in the middle of an update
+    if (isUpdatingRef.current || displayValue === lastValueRef.current) return;
+
+    const updateEditor = () => {
+      const container = containerRef.current;
+      if (!container) return;
+
+      const $noteEditable = $(container).find('.note-editable');
+      if ($noteEditable.length) {
+        const currentContent = $noteEditable.html();
+        // Only update if the content is actually different
+        if (currentContent !== displayValue) {
+          isUpdatingRef.current = true;
+          $noteEditable.html(displayValue || '');
+          lastValueRef.current = displayValue || '';
+          isUpdatingRef.current = false;
+        }
+      }
+    };
+
+    // Use a small delay to ensure Summernote is fully initialized
+    const timer = setTimeout(updateEditor, 150);
+    return () => clearTimeout(timer);
+  }, [displayValue]);
+
   // Handle onChange - store with Western numerals for consistency
   const handleChange = useCallback((content: string) => {
+    // Update lastValueRef to prevent sync effect from overwriting user input
+    const displayContent = language === 'ar' ? convertNumbersInHtml(content, true) : content;
+    lastValueRef.current = displayContent;
     // Convert Arabic numerals back to Western for storage
     const normalizedContent = language === 'ar' ? convertNumbersInHtml(content, false) : content;
     onChange(normalizedContent);

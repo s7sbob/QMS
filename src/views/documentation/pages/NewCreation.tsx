@@ -37,7 +37,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 import RichTextEditor from './components/RichTextEditor'; // ⬅️ الجديد
-import TableOfContentsEditor, { TableOfContentsEntry } from './components/TableOfContentsEditor';
 
 /* ╭──────────────────────────────────────────────────────────────╮
    │ أنواع البيانات                                               │
@@ -63,7 +62,6 @@ const NewCreation: React.FC = () => {
   const [searchParams] = useSearchParams();
   const headerId = searchParams.get('headerId');
   const [isEditMode, setIsEditMode] = useState(false);
-  const [tableOfContents, setTableOfContents] = useState<TableOfContentsEntry[]>([]);
 
   const [formData, setFormData] = useState({
     titleAr: '',
@@ -88,13 +86,17 @@ const NewCreation: React.FC = () => {
   });
 
   const creationDate = new Date().toISOString().slice(0, 10);
-  const [loading, setLoading] = useState(false);
+  const [departmentsLoading, setDepartmentsLoading] = useState(true);
+  const [sopDataLoading, setSopDataLoading] = useState(false);
   const navigate = useNavigate();
+
+  // Show spinner when any data is still loading
+  const isLoading = departmentsLoading || sopDataLoading;
 
   /* ────────────────────────────── جلب الأقسام ───────────────────────────── */
   useEffect(() => {
     if (compId) {
-      setLoading(true);
+      setDepartmentsLoading(true);
       axiosServices
         .get(`/api/department/compdepartments/${compId}`)
         .then((res) => {
@@ -109,7 +111,7 @@ const NewCreation: React.FC = () => {
           setDepartments(data);
         })
         .catch((err) => console.error('Error fetching departments:', err))
-        .finally(() => setLoading(false));
+        .finally(() => setDepartmentsLoading(false));
     }
   }, [compId]);
 
@@ -118,7 +120,7 @@ const NewCreation: React.FC = () => {
     const loadExistingSopData = async () => {
       if (!headerId) return;
 
-      setLoading(true);
+      setSopDataLoading(true);
       setIsEditMode(true);
       try {
         // Load SOP header data
@@ -133,15 +135,6 @@ const NewCreation: React.FC = () => {
             titleEn: sopHeader.Doc_Title_en || '',
             documentType: sopHeader.doc_Type || 'SOP',
           }));
-          // Load Table of Contents
-          if (sopHeader.Content_Table) {
-            try {
-              const tocData = JSON.parse(sopHeader.Content_Table);
-              setTableOfContents(tocData);
-            } catch (e) {
-              console.log('Error parsing Content_Table:', e);
-            }
-          }
         }
 
         // Load Purpose
@@ -224,7 +217,7 @@ const NewCreation: React.FC = () => {
 
         // Load References
         try {
-          const refRes = await axiosServices.get(`/api/sopRefrences/getAllHistory/${headerId}`);
+          const refRes = await axiosServices.get(`/api/sopRefrences/history/${headerId}`);
           if (refRes.data?.length > 0) {
             const ref = refRes.data[0];
             setFormData((prev) => ({
@@ -252,7 +245,7 @@ const NewCreation: React.FC = () => {
         console.error('Error loading SOP data:', err);
         Swal.fire('خطأ', 'حدث خطأ أثناء تحميل بيانات الـ SOP', 'error');
       } finally {
-        setLoading(false);
+        setSopDataLoading(false);
       }
     };
 
@@ -276,7 +269,9 @@ const NewCreation: React.FC = () => {
     setAttachments((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handlePrint = () => window.print();
+  const handleCancel = () => {
+    navigate('/documentation-control');
+  };
 
   /* ─────────────────────────── خريطة اسم القسم ──────────────────────────── */
   const getSectionName = (url: string) => {
@@ -292,33 +287,27 @@ const NewCreation: React.FC = () => {
     return url;
   };
 
-  /* ───────────────────────────── إرسال النموذج ──────────────────────────── */
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  /* ───────────────────────────── حفظ التقدم (الحالة = 1) ──────────────────────────── */
+  const handleSaveProgress = async () => {
     setSubmitLoading(true);
     try {
       let sopHeaderId = headerId;
 
+      setSubmitStatus(`⏳ ${t('messages.savingProgress')}`);
+
       if (isEditMode && headerId) {
-        // Update existing SOP header
-        setSubmitStatus(`⏳ ${t('messages.updatingDocument')}`);
+        // Update existing SOP header with status 1
         const headerPayload = {
           Id: headerId,
           Doc_Title_en: formData.titleEn,
           Doc_Title_ar: formData.titleAr,
           Dept_Id: selectedDepartment,
           doc_Type: formData.documentType,
-          Content_Table: tableOfContents.length > 0 ? JSON.stringify(tableOfContents) : null,
+          status: '1',
         };
         await axiosServices.post('/api/sopheader/addEditSopHeader', headerPayload);
-
-        // Update status to 8 (re-submitted for review)
-        await axiosServices.patch(`/api/sopheader/updateSopStatusByAssociate/${headerId}`, {
-          signedBy: user?.signUrl || '',
-          status: { newStatus: '8' },
-        });
       } else {
-        // Create new SOP header
+        // Create new SOP header with status 1
         const headerPayload = {
           Doc_Title_en: formData.titleEn,
           Doc_Title_ar: formData.titleAr,
@@ -326,7 +315,96 @@ const NewCreation: React.FC = () => {
           Dept_Id: selectedDepartment,
           status: '1',
           doc_Type: formData.documentType,
-          Content_Table: tableOfContents.length > 0 ? JSON.stringify(tableOfContents) : null,
+        };
+
+        const headerRes = await axiosServices.post('/api/sopheader/addEditSopHeader', headerPayload);
+        sopHeaderId = headerRes.data?.Id;
+        if (!sopHeaderId) throw new Error(t('messages.noHeaderId'));
+      }
+
+      if (!user) {
+        Swal.fire(t('messages.error'), t('messages.userDataNotAvailable'), 'error');
+        return;
+      }
+      const userId = user.Id;
+
+      const sections = [
+        { en: formData.definitionsEn, ar: formData.definitionsAr, url: '/api/sopDefinition/addSop-Definition' },
+        { en: formData.purposeEn, ar: formData.purposeAr, url: '/api/soppurpose/addSop-Purpose' },
+        { en: formData.responsibilityEn, ar: formData.responsibilityAr, url: '/api/sopRes/SopReponsibility-create' },
+        { en: formData.procedureEn, ar: formData.procedureAr, url: '/api/sopProcedures/addSop-Procedure' },
+        { en: formData.scopeEn, ar: formData.scopeAr, url: '/api/sopScope/addSop-Scope' },
+        { en: formData.safetyConcernsEn, ar: formData.safetyConcernsAr, url: '/api/sopSafetyConcerns/addsop-safety-concerns' },
+        { en: formData.referenceDocumentsEn, ar: formData.referenceDocumentsAr, url: '/api/sopRefrences/Create' },
+        { en: formData.criticalPointsEn, ar: formData.criticalPointsAr, url: '/api/sopCriticalControlPoints/addSop-CriticalControlPoint' },
+      ];
+
+      for (const s of sections) {
+        if (s.en || s.ar) {
+          setSubmitStatus(`⏳ ${i18n.language === 'ar' ? 'رفع قسم:' : 'Saving section:'} ${getSectionName(s.url)}…`);
+          await axiosServices.post(s.url, {
+            Content_en: s.en,
+            Content_ar: s.ar,
+            Is_Current: 1,
+            Is_Active: 1,
+            Sop_HeaderId: sopHeaderId,
+          });
+        }
+      }
+
+      if (attachments.length) {
+        setSubmitStatus(`⏳ ${t('messages.savingAttachments')}`);
+        const fd = new FormData();
+        attachments.forEach((f) => fd.append('files', f));
+        fd.append('Sop_HeadId', sopHeaderId!);
+        fd.append('Crt_by', userId);
+        await axiosServices.post('/api/files/upload', fd, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+      }
+
+      setSubmitStatus(`🎉 ${t('messages.progressSaved')}`);
+      await new Promise((r) => setTimeout(r, 500));
+      Swal.fire(t('messages.success'), t('messages.progressSaved'), 'success').then((r) => {
+        if (r.isConfirmed) navigate(`/documentation-control/New_Creation_SOP?headerId=${sopHeaderId}`);
+      });
+    } catch (err) {
+      console.error(err);
+      Swal.fire(t('messages.error'), t('messages.errorSaving'), 'error');
+    } finally {
+      setSubmitLoading(false);
+    }
+  };
+
+  /* ───────────────────────────── إرسال النموذج (الحالة = 2) ──────────────────────────── */
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setSubmitLoading(true);
+    try {
+      let sopHeaderId = headerId;
+
+      setSubmitStatus(`⏳ ${t('messages.updatingDocument')}`);
+
+      if (isEditMode && headerId) {
+        // Update existing SOP header with status 2
+        const headerPayload = {
+          Id: headerId,
+          Doc_Title_en: formData.titleEn,
+          Doc_Title_ar: formData.titleAr,
+          Dept_Id: selectedDepartment,
+          doc_Type: formData.documentType,
+          status: '2',
+        };
+        await axiosServices.post('/api/sopheader/addEditSopHeader', headerPayload);
+      } else {
+        // Create new SOP header with status 2
+        const headerPayload = {
+          Doc_Title_en: formData.titleEn,
+          Doc_Title_ar: formData.titleAr,
+          Com_Id: compId,
+          Dept_Id: selectedDepartment,
+          status: '2',
+          doc_Type: formData.documentType,
         };
 
         const headerRes = await axiosServices.post('/api/sopheader/addEditSopHeader', headerPayload);
@@ -399,7 +477,7 @@ const NewCreation: React.FC = () => {
         });
       }
 
-      const successMessage = isEditMode ? t('messages.sopUpdatedSuccess') : t('messages.sopCreatedSuccess');
+      const successMessage = t('messages.sopSubmittedSuccess');
       setSubmitStatus(`🎉 ${successMessage}`);
       await new Promise((r) => setTimeout(r, 500));
       Swal.fire(t('messages.success'), successMessage, 'success').then((r) => {
@@ -414,7 +492,7 @@ const NewCreation: React.FC = () => {
   };
 
   /* ───────────────────────────── واجهة تحميل المستخدم ───────────────────── */
-  if (!user || !compId) {
+  if (!user || !compId || isLoading) {
     return (
       <Box sx={{ width: '100%', height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
         <CircularProgress size={50} />
@@ -524,7 +602,7 @@ const NewCreation: React.FC = () => {
                     label="القسم"
                     onChange={(e) => setSelectedDepartment(e.target.value)}
                   >
-                    {loading ? (
+                    {departmentsLoading ? (
                       <MenuItem disabled>{t('messages.loadingDepartments')}</MenuItem>
                     ) : departments.length ? (
                       departments.map((d) => (
@@ -667,15 +745,6 @@ const NewCreation: React.FC = () => {
                   label="يتضمن تدريب"
                   sx={{ mt: 2 }}
                 />
-
-                {/* Table of Contents Editor */}
-                <Box sx={{ mt: 3, mb: 2 }}>
-                  <TableOfContentsEditor
-                    value={tableOfContents}
-                    onChange={setTableOfContents}
-                    language="ar"
-                  />
-                </Box>
               </Grid>
 
               {/* ───────────── English ───────────── */}
@@ -736,7 +805,7 @@ const NewCreation: React.FC = () => {
                     label="Department"
                     onChange={(e) => setSelectedDepartment(e.target.value)}
                   >
-                    {loading ? (
+                    {departmentsLoading ? (
                       <MenuItem disabled>{t('messages.loadingDepartments')}</MenuItem>
                     ) : departments.length ? (
                       departments.map((d) => (
@@ -868,11 +937,14 @@ const NewCreation: React.FC = () => {
 
             {/* أزرار */}
             <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2 }}>
-              <Button variant="outlined" onClick={handlePrint}>
-                cancel
+              <Button variant="outlined" onClick={handleCancel}>
+                Cancel
+              </Button>
+              <Button variant="outlined" color="primary" onClick={handleSaveProgress}>
+                Save Progress
               </Button>
               <Button variant="contained" type="submit">
-                {isEditMode ? 'Update' : 'Submit'}
+                Submit
               </Button>
             </Box>
           </form>

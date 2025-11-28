@@ -98,7 +98,7 @@
         "statusUpdatedSuccess": "Status updated successfully",
         "errorUpdatingStatus": "Error updating status",
         "errorSaving": "Error saving",
-        "loadingUserData": "Loading user data...",
+        "loadingUserData": "Loading Document data...",
         "failedCreateDocument": "Failed to create document",
         "savingPurpose": "Saving Purpose...",
         "savingScope": "Saving Scope...",
