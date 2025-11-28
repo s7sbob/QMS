@@ -319,11 +319,11 @@ const NewCreation: React.FC = () => {
 
         const headerRes = await axiosServices.post('/api/sopheader/addEditSopHeader', headerPayload);
         sopHeaderId = headerRes.data?.Id;
-        if (!sopHeaderId) throw new Error(t('messages.noHeaderId'));
+        if (!sopHeaderId) throw new Error(String(t('messages.noHeaderId')));
       }
 
       if (!user) {
-        Swal.fire(t('messages.error'), t('messages.userDataNotAvailable'), 'error');
+        Swal.fire(String(t('messages.error')), String(t('messages.userDataNotAvailable')), 'error');
         return;
       }
       const userId = user.Id;
@@ -365,12 +365,12 @@ const NewCreation: React.FC = () => {
 
       setSubmitStatus(`🎉 ${t('messages.progressSaved')}`);
       await new Promise((r) => setTimeout(r, 500));
-      Swal.fire(t('messages.success'), t('messages.progressSaved'), 'success').then((r) => {
+      Swal.fire(String(t('messages.success')), String(t('messages.progressSaved')), 'success').then((r) => {
         if (r.isConfirmed) navigate(`/documentation-control/New_Creation_SOP?headerId=${sopHeaderId}`);
       });
     } catch (err) {
       console.error(err);
-      Swal.fire(t('messages.error'), t('messages.errorSaving'), 'error');
+      Swal.fire(String(t('messages.error')), String(t('messages.errorSaving')), 'error');
     } finally {
       setSubmitLoading(false);
     }
@@ -409,11 +409,11 @@ const NewCreation: React.FC = () => {
 
         const headerRes = await axiosServices.post('/api/sopheader/addEditSopHeader', headerPayload);
         sopHeaderId = headerRes.data?.Id;
-        if (!sopHeaderId) throw new Error(t('messages.noHeaderId'));
+        if (!sopHeaderId) throw new Error(String(t('messages.noHeaderId')));
       }
 
       if (!user) {
-        Swal.fire(t('messages.error'), t('messages.userDataNotAvailable'), 'error');
+        Swal.fire(String(t('messages.error')), String(t('messages.userDataNotAvailable')), 'error');
         return;
       }
       const userId = user.Id;
@@ -477,15 +477,15 @@ const NewCreation: React.FC = () => {
         });
       }
 
-      const successMessage = t('messages.sopSubmittedSuccess');
+      const successMessage = String(t('messages.sopSubmittedSuccess'));
       setSubmitStatus(`🎉 ${successMessage}`);
       await new Promise((r) => setTimeout(r, 500));
-      Swal.fire(t('messages.success'), successMessage, 'success').then((r) => {
+      Swal.fire(String(t('messages.success')), successMessage, 'success').then((r) => {
         if (r.isConfirmed) navigate(`/SOPFullDocument?headerId=${sopHeaderId}`);
       });
     } catch (err) {
       console.error(err);
-      Swal.fire(t('messages.error'), t('messages.errorSaving'), 'error');
+      Swal.fire(String(t('messages.error')), String(t('messages.errorSaving')), 'error');
     } finally {
       setSubmitLoading(false);
     }

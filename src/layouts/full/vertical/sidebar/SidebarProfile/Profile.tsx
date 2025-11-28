@@ -12,8 +12,9 @@ export const Profile = () => {
   const profileImage = user?.userImg_Url || '/default-profile.jpg';
   const displayName = user ? `${user.FName}` : 'User';
   // استخدام الخاصية المطلوبة لاستخراج jobTitle
-  const jobTitle =
+  const _jobTitle =
     user?.Users_Departments_Users_Departments_User_IdToUser_Data?.[0]?.job_title || 'Job Title';
+  void _jobTitle; // Reserved for future use
   const userRole =
     user?.Users_Departments_Users_Departments_User_IdToUser_Data?.[0]?.User_Roles?.Name || '';
   const departmentName =

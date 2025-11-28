@@ -14,7 +14,6 @@ import {
   Paper,
   Typography,
   Checkbox,
-  FormControlLabel,
 } from '@mui/material';
 import { IconPlus, IconTrash, IconArrowUp, IconArrowDown } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
@@ -39,7 +38,7 @@ const TableOfContentsEditor: React.FC<TableOfContentsEditorProps> = ({
   onChange,
   language = 'en',
 }) => {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const isArabic = language === 'ar' || i18n.language === 'ar';
 
   const [entries, setEntries] = useState<TableOfContentsEntry[]>(value || []);

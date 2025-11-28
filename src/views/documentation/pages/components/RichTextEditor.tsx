@@ -217,7 +217,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       `;
 
       // Insert the HTML into the editor using pasteHTML
-      const $noteEditable = $(containerRef.current).find('.note-editable');
+      const $noteEditable = $(containerRef.current as HTMLDivElement).find('.note-editable');
       if ($noteEditable.length) {
         $noteEditable.focus();
         document.execCommand('insertHTML', false, imgHtml);
@@ -240,7 +240,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     if (!file) return;
 
     // Close the Summernote modal dialog immediately
-    $('.note-modal').modal('hide');
+    ($('.note-modal') as any).modal('hide');
     $('.modal-backdrop').remove();
     $('body').removeClass('modal-open');
 

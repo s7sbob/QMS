@@ -339,7 +339,7 @@ const DocumentRequestManagement: React.FC = () => {
         }));
       } catch (err) {
         console.error(err);
-        Swal.fire(t('messages.error'), t('messages.failedFetchRequest'), 'error');
+        Swal.fire(String(t('messages.error')), String(t('messages.failedFetchRequest')), 'error');
       } finally {
         setLoading(false);
       }
@@ -415,7 +415,7 @@ const DocumentRequestManagement: React.FC = () => {
         }
       } catch (err) {
         console.error('Error loading SOP header:', err);
-        Swal.fire(t('messages.error'), t('messages.failedFetchDocument'), 'error');
+        Swal.fire(String(t('messages.error')), String(t('messages.failedFetchDocument')), 'error');
       } finally {
         setLoading(false);
       }
@@ -517,11 +517,12 @@ const DocumentRequestManagement: React.FC = () => {
   };
 
   // Check if current user is QA Manager viewing a request at status 12 (approved by Dept Manager)
-  const isQAManagerViewingRequest = (): boolean => {
+  const _isQAManagerViewingRequest = (): boolean => {
     if (userRole !== 'QA Manager' || !docRequestForm || !id) return false;
     // Check if the request is in status 12 (approved by dept manager, waiting for QA Manager)
     return docRequestForm.Request_status === 12;
   };
+  void _isQAManagerViewingRequest; // Reserved for future use
 
   // Check if current user is QA Manager (for disabling certain sections)
   const isQAManagerViewing = (): boolean => {
@@ -534,11 +535,12 @@ const DocumentRequestManagement: React.FC = () => {
   };
 
   // Check if current user is QA Officer viewing a request at status 15 (approved by QA Manager)
-  const isQAOfficerViewingRequest = (): boolean => {
+  const _isQAOfficerViewingRequest = (): boolean => {
     if (userRole !== 'QA DocumentOfficer' || !docRequestForm || !id) return false;
     // Check if the request is in status 15 (approved by QA Manager, waiting for QA Officer)
     return docRequestForm.Request_status === 15;
   };
+  void _isQAOfficerViewingRequest; // Reserved for future use
 
   // Handle Dept Manager approval/rejection
   const handleDeptManagerAction = async (action: 'approve' | 'reject') => {
@@ -575,13 +577,13 @@ const DocumentRequestManagement: React.FC = () => {
         },
       }));
 
-      const message = action === 'approve' ? t('messages.requestApprovedSuccess') : t('messages.requestRejectedSuccess');
-      Swal.fire(t('messages.success'), message, 'success').then(() => {
+      const message = action === 'approve' ? String(t('messages.requestApprovedSuccess')) : String(t('messages.requestRejectedSuccess'));
+      Swal.fire(String(t('messages.success')), message, 'success').then(() => {
         navigate(-1);
       });
     } catch (error) {
       console.error('Error updating status:', error);
-      Swal.fire(t('messages.error'), t('messages.errorUpdatingStatus'), 'error');
+      Swal.fire(String(t('messages.error')), String(t('messages.errorUpdatingStatus')), 'error');
     } finally {
       setSubmitLoading(false);
     }
@@ -623,20 +625,20 @@ const DocumentRequestManagement: React.FC = () => {
         },
       }));
 
-      const message = action === 'approve' ? t('messages.requestApprovedSuccess') : t('messages.requestRejectedSuccess');
-      Swal.fire(t('messages.success'), message, 'success').then(() => {
+      const message = action === 'approve' ? String(t('messages.requestApprovedSuccess')) : String(t('messages.requestRejectedSuccess'));
+      Swal.fire(String(t('messages.success')), message, 'success').then(() => {
         navigate(-1);
       });
     } catch (error) {
       console.error('Error updating status:', error);
-      Swal.fire(t('messages.error'), t('messages.errorUpdatingStatus'), 'error');
+      Swal.fire(String(t('messages.error')), String(t('messages.errorUpdatingStatus')), 'error');
     } finally {
       setSubmitLoading(false);
     }
   };
 
   // Handle QA Officer approval/rejection
-  const handleQAOfficerAction = async (action: 'approve' | 'reject') => {
+  const _handleQAOfficerAction = async (action: 'approve' | 'reject') => {
     if (!docRequestForm) return;
 
     setSubmitLoading(true);
@@ -669,17 +671,18 @@ const DocumentRequestManagement: React.FC = () => {
         },
       }));
 
-      const message = action === 'approve' ? t('messages.requestApprovedSuccess') : t('messages.requestRejectedSuccess');
-      Swal.fire(t('messages.success'), message, 'success').then(() => {
+      const message = action === 'approve' ? String(t('messages.requestApprovedSuccess')) : String(t('messages.requestRejectedSuccess'));
+      Swal.fire(String(t('messages.success')), message, 'success').then(() => {
         navigate(-1);
       });
     } catch (error) {
       console.error('Error updating status:', error);
-      Swal.fire(t('messages.error'), t('messages.errorUpdatingStatus'), 'error');
+      Swal.fire(String(t('messages.error')), String(t('messages.errorUpdatingStatus')), 'error');
     } finally {
       setSubmitLoading(false);
     }
   };
+  void _handleQAOfficerAction; // Reserved for future use
 
   const handleStatusUpdate = async (newStatus: number, additionalData: any = {}) => {
     if (!docRequestForm) return;
@@ -712,12 +715,12 @@ const DocumentRequestManagement: React.FC = () => {
 
       await axiosServices.post('/api/docrequest-form/addEdit', payload);
 
-      Swal.fire(t('messages.success'), t('messages.statusUpdatedSuccess'), 'success').then(() => {
+      Swal.fire(String(t('messages.success')), String(t('messages.statusUpdatedSuccess')), 'success').then(() => {
         window.location.reload();
       });
     } catch (error) {
       console.error('Error updating status:', error);
-      Swal.fire(t('messages.error'), t('messages.errorUpdatingStatus'), 'error');
+      Swal.fire(String(t('messages.error')), String(t('messages.errorUpdatingStatus')), 'error');
     } finally {
       setSubmitLoading(false);
     }
@@ -885,7 +888,7 @@ const DocumentRequestManagement: React.FC = () => {
       setSubmitStatus(`🎉 ${t('messages.dataSavedSuccess')}`);
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      Swal.fire(t('messages.success'), t('messages.dataSavedSuccess'), 'success').then(() => {
+      Swal.fire(String(t('messages.success')), String(t('messages.dataSavedSuccess')), 'success').then(() => {
         if (!id) {
           navigate(-1);
         } else {
@@ -895,7 +898,7 @@ const DocumentRequestManagement: React.FC = () => {
 
     } catch (err: any) {
       console.error(err);
-      Swal.fire(t('messages.error'), `${t('messages.errorSaving')}: ${err.response?.data?.message || err.message}`, 'error');
+      Swal.fire(String(t('messages.error')), `${t('messages.errorSaving')}: ${err.response?.data?.message || err.message}`, 'error');
     } finally {
       setSubmitLoading(false);
       setSubmitStatus('');
@@ -1279,13 +1282,13 @@ const DocumentRequestManagement: React.FC = () => {
                     <TableCell sx={{ fontWeight: 'bold' }}>{t('Signature')}</TableCell>
                     <TableCell sx={{ bgcolor: '#fafafa' }}>
                       {form.requested.signature && (
-                        <img src={form.requested.signature} alt={t('documentRequest.signature')} style={{ maxHeight: 50 }} />
+                        <img src={form.requested.signature} alt={String(t('documentRequest.signature'))} style={{ maxHeight: 50 }} />
                       )}
                     </TableCell>
                     <TableCell sx={{ fontWeight: 'bold' }}>{t('signature')}</TableCell>
                     <TableCell sx={{ bgcolor: '#fafafa' }}>
                       {form.reviewed.signature && (
-                        <img src={form.reviewed.signature} alt={t('documentRequest.signature')} style={{ maxHeight: 50 }} />
+                        <img src={form.reviewed.signature} alt={String(t('documentRequest.signature'))} style={{ maxHeight: 50 }} />
                       )}
                     </TableCell>
                   </TableRow>
@@ -1476,13 +1479,13 @@ const DocumentRequestManagement: React.FC = () => {
                         <TableCell sx={{ fontWeight: 'bold' }}>{t('documentRequest.signature')}</TableCell>
                         <TableCell sx={{ bgcolor: '#fafafa' }}>
                           {form.qaManager.signature && (
-                            <img src={form.qaManager.signature} alt={t('documentRequest.signature')} style={{ maxHeight: 50 }} />
+                            <img src={form.qaManager.signature} alt={String(t('documentRequest.signature'))} style={{ maxHeight: 50 }} />
                           )}
                         </TableCell>
                         <TableCell sx={{ fontWeight: 'bold' }}>{t('documentRequest.signature')}</TableCell>
                         <TableCell sx={{ bgcolor: '#fafafa' }}>
                           {form.docOfficer.signature && (
-                            <img src={form.docOfficer.signature} alt={t('documentRequest.signature')} style={{ maxHeight: 50 }} />
+                            <img src={form.docOfficer.signature} alt={String(t('documentRequest.signature'))} style={{ maxHeight: 50 }} />
                           )}
                         </TableCell>
                       </TableRow>

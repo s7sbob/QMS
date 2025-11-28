@@ -27,8 +27,9 @@ const Profile: React.FC = () => {
   };
 
   // استخدام userRole مباشرة من الـ context لعرض المسمى الوظيفي
-  const jobTitle =
+  const _jobTitle =
     user?.Users_Departments_Users_Departments_User_IdToUser_Data?.[0]?.job_title || 'Job Title';
+  void _jobTitle; // Reserved for future use
   const userRole =
     user?.Users_Departments_Users_Departments_User_IdToUser_Data?.[0]?.User_Roles?.Name || '';
   const departmentName =

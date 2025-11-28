@@ -1,7 +1,7 @@
 // src/views/ITManagement/ITManagementPage.tsx
 
 import React, { useEffect, useState } from 'react';
-import { Box, Button, Typography, LinearProgress, Backdrop, CircularProgress } from '@mui/material';
+import { Box, Button, Typography, CircularProgress } from '@mui/material';
 
 import axiosServices from 'src/utils/axiosServices';
 

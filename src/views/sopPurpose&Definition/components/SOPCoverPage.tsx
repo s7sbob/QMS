@@ -7,7 +7,7 @@ interface SOPCoverPageProps {
   totalPages: number;
 }
 
-const formatDate = (iso: string | null) => (iso ? iso.split('T')[0] : '');
+const formatDate = (iso: string | null | undefined) => (iso ? iso.split('T')[0] : '');
 
 const SOPCoverPage: React.FC<SOPCoverPageProps> = ({ headerData, totalPages }) => {
   if (!headerData) return null;

@@ -1,5 +1,5 @@
 // src/components/SOPPaginatedDocument.tsx
-import React, { ReactNode, useEffect, useState, useRef, useMemo, useLayoutEffect } from 'react';
+import React, { ReactNode, useState, useRef, useMemo, useLayoutEffect } from 'react';
 import SOPCoverPage from './SOPCoverPage';
 import SOPContentPageHeader from './SOPContentPageHeader';
 import SOPTableOfContents, { TableOfContentsEntry } from './SOPTableOfContents';
