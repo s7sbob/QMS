@@ -58,7 +58,10 @@
         "approve": "Approve",
         "reject": "Reject",
         "saveChanges": "Save Changes",
-        "sendRequest": "Send Request"
+        "sendRequest": "Send Request",
+        "managerApproval": "Manager Approval",
+        "qaManagerApproval": "QA Manager Approval",
+        "rejectRequest": "Reject Request"
     },
 
     "status": {
@@ -89,6 +92,7 @@
         "savingData": "Saving data...",
         "dataSavedSuccess": "Data saved successfully!",
         "failedFetchRequest": "Failed to fetch request data",
+        "failedFetchDocument": "Failed to fetch document data",
         "requestApprovedSuccess": "Request approved successfully",
         "requestRejectedSuccess": "Request rejected successfully",
         "statusUpdatedSuccess": "Status updated successfully",
@@ -137,5 +141,19 @@
         "logout": "Logout",
         "login": "Login",
         "welcome": "Welcome"
-    }
+    },
+
+    "signature": "Signature",
+    "date": "Date",
+    "Designation": "Designation",
+    "accept": "Accept",
+    "Print Preview": "Print Preview",
+    "New Request": "New Request",
+    "Reviewed": "Reviewed",
+    "Approved By Dept Manager": "Approved By Department Manager",
+    "Rejected By Dept Manager": "Rejected By Department Manager",
+    "Rejected By QA Manager": "Rejected By QA Manager",
+    "Approved By QA Manager": "Approved By QA Manager",
+    "ApprovedBy QA Document Officer": "Approved By QA Document Officer",
+    "Rejected By QA Document Officer": "Rejected By QA Document Officer"
 }

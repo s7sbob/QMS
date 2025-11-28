@@ -58,7 +58,10 @@
         "approve": "موافقة",
         "reject": "رفض",
         "saveChanges": "حفظ التعديلات",
-        "sendRequest": "إرسال الطلب"
+        "sendRequest": "إرسال الطلب",
+        "managerApproval": "موافقة المدير",
+        "qaManagerApproval": "موافقة مدير الجودة",
+        "rejectRequest": "رفض الطلب"
     },
 
     "status": {
@@ -89,6 +92,7 @@
         "savingData": "جاري حفظ البيانات...",
         "dataSavedSuccess": "تم حفظ البيانات بنجاح!",
         "failedFetchRequest": "فشل في جلب بيانات الطلب",
+        "failedFetchDocument": "فشل في جلب بيانات المستند",
         "requestApprovedSuccess": "تمت الموافقة على الطلب بنجاح",
         "requestRejectedSuccess": "تم رفض الطلب بنجاح",
         "statusUpdatedSuccess": "تم تحديث حالة الطلب بنجاح",
@@ -137,5 +141,19 @@
         "logout": "تسجيل الخروج",
         "login": "تسجيل الدخول",
         "welcome": "مرحباً"
-    }
+    },
+
+    "signature": "التوقيع",
+    "date": "التاريخ",
+    "Designation": "المنصب",
+    "accept": "قبول",
+    "Print Preview": "معاينة الطباعة",
+    "New Request": "طلب إنشاء جديد",
+    "Reviewed": "تم مراجعه طلب الانشاء",
+    "Approved By Dept Manager": "تم الموافقه بواسطه رئيس القسم",
+    "Rejected By Dept Manager": "تم الرفض بواسطه رئيس القسم",
+    "Rejected By QA Manager": "تم الرفض بواسطه مدير الجوده",
+    "Approved By QA Manager": "تم الموافقه بواسطه مدير الجوده",
+    "ApprovedBy QA Document Officer": "تم الموافقه بواسطه مسؤول الجوده",
+    "Rejected By QA Document Officer": "تم الرفض بواسطه مسؤول الجوده"
 }

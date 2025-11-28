@@ -15,6 +15,7 @@ import { Button, Box } from '@mui/material';
 import ReferenceDocumentsSection from '../components/ReferenceDocumentsSection';
 import AttachmentsSection from '../components/AttachmentsSection';
 import CriticalControlPointsSection from '../components/CriticalControlPointsSection';
+import Spinner from 'src/views/spinner/Spinner';
 
 export interface SopDetailTracking {
   Id: string;
@@ -36,6 +37,7 @@ export interface SopDetailTracking {
 
 const SOPFullDocument: React.FC = () => {
   const [sopDetail, setSopDetail] = useState<SopDetailTracking | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [searchParams] = useSearchParams();
   const headerId = searchParams.get('headerId');
   const user = useContext(UserContext);
@@ -50,8 +52,12 @@ const SOPFullDocument: React.FC = () => {
       .then((res) => {
         const active = res.data.find((x: SopDetailTracking) => x.Is_Active === 1);
         if (active) setSopDetail(active);
+        setIsLoading(false);
       })
-      .catch((err) => console.error('Error refreshing sop detail:', err));
+      .catch((err) => {
+        console.error('Error refreshing sop detail:', err);
+        setIsLoading(false);
+      });
   };
 
   useEffect(refreshSopDetail, [headerId]);
@@ -67,24 +73,6 @@ const SOPFullDocument: React.FC = () => {
       );
     }
   }, [sopDetail, navigate]);
-
-  useEffect(() => {
-    let url = '';
-    if (headerId) {
-      url = `/api/sopDetailTracking/getSop?headerId=${headerId}`;
-    } else {
-      url = `/api/sopDetailTracking/getSop?isCurrent=true`;
-    }
-    axiosServices
-      .get(url)
-      .then((res) => {
-        const activeRecords = res.data.filter((item: SopDetailTracking) => item.Is_Active === 1);
-        if (activeRecords.length > 0) {
-          setSopDetail(activeRecords[0]);
-        }
-      })
-      .catch((error) => console.error('Error fetching sop detail tracking data:', error));
-  }, [headerId]);
 
   // مكون التحكم بالحالة (StatusControl)
   const StatusControl: React.FC<{
@@ -212,6 +200,10 @@ const SOPFullDocument: React.FC = () => {
     }
     return null;
   };
+
+  if (isLoading) {
+    return <Spinner text="Loading SOP data" />;
+  }
 
   return (
     <>

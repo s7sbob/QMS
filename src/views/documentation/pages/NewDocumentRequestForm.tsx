@@ -137,14 +137,14 @@ const DocumentRequestManagement: React.FC = () => {
 
   // تحديد الخطوات والحالات
   const getStatusSteps = () => [
-    { label: t('status.newRequest'), status: 8 },                    // Step 1: طلب إنشاء جديد
-    { label: t('status.reviewed'), status: 11 },                     // Step 1: تم مراجعه طلب الانشاء
-    { label: t('status.approvedByDeptManager'), status: 12 },        // Step 2: تم الموافقه بواسطه رئيس القسم
-    { label: t('status.rejectedByDeptManager'), status: 13 },        // Step 2: تم الرفض بواسطه رئيس القسم
-    { label: t('status.rejectedByQAManager'), status: 14 },          // Step 3: تم الرفض بواسطه مدير الجوده
-    { label: t('status.approvedByQAManager'), status: 15 },          // Step 3: تم الموافقه بواسطه مدير الجوده
-    { label: t('status.approvedByQAOfficer'), status: 16 },          // Step 4: تم الموافقه بواسطه مسؤول الجوده
-    { label: t('status.rejectedByQAOfficer'), status: 17 },          // Step 4: تم الرفض بواسطه مسؤول الجوده
+    { label: t('New Request'), status: 8 },                    // Step 1: طلب إنشاء جديد
+    { label: t('Reviewed'), status: 11 },                     // Step 1: تم مراجعه طلب الانشاء
+    { label: t('Approved By Dept Manager'), status: 12 },        // Step 2: تم الموافقه بواسطه رئيس القسم
+    { label: t('Rejected By Dept Manager'), status: 13 },        // Step 2: تم الرفض بواسطه رئيس القسم
+    { label: t('Rejected By QA Manager'), status: 14 },          // Step 3: تم الرفض بواسطه مدير الجوده
+    { label: t('Approved By QA Manager'), status: 15 },          // Step 3: تم الموافقه بواسطه مدير الجوده
+    { label: t('ApprovedBy QA Document Officer'), status: 16 },          // Step 4: تم الموافقه بواسطه مسؤول الجوده
+    { label: t('Rejected By QA Document Officer'), status: 17 },          // Step 4: تم الرفض بواسطه مسؤول الجوده
   ];
 
   const getCurrentStepIndex = (status: number) => {
@@ -160,7 +160,7 @@ const DocumentRequestManagement: React.FC = () => {
     return index >= 0 ? index : 0;
   };
 
-  const getStatusColor = (status: number) => {
+  const getStatusColor = (status: number): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
     switch (status) {
       case 8: return 'info';           // New Request
       case 11: return 'warning';       // Reviewed
@@ -196,7 +196,7 @@ const DocumentRequestManagement: React.FC = () => {
       setForm(prev => ({
         ...prev,
         requested: {
-          name: user.FName + ' ' + user.LName || '',
+          name: `${user.FName || ''} ${user.LName || ''}`.trim(),
           designation: userRole || '',
           signature: user.signUrl || '',
           date: currentDate,
@@ -313,29 +313,25 @@ const DocumentRequestManagement: React.FC = () => {
           scopeEn,
           scopeAr,
           requested: {
-            name: data.User_Data_DocRequest_frm_Requested_byToUser_Data?.FName + ' ' +
-              data.User_Data_DocRequest_frm_Requested_byToUser_Data?.LName || '',
+            name: `${data.User_Data_DocRequest_frm_Requested_byToUser_Data?.FName || ''} ${data.User_Data_DocRequest_frm_Requested_byToUser_Data?.LName || ''}`.trim(),
             designation: 'Requester',
             signature: data.User_Data_DocRequest_frm_Requested_byToUser_Data?.signUrl || '',
             date: data.Request_date ? new Date(data.Request_date).toLocaleDateString() : '',
           },
           reviewed: {
-            name: data.User_Data_DocRequest_frm_Reviewed_byToUser_Data?.FName + ' ' +
-              data.User_Data_DocRequest_frm_Reviewed_byToUser_Data?.LName || '',
+            name: `${data.User_Data_DocRequest_frm_Reviewed_byToUser_Data?.FName || ''} ${data.User_Data_DocRequest_frm_Reviewed_byToUser_Data?.LName || ''}`.trim(),
             designation: 'Department Manager',
             signature: data.User_Data_DocRequest_frm_Reviewed_byToUser_Data?.signUrl || '',
             date: data.Reviewed_date ? new Date(data.Reviewed_date).toLocaleDateString() : '',
           },
           qaManager: {
-            name: data.User_Data_DocRequest_frm_QaMan_IdToUser_Data?.FName + ' ' +
-              data.User_Data_DocRequest_frm_QaMan_IdToUser_Data?.LName || '',
+            name: `${data.User_Data_DocRequest_frm_QaMan_IdToUser_Data?.FName || ''} ${data.User_Data_DocRequest_frm_QaMan_IdToUser_Data?.LName || ''}`.trim(),
             designation: 'QA Manager',
             signature: data.User_Data_DocRequest_frm_QaMan_IdToUser_Data?.signUrl || '',
             date: data.QaManApprove_Date ? new Date(data.QaManApprove_Date).toLocaleDateString() : '',
           },
           docOfficer: {
-            name: data.User_Data_DocRequest_frm_QaDoc_officerIdToUser_Data?.FName + ' ' +
-              data.User_Data_DocRequest_frm_QaDoc_officerIdToUser_Data?.LName || '',
+            name: `${data.User_Data_DocRequest_frm_QaDoc_officerIdToUser_Data?.FName || ''} ${data.User_Data_DocRequest_frm_QaDoc_officerIdToUser_Data?.LName || ''}`.trim(),
             designation: 'QA Officer',
             signature: data.User_Data_DocRequest_frm_QaDoc_officerIdToUser_Data?.signUrl || '',
             date: data.QaDoc_officerDate ? new Date(data.QaDoc_officerDate).toLocaleDateString() : '',
@@ -343,7 +339,7 @@ const DocumentRequestManagement: React.FC = () => {
         }));
       } catch (err) {
         console.error(err);
-        Swal.fire('خطأ', 'فشل في جلب بيانات الطلب', 'error');
+        Swal.fire(t('messages.error'), t('messages.failedFetchRequest'), 'error');
       } finally {
         setLoading(false);
       }
@@ -419,7 +415,7 @@ const DocumentRequestManagement: React.FC = () => {
         }
       } catch (err) {
         console.error('Error loading SOP header:', err);
-        Swal.fire('خطأ', 'فشل في جلب بيانات المستند', 'error');
+        Swal.fire(t('messages.error'), t('messages.failedFetchDocument'), 'error');
       } finally {
         setLoading(false);
       }
@@ -446,30 +442,6 @@ const DocumentRequestManagement: React.FC = () => {
         return status === 11;
       default:
         return false;
-    }
-  };
-
-  const loadUserRequests = async () => {
-    if (!user?.Id) return;
-    
-    setLoading(true);
-    try {
-      const response = await axiosServices.get('/api/docrequest-form/getall');
-      const userRequests = response.data.filter((req: DocRequestForm) => 
-        req.Requested_by === user.Id && req.Request_status < 12
-      );
-      
-      if (userRequests.length > 0) {
-        // عرض أحدث طلب للمستخدم
-        const latestRequest = userRequests[0];
-        setDocRequestForm(latestRequest);
-        const canUserEdit = checkEditPermission(latestRequest, userRole, user.Id);
-        setCanEdit(canUserEdit);
-      }
-    } catch (error) {
-      console.error('Error loading user requests:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -603,13 +575,13 @@ const DocumentRequestManagement: React.FC = () => {
         },
       }));
 
-      const actionText = action === 'approve' ? 'تمت الموافقة على' : 'تم رفض';
-      Swal.fire('تم', `${actionText} الطلب بنجاح`, 'success').then(() => {
+      const message = action === 'approve' ? t('messages.requestApprovedSuccess') : t('messages.requestRejectedSuccess');
+      Swal.fire(t('messages.success'), message, 'success').then(() => {
         navigate(-1);
       });
     } catch (error) {
       console.error('Error updating status:', error);
-      Swal.fire('خطأ', 'حدث خطأ أثناء تحديث الحالة', 'error');
+      Swal.fire(t('messages.error'), t('messages.errorUpdatingStatus'), 'error');
     } finally {
       setSubmitLoading(false);
     }
@@ -651,13 +623,13 @@ const DocumentRequestManagement: React.FC = () => {
         },
       }));
 
-      const actionText = action === 'approve' ? 'تمت الموافقة على' : 'تم رفض';
-      Swal.fire('تم', `${actionText} الطلب بنجاح`, 'success').then(() => {
+      const message = action === 'approve' ? t('messages.requestApprovedSuccess') : t('messages.requestRejectedSuccess');
+      Swal.fire(t('messages.success'), message, 'success').then(() => {
         navigate(-1);
       });
     } catch (error) {
       console.error('Error updating status:', error);
-      Swal.fire('خطأ', 'حدث خطأ أثناء تحديث الحالة', 'error');
+      Swal.fire(t('messages.error'), t('messages.errorUpdatingStatus'), 'error');
     } finally {
       setSubmitLoading(false);
     }
@@ -697,13 +669,13 @@ const DocumentRequestManagement: React.FC = () => {
         },
       }));
 
-      const actionText = action === 'approve' ? 'تمت الموافقة على' : 'تم رفض';
-      Swal.fire('تم', `${actionText} الطلب بنجاح`, 'success').then(() => {
+      const message = action === 'approve' ? t('messages.requestApprovedSuccess') : t('messages.requestRejectedSuccess');
+      Swal.fire(t('messages.success'), message, 'success').then(() => {
         navigate(-1);
       });
     } catch (error) {
       console.error('Error updating status:', error);
-      Swal.fire('خطأ', 'حدث خطأ أثناء تحديث الحالة', 'error');
+      Swal.fire(t('messages.error'), t('messages.errorUpdatingStatus'), 'error');
     } finally {
       setSubmitLoading(false);
     }
@@ -740,12 +712,12 @@ const DocumentRequestManagement: React.FC = () => {
 
       await axiosServices.post('/api/docrequest-form/addEdit', payload);
 
-      Swal.fire('تم', 'تم تحديث حالة الطلب بنجاح', 'success').then(() => {
+      Swal.fire(t('messages.success'), t('messages.statusUpdatedSuccess'), 'success').then(() => {
         window.location.reload();
       });
     } catch (error) {
       console.error('Error updating status:', error);
-      Swal.fire('خطأ', 'حدث خطأ أثناء تحديث الحالة', 'error');
+      Swal.fire(t('messages.error'), t('messages.errorUpdatingStatus'), 'error');
     } finally {
       setSubmitLoading(false);
     }
@@ -869,7 +841,7 @@ const DocumentRequestManagement: React.FC = () => {
         const docCode = headerResponse.data?.Doc_Code;
 
         if (!newHeaderId) {
-          throw new Error(t('messages.failedCreateDocument'));
+          throw new Error('failed to Create Document');
         }
 
         // Save scope and purpose
@@ -944,7 +916,7 @@ const DocumentRequestManagement: React.FC = () => {
             onClick={() => handleStatusUpdate(10)}
             disabled={submitLoading}
           >
-            موافقة المدير
+            {t('buttons.managerApproval')}
           </Button>
           <Button
             variant="contained"
@@ -952,7 +924,7 @@ const DocumentRequestManagement: React.FC = () => {
             onClick={() => handleStatusUpdate(13)}
             disabled={submitLoading}
           >
-            رفض الطلب
+            {t('buttons.rejectRequest')}
           </Button>
         </Stack>
       );
@@ -967,7 +939,7 @@ const DocumentRequestManagement: React.FC = () => {
             onClick={() => handleStatusUpdate(11)}
             disabled={submitLoading}
           >
-            موافقة QA Manager
+            {t('buttons.qaManagerApproval')}
           </Button>
           <Button
             variant="contained"
@@ -975,7 +947,7 @@ const DocumentRequestManagement: React.FC = () => {
             onClick={() => handleStatusUpdate(14)}
             disabled={submitLoading}
           >
-            رفض الطلب
+            {t('buttons.rejectRequest')}
           </Button>
         </Stack>
       );
@@ -1012,7 +984,7 @@ const DocumentRequestManagement: React.FC = () => {
             variant="contained"
             disabled={submitLoading}
           >
-            إرسال الطلب
+            {t('buttons.sendRequest')}
           </Button>
         </Stack>
       );
@@ -1083,13 +1055,15 @@ const DocumentRequestManagement: React.FC = () => {
             </Box>
 
             <Stepper activeStep={getCurrentStepIndex(docRequestForm.Request_status)} alternativeLabel>
-              {getStatusSteps().filter(step => ![13, 14].includes(step.status)).map((step, index) => {
+              {getStatusSteps().filter(step => ![13, 14, 17].includes(step.status)).map((step, index) => {
                 // Determine if this step should show error styling
                 const isRejectedByDeptManager = docRequestForm.Request_status === 13 && index <= 1;
                 const isRejectedByQAManager = docRequestForm.Request_status === 14 && index <= 2;
-                const showErrorStyle = isRejectedByDeptManager || isRejectedByQAManager;
+                const isRejectedByQAOfficer = docRequestForm.Request_status === 17 && index <= 3;
+                const showErrorStyle = isRejectedByDeptManager || isRejectedByQAManager || isRejectedByQAOfficer;
                 const showErrorLabel = (docRequestForm.Request_status === 13 && index === 1) ||
-                                       (docRequestForm.Request_status === 14 && index === 2);
+                                       (docRequestForm.Request_status === 14 && index === 2) ||
+                                       (docRequestForm.Request_status === 17 && index === 3);
 
                 return (
                   <Step
@@ -1117,7 +1091,7 @@ const DocumentRequestManagement: React.FC = () => {
               })}
             </Stepper>
 
-            {[13, 14].includes(docRequestForm.Request_status) && (
+            {[13, 14, 17].includes(docRequestForm.Request_status) && (
               <Alert severity="error" sx={{ mt: 2 }}>
                 {t('documentRequest.requestRejected')}
               </Alert>
@@ -1296,19 +1270,19 @@ const DocumentRequestManagement: React.FC = () => {
                     <TableCell sx={{ bgcolor: '#fafafa' }}>{form.reviewed.name}</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 'bold' }}>{t('documentRequest.designation')}</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>{t('Designation')}</TableCell>
                     <TableCell sx={{ bgcolor: '#fafafa' }}>{form.requested.designation}</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>{t('documentRequest.designation')}</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>{t('Designation')}</TableCell>
                     <TableCell sx={{ bgcolor: '#fafafa' }}>{form.reviewed.designation}</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 'bold' }}>{t('documentRequest.signature')}</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>{t('Signature')}</TableCell>
                     <TableCell sx={{ bgcolor: '#fafafa' }}>
                       {form.requested.signature && (
                         <img src={form.requested.signature} alt={t('documentRequest.signature')} style={{ maxHeight: 50 }} />
                       )}
                     </TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>{t('documentRequest.signature')}</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>{t('signature')}</TableCell>
                     <TableCell sx={{ bgcolor: '#fafafa' }}>
                       {form.reviewed.signature && (
                         <img src={form.reviewed.signature} alt={t('documentRequest.signature')} style={{ maxHeight: 50 }} />
@@ -1316,9 +1290,9 @@ const DocumentRequestManagement: React.FC = () => {
                     </TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 'bold' }}>{t('documentRequest.date')}</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>{t('date')}</TableCell>
                     <TableCell sx={{ bgcolor: '#fafafa' }}>{form.requested.date}</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>{t('documentRequest.date')}</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>{t('date')}</TableCell>
                     <TableCell sx={{ bgcolor: '#fafafa' }}>{form.reviewed.date}</TableCell>
                   </TableRow>
                 </TableBody>

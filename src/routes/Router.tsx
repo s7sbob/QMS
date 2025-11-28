@@ -12,6 +12,7 @@ const FullLayout = Loadable(lazy(() => import('../layouts/full/FullLayout')));
 const BlankLayout = Loadable(lazy(() => import('../layouts/blank/BlankLayout')));
 
 /* *** Guards (الحارس) *** */
+import AuthGuard from '../guards/AuthGuard';
 import SOPFullDocument from 'src/views/sopPurpose&Definition/Pages/SOPFullDocument';
 import AllNotifications from 'src/layouts/full/vertical/header/AllNotifications';
 import NewDocumentRequestForm from 'src/views/documentation/pages/NewDocumentRequestForm';
@@ -124,7 +125,11 @@ const BlogPost = Loadable(lazy(() => import('../views/pages/frontend-pages/BlogP
 const Router = [
   {
     path: '/',
-    element: <FullLayout />,
+    element: (
+      <AuthGuard>
+        <FullLayout />
+      </AuthGuard>
+    ),
     children: [
       { path: '/', element: <Dashboard /> },
       { path: '/Users-Page', element: <Users_Page /> },

@@ -66,6 +66,9 @@ const Notifications: React.FC = () => {
   // حساب عدد الإشعارات غير المقروءة فقط
   const unreadCount = notifications.filter(notification => !notification.isRead).length;
 
+  // Status IDs that should open in Request Form
+  const REQUEST_FORM_STATUS_IDS = ['8', '12', '13', '14', '15', '17'];
+
   const handleNotificationClick = async (notification: NotificationItem) => {
     handleClose();
 
@@ -85,11 +88,13 @@ const Notifications: React.FC = () => {
     }
 
     if (notification.data?.sopHeaderId) {
-      // If status is 16 (approved by QA Document Officer), open in New_Creation_SOP to complete remaining data
-      if (notification.data?.status === "16" || notification.data?.status === 16) {
+      const status = String(notification.data?.status);
+
+      // Status 16 (approved by QA Document Officer) - open in New_Creation_SOP to complete remaining data
+      if (status === '16') {
         navigate(`/documentation-control/New_Creation_SOP?headerId=${notification.data.sopHeaderId}`);
-      // If status is 17 (rejected by QA Document Officer), open in Document Request Form
-      } else if (notification.data?.status === "17" || notification.data?.status === 17) {
+      // Statuses 8, 12, 13, 14, 15, 17 - open in Request Form
+      } else if (REQUEST_FORM_STATUS_IDS.includes(status)) {
         navigate(`/documentation-control/Request_Form?headerId=${notification.data.sopHeaderId}`);
       } else {
         navigate(`/SOPFullDocument?headerId=${notification.data.sopHeaderId}`);
