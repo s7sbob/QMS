@@ -25,6 +25,8 @@ import { IconPencil, IconDeviceFloppy, IconTrash } from '@tabler/icons-react';
 import Tooltip from '@mui/material/Tooltip';
 import { IUser, addEditUserApi, deleteUser } from 'src/services/userService';
 import axiosServices from 'src/utils/axiosServices';
+import { useStorage, StorageType } from 'src/context/StorageContext';
+import StorageToggle from 'src/components/shared/StorageToggle';
 
 // Additional interfaces for extra data
 interface Company {
@@ -61,6 +63,7 @@ type UserDetailsProps = {
 };
 
 const UserDetails: React.FC<UserDetailsProps> = ({ user }) => {
+  const { defaultStorage } = useStorage();
   const [editMode, setEditMode] = useState(false);
   const [editedUser, setEditedUser] = useState<ExtendedUser | null>(null);
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -68,6 +71,7 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user }) => {
   const [departments, setDepartments] = useState<DepartmentOption[]>([]);
   const [departmentAssignments, setDepartmentAssignments] = useState<DepartmentAssignment[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [storageType, setStorageType] = useState<StorageType>(defaultStorage);
 
   // When a user is selected, prefill the editedUser state
   useEffect(() => {
@@ -157,6 +161,7 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user }) => {
         formData.append('dateOfBirth', editedUser.dateOfBirth || '');
         formData.append('companyId', editedUser.companyId || '');
         formData.append('signUrl', editedUser.signUrl || '');
+        formData.append('storageType', storageType);
         formData.append('departmentAssignments', JSON.stringify(departmentAssignments));
         await addEditUserApi(formData);
         console.log('User updated successfully!');
@@ -434,6 +439,13 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user }) => {
               )
             )}
           </Grid>
+
+          {/* Storage Type Selector */}
+          {editMode && (
+            <Grid item xs={12} sm={6}>
+              <StorageToggle value={storageType} onChange={setStorageType} />
+            </Grid>
+          )}
 
           {/* Company Dropdown */}
           <Grid item xs={12} sm={6}>

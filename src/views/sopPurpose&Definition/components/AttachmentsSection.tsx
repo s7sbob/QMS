@@ -20,6 +20,8 @@ import {
   IconDownload,
 } from '@tabler/icons-react';
 import axiosServices from 'src/utils/axiosServices';
+import { useStorage, StorageType } from 'src/context/StorageContext';
+import StorageToggle from 'src/components/shared/StorageToggle';
 
 interface Attachment {
   Id: string;
@@ -30,12 +32,14 @@ interface Attachment {
 }
 
 const AttachmentsSection: React.FC<{ headerId: string }> = ({ headerId }) => {
+  const { defaultStorage } = useStorage();
   const [attchs, setAttchs] = useState<Attachment[]>([]);
   const [uploading, setUploading] = useState(false);
   const [previewFile, setPreviewFile] = useState<Attachment | null>(null);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState('');
+  const [storageType, setStorageType] = useState<StorageType>(defaultStorage);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchAll = () =>
@@ -53,6 +57,7 @@ const AttachmentsSection: React.FC<{ headerId: string }> = ({ headerId }) => {
     const file = e.target.files[0];
     setSelectedFile(file);
     setFileName(file.name);
+    setStorageType(defaultStorage); // Reset to default storage
     setUploadDialogOpen(true);
   };
 
@@ -62,6 +67,7 @@ const AttachmentsSection: React.FC<{ headerId: string }> = ({ headerId }) => {
     const fd = new FormData();
     fd.append('Sop_HeadId', headerId);
     fd.append('File_Name', fileName);
+    fd.append('storageType', storageType);
     fd.append('files', selectedFile);
     axiosServices
       .post('/api/files/upload', fd, {
@@ -168,6 +174,9 @@ const AttachmentsSection: React.FC<{ headerId: string }> = ({ headerId }) => {
             onChange={(e) => setFileName(e.target.value)}
             sx={{ mt: 2 }}
           />
+          <Box sx={{ mt: 2 }}>
+            <StorageToggle value={storageType} onChange={setStorageType} />
+          </Box>
           {selectedFile && (
             <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
               Selected: {selectedFile.name} ({(selectedFile.size / 1024).toFixed(2)} KB)
