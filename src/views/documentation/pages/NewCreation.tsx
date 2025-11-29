@@ -427,6 +427,11 @@ const NewCreation: React.FC = () => {
         return;
       }
 
+      if (!user) {
+        Swal.fire(String(t('messages.error')), String(t('messages.userDataNotAvailable')), 'error');
+        return;
+      }
+
       setSubmitStatus(`⏳ ${t('messages.updatingDocument')}`);
 
       // Update status to 2 and set prepared_by data with signature
