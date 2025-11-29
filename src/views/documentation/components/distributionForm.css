@@ -1,0 +1,102 @@
+/* src/views/documentation/components/distributionForm.css */
+
+.distribution-form-wrapper {
+  width: 100%;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+}
+
+.distribution-form-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.distribution-form-table thead th,
+.distribution-form-table tfoot td {
+  /* Headers and footers repeat on every page in print */
+}
+
+.distribution-form-table tbody td {
+  padding: 20px;
+}
+
+/* Print-specific styles */
+@media print {
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+
+  .distribution-form-wrapper {
+    width: 100%;
+  }
+
+  /* Hide elements that shouldn't be printed */
+  .no-print,
+  button,
+  .MuiButton-root {
+    display: none !important;
+  }
+
+  /* Ensure table headers and footers repeat on every page */
+  .distribution-form-table thead {
+    display: table-header-group;
+  }
+
+  .distribution-form-table tfoot {
+    display: table-footer-group;
+  }
+
+  .distribution-form-table tbody {
+    display: table-row-group;
+  }
+
+  /* Page break control */
+  .distribution-form-table {
+    page-break-inside: auto;
+  }
+
+  .distribution-form-table tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  .distribution-form-table thead {
+    page-break-after: avoid;
+  }
+
+  .distribution-form-table tfoot {
+    page-break-before: avoid;
+  }
+}
+
+/* Distribution table styles */
+.distribution-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.distribution-table th,
+.distribution-table td {
+  border: 1px solid #000;
+  padding: 8px;
+  text-align: center;
+  font-size: 12px;
+}
+
+.distribution-table th {
+  background-color: #f0f0f0;
+  font-weight: bold;
+}
+
+.signature-cell {
+  height: 60px;
+  vertical-align: middle;
+}
+
+.signature-cell img {
+  max-width: 100%;
+  max-height: 50px;
+  object-fit: contain;
+}

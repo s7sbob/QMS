@@ -1,6 +1,6 @@
 // src/pages/SOPDetail.tsx
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Stack, IconButton, Typography } from '@mui/material';
+import { Box, Button, Stack, IconButton, Typography, CircularProgress } from '@mui/material';
 import { IconMenu2, IconFileChart } from '@tabler/icons-react';
 import { useParams } from 'react-router-dom';
 import PageContainer from 'src/components/container/PageContainer';
@@ -19,6 +19,7 @@ interface SopHeaderDetail {
 const SOPDetail: React.FC = () => {
   const { id } = useParams(); // التقط ID من الRoute
   const [sopHeader, setSopHeader] = useState<SopHeaderDetail | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   // PDF المعروض (سواء ملف الدوكومنت أو الـ FlowChart)
   const [selectedPdf, setSelectedPdf] = useState<string>('/documents/document-control.pdf');
@@ -27,11 +28,14 @@ const SOPDetail: React.FC = () => {
   useEffect(() => {
     const fetchSopDetail = async () => {
       if (!id) return;
+      setLoading(true);
       try {
         const resp = await axiosServices.get(`/api/sopheader/getByIdsop-Header/${id}`);
         setSopHeader(resp.data);
       } catch (error) {
         console.error(error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchSopDetail();
@@ -45,6 +49,19 @@ const SOPDetail: React.FC = () => {
       setSelectedPdf('/Flow_Charts/Documentation_Flow_Chart.pdf');
     }
   };
+
+  if (loading) {
+    return (
+      <PageContainer title="SOP Details" description="Standard Operating Procedure Details">
+        <Box sx={{ width: '100%', height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+          <CircularProgress size={50} />
+          <Typography variant="h6" mt={2} color="primary">
+            Loading SOP details...
+          </Typography>
+        </Box>
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer title="SOP Details" description="Standard Operating Procedure Details">

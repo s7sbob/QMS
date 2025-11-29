@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // src/components/ResponsibilitiesSection.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import axiosServices from 'src/utils/axiosServices';
 import {
   Box,
@@ -14,6 +14,7 @@ import {
   Typography,
 } from '@mui/material';
 import EditDialog from './EditDialog';
+import { UserContext } from 'src/context/UserContext';
 
 export interface Responsibility {
   Id: string;
@@ -36,6 +37,9 @@ interface ResponsibilitiesSectionProps {
 }
 
 const ResponsibilitiesSection: React.FC<ResponsibilitiesSectionProps> = ({ initialData }) => {
+  const user = useContext(UserContext);
+  const userRole = user?.Users_Departments_Users_Departments_User_IdToUser_Data?.[0]?.User_Roles?.Name || '';
+
   const [responsibility, setResponsibility] = useState<Responsibility | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [historyData, setHistoryData] = useState<Responsibility[]>([]);
@@ -58,37 +62,58 @@ const ResponsibilitiesSection: React.FC<ResponsibilitiesSectionProps> = ({ initi
       .catch((error) => console.error('Error fetching historical responsibilities:', error));
   };
 
-  const handleDialogSave = (
+  // Send notification to QA Associates when a comment is added
+  const sendNotificationToQAAssociates = async (headerId: string, sectionName: string) => {
+    try {
+      const response = await axiosServices.get(`/api/user/getUsersByRole/QA Associate`);
+      const qaAssociates = response.data || [];
+      for (const qaUser of qaAssociates) {
+        await axiosServices.post('/api/notification/pushNotification', {
+          targetUserId: qaUser.Id,
+          message: `A reviewer has added a comment on the "${sectionName}" section. Please review and update.`,
+          data: { headerId, sectionName, type: 'reviewer_comment' }
+        });
+      }
+    } catch (error) {
+      console.error('Error sending notifications:', error);
+    }
+  };
+
+  const handleDialogSave = async (
     newContentEn: string,
     newContentAr: string,
     newReviewerComment: string,
   ) => {
     if (!responsibility) return;
-    if (newContentEn !== responsibility.Content_en || newContentAr !== responsibility.Content_ar) {
-      axiosServices
-        .post('/api/sopRes/SopReponsibility-create', {
+
+    const isReviewer = userRole === 'QA Supervisor' || userRole === 'QA Manager';
+    const hasNewComment = newReviewerComment && newReviewerComment !== responsibility.reviewer_Comment;
+
+    try {
+      let res;
+      if (newContentEn !== responsibility.Content_en || newContentAr !== responsibility.Content_ar) {
+        res = await axiosServices.post('/api/sopRes/SopReponsibility-create', {
           Content_en: newContentEn,
           Content_ar: newContentAr,
           reviewer_Comment: newReviewerComment,
           Sop_HeaderId: responsibility.Sop_HeaderId,
-        })
-        .then((res) => {
-          setResponsibility(res.data);
-          setOpenDialog(false);
-        })
-        .catch((error) => console.error('Error inserting responsibility:', error));
-    } else {
-      axiosServices
-        .post(`/api/sopRes/updateSop-Res/${responsibility.Id}`, {
+        });
+      } else {
+        res = await axiosServices.post(`/api/sopRes/updateSop-Res/${responsibility.Id}`, {
           Content_en: newContentEn,
           Content_ar: newContentAr,
           reviewer_Comment: newReviewerComment,
-        })
-        .then((res) => {
-          setResponsibility(res.data);
-          setOpenDialog(false);
-        })
-        .catch((error) => console.error('Error updating responsibility:', error));
+        });
+      }
+
+      setResponsibility(res.data);
+      setOpenDialog(false);
+
+      if (isReviewer && hasNewComment) {
+        await sendNotificationToQAAssociates(responsibility.Sop_HeaderId, 'Responsibilities');
+      }
+    } catch (error) {
+      console.error('Error saving responsibility:', error);
     }
   };
 
@@ -145,6 +170,7 @@ const ResponsibilitiesSection: React.FC<ResponsibilitiesSectionProps> = ({ initi
             modifiedBy: responsibility.Modified_by,
           }}
           historyData={historyData}
+          userRole={userRole}
           onSave={handleDialogSave}
           onClose={() => setOpenDialog(false)}
         />

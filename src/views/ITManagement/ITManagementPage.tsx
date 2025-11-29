@@ -1,7 +1,7 @@
 // src/views/ITManagement/ITManagementPage.tsx
 
 import React, { useEffect, useState } from 'react';
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button, Typography, CircularProgress } from '@mui/material';
 
 import axiosServices from 'src/utils/axiosServices';
 
@@ -18,6 +18,7 @@ const ITManagementPage: React.FC = () => {
   const [companies, setCompanies] = useState<ICompany[]>([]);
   const [allUsers, setAllUsers] = useState<IUserData[]>([]);
   const [allRoles, setAllRoles] = useState<IUserRole[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // العنصر المختار في الشجرة (شركة أو قسم)
   const [selectedItem, setSelectedItem] = useState<ICompany | IDepartment | null>(null);
@@ -46,9 +47,15 @@ const ITManagementPage: React.FC = () => {
 
   // ================== جلب البيانات ==================
   useEffect(() => {
-    fetchCompanies();
-    fetchUsers();
-    fetchRoles();
+    const loadAllData = async () => {
+      setLoading(true);
+      try {
+        await Promise.all([fetchCompanies(), fetchUsers(), fetchRoles()]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadAllData();
   }, []);
 
   const fetchCompanies = async () => {
@@ -62,7 +69,7 @@ const ITManagementPage: React.FC = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await axiosServices.get('/api/users/');
+      const res = await axiosServices.get('/api/users/getUsers');
       setAllUsers(res.data);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -148,6 +155,17 @@ const ITManagementPage: React.FC = () => {
       setSelectedItem(updatedDept);
     }
   };
+
+  if (loading) {
+    return (
+      <Box sx={{ width: '100%', height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+        <CircularProgress size={50} />
+        <Typography variant="h6" mt={2} color="primary">
+          Loading data...
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ p: 2, display: 'flex', gap: 2 }}>

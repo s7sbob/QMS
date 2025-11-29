@@ -14,6 +14,7 @@ export interface IUser {
   signUrl: string | null;
   is_Active: number;
   compId: string;
+  companyName?: string;
   // بيانات العلاقات الأخرى إن وجدت
   Users_Departments_Users_Departments_User_IdToUser_Data?: any[];
   Comp_Data?: any[];

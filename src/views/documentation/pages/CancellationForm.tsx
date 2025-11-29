@@ -16,6 +16,7 @@ import {
   Select,
   MenuItem,
   SelectChangeEvent,
+  CircularProgress,
 } from '@mui/material';
 
 import axiosServices from 'src/utils/axiosServices';
@@ -117,6 +118,7 @@ const CancellationForm: React.FC = () => {
   const [departments, setDepartments] = useState<IDepartment[]>([]);
   const [allSopHeaders, setAllSopHeaders] = useState<ISopHeader[]>([]);
   const [filteredSopHeaders, setFilteredSopHeaders] = useState<ISopHeader[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   // عند التحميل أو تغيّر user
   useEffect(() => {
@@ -147,11 +149,14 @@ const CancellationForm: React.FC = () => {
   // جلب جميع الـSOPs
   useEffect(() => {
     const fetchAllSopHeaders = async () => {
+      setLoading(true);
       try {
         const response = await axiosServices.get('/api/sopheader/getAllSopHeaders');
         setAllSopHeaders(response.data);
       } catch (error) {
         console.error('خطأ في جلب الـSOPs:', error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchAllSopHeaders();
@@ -217,6 +222,17 @@ const CancellationForm: React.FC = () => {
 
   // هل المستخدم الحالي QA Manager؟
   const isQaManager = user?.Users_Departments_Users_Departments_User_IdToUser_Data?.[0]?.User_Roles?.Name === 'QA Manager';
+
+  if (loading) {
+    return (
+      <Box sx={{ width: '100%', height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+        <CircularProgress size={50} />
+        <Typography variant="h6" mt={2} color="primary">
+          Loading data...
+        </Typography>
+      </Box>
+    );
+  }
 
   // إرسال البيانات
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import axiosServices from 'src/utils/axiosServices';
 import {
   Box,
@@ -12,6 +12,7 @@ import {
   TableBody,
 } from '@mui/material';
 import EditDialog from './EditDialog';
+import { UserContext } from 'src/context/UserContext';
 
 export interface ReferenceDoc {
   Id: string;
@@ -31,6 +32,9 @@ export interface ReferenceDoc {
 const ReferenceDocumentsSection: React.FC<{ initialData: ReferenceDoc | null }> = ({
   initialData,
 }) => {
+  const user = useContext(UserContext);
+  const userRole = user?.Users_Departments_Users_Departments_User_IdToUser_Data?.[0]?.User_Roles?.Name || '';
+
   const [refDoc, setRefDoc] = useState<ReferenceDoc | null>(null);
   const [openDlg, setOpenDlg] = useState(false);
   const [history, setHistory] = useState<ReferenceDoc[]>([]);
@@ -53,9 +57,29 @@ const ReferenceDocumentsSection: React.FC<{ initialData: ReferenceDoc | null }> 
       .catch((err) => console.error(err));
   };
 
+  // Send notification to QA Associates when a comment is added
+  const sendNotificationToQAAssociates = async (headerId: string, sectionName: string) => {
+    try {
+      const response = await axiosServices.get(`/api/user/getUsersByRole/QA Associate`);
+      const qaAssociates = response.data || [];
+      for (const qaUser of qaAssociates) {
+        await axiosServices.post('/api/notification/pushNotification', {
+          targetUserId: qaUser.Id,
+          message: `A reviewer has added a comment on the "${sectionName}" section. Please review and update.`,
+          data: { headerId, sectionName, type: 'reviewer_comment' }
+        });
+      }
+    } catch (error) {
+      console.error('Error sending notifications:', error);
+    }
+  };
+
   /*  ❱❱❱  حفظ التعديلات أو إنشاء إصدار جديد  */
-  const onSave = (en: string, ar: string, comment: string) => {
+  const onSave = async (en: string, ar: string, comment: string) => {
     if (!refDoc) return;
+
+    const isReviewer = userRole === 'QA Supervisor' || userRole === 'QA Manager';
+    const hasNewComment = comment && comment !== refDoc.reviewer_Comment;
 
     const payload = {
       Content_en: en,
@@ -66,17 +90,21 @@ const ReferenceDocumentsSection: React.FC<{ initialData: ReferenceDoc | null }> 
 
     const isNew = en !== refDoc.Content_en || ar !== refDoc.Content_ar;
 
-    /*  ⬇︎  المسارات الجديدة في الـ backend  */
-    const request = isNew
-      ? axiosServices.post('/api/sopRefrences/Create', payload)
-      : axiosServices.put(`/api/sopRefrences/update/${refDoc.Id}`, payload);
+    try {
+      /*  ⬇︎  المسارات الجديدة في الـ backend  */
+      const res = isNew
+        ? await axiosServices.post('/api/sopRefrences/Create', payload)
+        : await axiosServices.put(`/api/sopRefrences/update/${refDoc.Id}`, payload);
 
-    request
-      .then((res) => {
-        setRefDoc(res.data);
-        setOpenDlg(false);
-      })
-      .catch((err) => console.error(err));
+      setRefDoc(res.data);
+      setOpenDlg(false);
+
+      if (isReviewer && hasNewComment) {
+        await sendNotificationToQAAssociates(refDoc.Sop_HeaderId, 'Reference Documents');
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
@@ -143,6 +171,7 @@ const ReferenceDocumentsSection: React.FC<{ initialData: ReferenceDoc | null }> 
             modifiedBy: refDoc.Modified_by,
           }}
           historyData={history}
+          userRole={userRole}
           onSave={onSave}
           onClose={() => setOpenDlg(false)}
         />

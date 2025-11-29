@@ -16,6 +16,7 @@ import {
   Button,
   Grid,
   Box,
+  CircularProgress,
 } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -139,20 +140,29 @@ const DocumentRevisionChecklist: React.FC = () => {
   });
   const [checklist, setChecklist] = useState<ChecklistItem[]>(initialChecklist);
   const [revisionForm, setRevisionForm] = useState<RevisionForm | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   // load departments & headers
   useEffect(() => {
-    const userDeps = user?.Users_Departments_Users_Departments_User_IdToUser_Data || [];
-    setDepartments(
-      userDeps.map((ud: any) => ({
-        Id: ud.Department_Data.Id,
-        Dept_name: ud.Department_Data.Dept_name,
-      })),
-    );
-    axiosServices
-      .get('/api/sopheader/getAllSopHeaders')
-      .then((res) => setAllSopHeaders(res.data))
-      .catch(console.error);
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        const userDeps = user?.Users_Departments_Users_Departments_User_IdToUser_Data || [];
+        setDepartments(
+          userDeps.map((ud: any) => ({
+            Id: ud.Department_Data.Id,
+            Dept_name: ud.Department_Data.Dept_name,
+          })),
+        );
+        const res = await axiosServices.get('/api/sopheader/getAllSopHeaders');
+        setAllSopHeaders(res.data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
   }, []);
 
   // pre-select department & document
@@ -260,6 +270,17 @@ const DocumentRevisionChecklist: React.FC = () => {
 
   const hasSup = !!revisionForm?.revision_requestedBy;
   const hasMgr = !!revisionForm?.revision_ApprovedBy;
+
+  if (loading) {
+    return (
+      <Box sx={{ width: '100%', height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+        <CircularProgress size={50} />
+        <Typography variant="h6" mt={2} color="primary">
+          Loading data...
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Container sx={{ py: 4 }}>

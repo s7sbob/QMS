@@ -52,6 +52,8 @@ export interface SopHeader {
   reviewed_by?: string;
   Approved_by?: string;
   // خصائص إضافية للهيدر
-  Version?: string;         // رقم الإصدار
+  version?: number;         // رقم الإصدار (from database)
+  Version?: string;         // رقم الإصدار (legacy support)
   Page_Number?: string;     // رقم الصفحة (يمكن تحديثه أثناء التقسيم)
+  Content_Table?: string | null; // JSON string for table of contents
 }

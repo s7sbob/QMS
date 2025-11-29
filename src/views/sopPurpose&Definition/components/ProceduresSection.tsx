@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // src/components/ProceduresSection.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import axiosServices from 'src/utils/axiosServices';
 import {
   Box,
@@ -14,6 +14,7 @@ import {
   Typography,
 } from '@mui/material';
 import EditDialog from './EditDialog';
+import { UserContext } from 'src/context/UserContext';
 
 export interface Procedure {
   Id: string;
@@ -36,6 +37,9 @@ interface ProceduresSectionProps {
 }
 
 const ProceduresSection: React.FC<ProceduresSectionProps> = ({ initialData }) => {
+  const user = useContext(UserContext);
+  const userRole = user?.Users_Departments_Users_Departments_User_IdToUser_Data?.[0]?.User_Roles?.Name || '';
+
   const [procedure, setProcedure] = useState<Procedure | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [historyData, setHistoryData] = useState<Procedure[]>([]);
@@ -58,37 +62,58 @@ const ProceduresSection: React.FC<ProceduresSectionProps> = ({ initialData }) =>
       .catch((error) => console.error('Error fetching historical procedures:', error));
   };
 
-  const handleDialogSave = (
+  // Send notification to QA Associates when a comment is added
+  const sendNotificationToQAAssociates = async (headerId: string, sectionName: string) => {
+    try {
+      const response = await axiosServices.get(`/api/user/getUsersByRole/QA Associate`);
+      const qaAssociates = response.data || [];
+      for (const qaUser of qaAssociates) {
+        await axiosServices.post('/api/notification/pushNotification', {
+          targetUserId: qaUser.Id,
+          message: `A reviewer has added a comment on the "${sectionName}" section. Please review and update.`,
+          data: { headerId, sectionName, type: 'reviewer_comment' }
+        });
+      }
+    } catch (error) {
+      console.error('Error sending notifications:', error);
+    }
+  };
+
+  const handleDialogSave = async (
     newContentEn: string,
     newContentAr: string,
     newReviewerComment: string,
   ) => {
     if (!procedure) return;
-    if (newContentEn !== procedure.Content_en || newContentAr !== procedure.Content_ar) {
-      axiosServices
-        .post('/api/soprocedures/addSop-Procedure', {
+
+    const isReviewer = userRole === 'QA Supervisor' || userRole === 'QA Manager';
+    const hasNewComment = newReviewerComment && newReviewerComment !== procedure.reviewer_Comment;
+
+    try {
+      let res;
+      if (newContentEn !== procedure.Content_en || newContentAr !== procedure.Content_ar) {
+        res = await axiosServices.post('/api/soprocedures/addSop-Procedure', {
           Content_en: newContentEn,
           Content_ar: newContentAr,
           reviewer_Comment: newReviewerComment,
           Sop_HeaderId: procedure.Sop_HeaderId,
-        })
-        .then((res) => {
-          setProcedure(res.data);
-          setOpenDialog(false);
-        })
-        .catch((error) => console.error('Error inserting procedure:', error));
-    } else {
-      axiosServices
-        .post(`/api/soprocedures/updateSop-Procedure/${procedure.Id}`, {
+        });
+      } else {
+        res = await axiosServices.post(`/api/soprocedures/updateSop-Procedure/${procedure.Id}`, {
           Content_en: newContentEn,
           Content_ar: newContentAr,
           reviewer_Comment: newReviewerComment,
-        })
-        .then((res) => {
-          setProcedure(res.data);
-          setOpenDialog(false);
-        })
-        .catch((error) => console.error('Error updating procedure:', error));
+        });
+      }
+
+      setProcedure(res.data);
+      setOpenDialog(false);
+
+      if (isReviewer && hasNewComment) {
+        await sendNotificationToQAAssociates(procedure.Sop_HeaderId, 'Procedures');
+      }
+    } catch (error) {
+      console.error('Error saving procedure:', error);
     }
   };
 
@@ -145,6 +170,7 @@ const ProceduresSection: React.FC<ProceduresSectionProps> = ({ initialData }) =>
             modifiedBy: procedure.Modified_by,
           }}
           historyData={historyData}
+          userRole={userRole}
           onSave={handleDialogSave}
           onClose={() => setOpenDialog(false)}
         />

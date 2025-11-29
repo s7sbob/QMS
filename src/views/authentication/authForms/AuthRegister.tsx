@@ -18,10 +18,13 @@ import {
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import { IconEye, IconEyeOff } from '@tabler/icons-react';
+import { useStorage, StorageType } from 'src/context/StorageContext';
+import StorageToggle from 'src/components/shared/StorageToggle';
 
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{8,}$/;
 
 const AuthRegister: React.FC = () => {
+  const { defaultStorage } = useStorage();
   const [formData, setFormData] = useState({
     fName: '',
     lName: '',
@@ -37,6 +40,7 @@ const AuthRegister: React.FC = () => {
   const [errors, setErrors] = useState<{ password?: string; confirmPassword?: string }>({});
   const [previewImg, setPreviewImg] = useState<string>(''); // لمعاينة الصورة الشخصية
   const [previewSignature, setPreviewSignature] = useState<string>(''); // لمعاينة التوقيع
+  const [storageType, setStorageType] = useState<StorageType>(defaultStorage);
   const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
@@ -94,6 +98,7 @@ const AuthRegister: React.FC = () => {
         formDataToSend.append('UserName', formData.userName);
         formDataToSend.append('Password', formData.password);
         formDataToSend.append('dateOfBirth', formData.dateOfBirth);
+        formDataToSend.append('storageType', storageType);
         // رفع الملفات باستخدام الأسماء المتوقعة من الباكند
         if (formData.profileImage) {
           formDataToSend.append('userImg', formData.profileImage);
@@ -216,6 +221,9 @@ const AuthRegister: React.FC = () => {
             ),
           }}
         />
+
+        {/* Storage Type Selector */}
+        <StorageToggle value={storageType} onChange={setStorageType} />
 
         {/* رفع الصورة الشخصية */}
         <Box>

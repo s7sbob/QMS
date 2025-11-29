@@ -6,13 +6,7 @@ import { Link } from 'react-router-dom';
 import { ReactComponent as LogoDark } from 'src/assets/images/logos/dark-logo.svg';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import { ReactComponent as LogoDarkRTL } from 'src/assets/images/logos/dark-rtl-logo.svg';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import { ReactComponent as LogoLight } from 'src/assets/images/logos/light-logo.svg';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import { ReactComponent as LogoLightRTL } from 'src/assets/images/logos/light-logo-rtl.svg';
 import { styled } from '@mui/material';
 import { AppState } from 'src/store/Store';
 
@@ -25,24 +19,6 @@ const Logo: FC = () => {
     display: 'block',
   }));
 
-  if (customizer.activeDir === 'ltr') {
-    return (
-      <LinkStyled
-        to="/"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-        }}
-      >
-        {customizer.activeMode === 'dark' ? (
-          <LogoLight />
-        ) : (
-          <LogoDark />
-        )}
-      </LinkStyled>
-    );
-  }
-
   return (
     <LinkStyled
       to="/"
@@ -52,9 +28,9 @@ const Logo: FC = () => {
       }}
     >
       {customizer.activeMode === 'dark' ? (
-        <LogoDarkRTL />
+        <LogoLight />
       ) : (
-        <LogoLightRTL />
+        <LogoDark />
       )}
     </LinkStyled>
   );

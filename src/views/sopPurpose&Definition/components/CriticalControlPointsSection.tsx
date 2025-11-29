@@ -1,8 +1,8 @@
 /* ───────────────────────────────────────────────────────────────
    CriticalControlPointsSection.tsx
-   § يظهر قسم “Critical Control Points” داخل مستند الـ SOP
+   § يظهر قسم "Critical Control Points" داخل مستند الـ SOP
    ─────────────────────────────────────────────────────────────── */
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import axiosServices from "src/utils/axiosServices";
 import {
   Box,
@@ -16,12 +16,13 @@ import {
   Typography,
 } from "@mui/material";
 import EditDialog, { HistoryRecord } from "./EditDialog"; // ⬅️ استيراد النوع
+import { UserContext } from "src/context/UserContext";
 
 /* ── نوع السجل الأساسى الراجع من الـ API ─────────────────────── */
 export interface CriticalControlPoint {
   Id: string;
-  ControlPoint_en: string;
-  ControlPoint_ar: string;
+  Content_en: string;  // API returns Content_en
+  Content_ar: string;  // API returns Content_ar
   Version: number | null;
   Is_Current: number;
   Is_Active: number;
@@ -41,8 +42,8 @@ interface Props {
 /* ── تحويل سجل CCP → HistoryRecord  (لتوافق EditDialog) ─────── */
 const toHistoryRecord = (rec: CriticalControlPoint): HistoryRecord => ({
   Id             : rec.Id,
-  Content_en     : rec.ControlPoint_en, // ⬅️ إعادة التسمية
-  Content_ar     : rec.ControlPoint_ar, // ⬅️ إعادة التسمية
+  Content_en     : rec.Content_en,
+  Content_ar     : rec.Content_ar,
   Version        : rec.Version,
   Crt_Date       : rec.Crt_Date,
   Modified_Date  : rec.Modified_Date,
@@ -53,6 +54,9 @@ const toHistoryRecord = (rec: CriticalControlPoint): HistoryRecord => ({
 
 /* ── مكوّن القسم ─────────────────────────────────────────────── */
 const CriticalControlPointsSection: React.FC<Props> = ({ initialData }) => {
+  const user = useContext(UserContext);
+  const userRole = user?.Users_Departments_Users_Departments_User_IdToUser_Data?.[0]?.User_Roles?.Name || '';
+
   const [ccp, setCcp]               = useState<CriticalControlPoint | null>(null);
   const [history, setHistory]       = useState<HistoryRecord[]>([]);
   const [openDialog, setOpenDialog] = useState(false);
@@ -76,31 +80,55 @@ const CriticalControlPointsSection: React.FC<Props> = ({ initialData }) => {
       .catch(err => console.error("CCP history fetch error:", err));
   };
 
+  // Send notification to QA Associates when a comment is added
+  const sendNotificationToQAAssociates = async (headerId: string, sectionName: string) => {
+    try {
+      const response = await axiosServices.get(`/api/user/getUsersByRole/QA Associate`);
+      const qaAssociates = response.data || [];
+      for (const qaUser of qaAssociates) {
+        await axiosServices.post('/api/notification/pushNotification', {
+          targetUserId: qaUser.Id,
+          message: `A reviewer has added a comment on the "${sectionName}" section. Please review and update.`,
+          data: { headerId, sectionName, type: 'reviewer_comment' }
+        });
+      }
+    } catch (error) {
+      console.error('Error sending notifications:', error);
+    }
+  };
+
   /* ───── حفظ (تحديث أو إضافة نسخة جديدة) ─────────────────── */
-  const handleSave = (
+  const handleSave = async (
     newEn: string,
     newAr: string,
     reviewerComment: string,
   ) => {
     if (!ccp) return;
 
+    const isReviewer = userRole === 'QA Supervisor' || userRole === 'QA Manager';
+    const hasNewComment = reviewerComment && reviewerComment !== ccp.reviewer_Comment;
+
     const data = {
-      ControlPoint_en : newEn,
-      ControlPoint_ar : newAr,
+      Content_en : newEn,
+      Content_ar : newAr,
       reviewer_Comment: reviewerComment,
       Sop_HeaderId    : ccp.Sop_HeaderId,
     };
 
-    const request = (newEn !== ccp.ControlPoint_en || newAr !== ccp.ControlPoint_ar)
-      ? axiosServices.post("/api/sopCriticalControlPoints/add", data)              // insert
-      : axiosServices.post(`/api/sopCriticalControlPoints/updateSop-CriticalControlPoint/${ccp.Id}`, data); // update
+    try {
+      const res = (newEn !== ccp.Content_en || newAr !== ccp.Content_ar)
+        ? await axiosServices.post("/api/sopCriticalControlPoints/add", data)              // insert
+        : await axiosServices.post(`/api/sopCriticalControlPoints/updateSop-CriticalControlPoint/${ccp.Id}`, data); // update
 
-    request
-      .then(res => {
-        setCcp(res.data); // حدِّث النسخة الحالية من الخادم
-        setOpenDialog(false);
-      })
-      .catch(err => console.error("CCP save error:", err));
+      setCcp(res.data); // حدِّث النسخة الحالية من الخادم
+      setOpenDialog(false);
+
+      if (isReviewer && hasNewComment) {
+        await sendNotificationToQAAssociates(ccp.Sop_HeaderId, 'Critical Control Points');
+      }
+    } catch (err) {
+      console.error("CCP save error:", err);
+    }
   };
 
   /* ───── واجهة المستخدم ───────────────────────────────────── */
@@ -143,10 +171,10 @@ const CriticalControlPointsSection: React.FC<Props> = ({ initialData }) => {
                 onDoubleClick={handleDoubleClick}
               >
                 <TableCell>
-                  <div dangerouslySetInnerHTML={{ __html: ccp.ControlPoint_en }} />
+                  <div dangerouslySetInnerHTML={{ __html: ccp.Content_en }} />
                 </TableCell>
                 <TableCell align="right" style={{ direction: "rtl" }}>
-                  <div dangerouslySetInnerHTML={{ __html: ccp.ControlPoint_ar }} />
+                  <div dangerouslySetInnerHTML={{ __html: ccp.Content_ar }} />
                 </TableCell>
               </TableRow>
             )}
@@ -159,8 +187,8 @@ const CriticalControlPointsSection: React.FC<Props> = ({ initialData }) => {
         <EditDialog
           open={openDialog}
           title="تفاصيل نقطة التحكم الحرجة"
-          initialContentEn={ccp.ControlPoint_en}
-          initialContentAr={ccp.ControlPoint_ar}
+          initialContentEn={ccp.Content_en}
+          initialContentAr={ccp.Content_ar}
           initialReviewerComment={ccp.reviewer_Comment || ""}
           additionalInfo={{
             version     : ccp.Version,
@@ -170,6 +198,7 @@ const CriticalControlPointsSection: React.FC<Props> = ({ initialData }) => {
             modifiedBy  : ccp.Modified_by,
           }}
           historyData={history}
+          userRole={userRole}
           onSave={handleSave}
           onClose={() => setOpenDialog(false)}
         />
@@ -179,7 +208,3 @@ const CriticalControlPointsSection: React.FC<Props> = ({ initialData }) => {
 };
 
 export default CriticalControlPointsSection;
-/* ───────────────────────────────────────────────────────────────
-   CriticalControlPointsSection.tsx
-   § يظهر قسم “Critical Control Points” داخل مستند الـ SOP
-   ─────────────────────────────────────────────────────────────── */

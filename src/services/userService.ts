@@ -52,7 +52,7 @@ export interface UserInput {
 }
 
 export const getAllUsers = async (): Promise<IUser[]> => {
-  const { data } = await axiosServices.get('/api/users');
+  const { data } = await axiosServices.get('/api/users/getUsers');
   return data;
 };
 
