@@ -41,6 +41,7 @@ interface EditDialogProps {
   initialReviewerComment: string;
   additionalInfo?: AdditionalInfo;
   historyData?: HistoryRecord[];
+  userRole?: string;
   onSave: (newContentEn: string, newContentAr: string, newReviewerComment: string) => void;
   onClose: () => void;
 }
@@ -53,12 +54,19 @@ const EditDialog: React.FC<EditDialogProps> = ({
   initialReviewerComment,
   additionalInfo,
   historyData,
+  userRole = '',
   onSave,
   onClose,
 }) => {
   const [contentEn, setContentEn] = useState(initialContentEn);
   const [contentAr, setContentAr] = useState(initialContentAr);
   const [reviewerComment, setReviewerComment] = useState(initialReviewerComment);
+
+  // Role-based permissions
+  const isReviewer = userRole === 'QA Supervisor' || userRole === 'QA Manager';
+  const isQAAssociate = userRole === 'QA Associate';
+  const canEditContent = isQAAssociate || (!isReviewer && !isQAAssociate); // QA Associate or other roles can edit content
+  const canEditComment = isReviewer; // Only QA Supervisor/Manager can add comments
 
   /* عند فتح الـ Dialog أعد مزامنة الحالة مع القيم الابتدائية */
   useEffect(() => {
@@ -69,7 +77,11 @@ const EditDialog: React.FC<EditDialogProps> = ({
     }
   }, [open, initialContentEn, initialContentAr, initialReviewerComment]);
 
-  const handleSave = () => onSave(contentEn, contentAr, reviewerComment);
+  const handleSave = () => {
+    // If QA Associate saves, clear the reviewer comment (title becomes black)
+    const finalComment = isQAAssociate ? '' : reviewerComment;
+    onSave(contentEn, contentAr, finalComment);
+  };
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
@@ -82,30 +94,54 @@ const EditDialog: React.FC<EditDialogProps> = ({
 
         <Box sx={{ mb: 2, border: '1px solid #ccc', p: 2, borderRadius: 1 }}>
           <Stack spacing={2}>
-            {/* English */}
+            {/* English Content */}
             <Typography variant="body2">English Content</Typography>
-            <RichTextEditor
-              value={contentEn}
-              onChange={setContentEn}
-              language="en"
-            />
+            {canEditContent ? (
+              <RichTextEditor
+                value={contentEn}
+                onChange={setContentEn}
+                language="en"
+              />
+            ) : (
+              <Box sx={{ p: 2, border: '1px solid #eee', borderRadius: 1, backgroundColor: '#f9f9f9' }}>
+                <div dangerouslySetInnerHTML={{ __html: contentEn }} />
+              </Box>
+            )}
 
-            {/* Arabic */}
+            {/* Arabic Content */}
             <Typography variant="body2">Arabic Content</Typography>
-            <RichTextEditor
-              value={contentAr}
-              onChange={setContentAr}
-              language="ar"
-              dir="rtl"
-            />
+            {canEditContent ? (
+              <RichTextEditor
+                value={contentAr}
+                onChange={setContentAr}
+                language="ar"
+                dir="rtl"
+              />
+            ) : (
+              <Box sx={{ p: 2, border: '1px solid #eee', borderRadius: 1, backgroundColor: '#f9f9f9', direction: 'rtl' }}>
+                <div dangerouslySetInnerHTML={{ __html: contentAr }} />
+              </Box>
+            )}
 
-            {/* Reviewer */}
-            <Typography variant="body2">Reviewer Comment</Typography>
-            <RichTextEditor
-              value={reviewerComment}
-              onChange={setReviewerComment}
-              language="en"
-            />
+            {/* Reviewer Comment - Only visible for QA Supervisor/Manager */}
+            {(canEditComment || reviewerComment) && (
+              <>
+                <Typography variant="body2" sx={{ color: reviewerComment ? 'red' : 'inherit' }}>
+                  Reviewer Comment {isReviewer ? '' : '(Read Only)'}
+                </Typography>
+                {canEditComment ? (
+                  <RichTextEditor
+                    value={reviewerComment}
+                    onChange={setReviewerComment}
+                    language="en"
+                  />
+                ) : (
+                  <Box sx={{ p: 2, border: '1px solid #ffcdd2', borderRadius: 1, backgroundColor: '#ffebee' }}>
+                    <div dangerouslySetInnerHTML={{ __html: reviewerComment || 'No comment' }} />
+                  </Box>
+                )}
+              </>
+            )}
 
             {/* معلومات إضافية */}
             {additionalInfo && (

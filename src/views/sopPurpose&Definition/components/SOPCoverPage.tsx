@@ -90,7 +90,7 @@ const SOPCoverPage: React.FC<SOPCoverPageProps> = ({ headerData, totalPages }) =
                   </tr>
                   <tr>
                     <td colSpan={2} style={{ border: '1px solid #000', padding: '5px', fontSize: '14px', fontWeight: 'bold', textAlign: 'center' }}>
-                      {headerData.Version}
+                      {headerData.version ?? headerData.Version ?? 0}
                     </td>
                   </tr>
                   <tr>

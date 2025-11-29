@@ -16,44 +16,108 @@ const SOPContentPageHeader: React.FC<SOPContentPageHeaderProps> = ({
   if (!headerData) return null;
 
   return (
-    <div className="content-page-header">
-      {/* Left - Logo */}
-      <div className="content-header-logo">
-        <img src="/logo.png" alt="Logo" />
-      </div>
+    <table
+      style={{
+        width: '100%',
+        borderCollapse: 'collapse',
+        marginBottom: '15px',
+        fontFamily: 'Arial, sans-serif',
+      }}
+    >
+      <tbody>
+        <tr>
+          {/* Left Column - Logo & Division */}
+          <td
+            style={{
+              width: '25%',
+              border: '2px solid #000',
+              padding: '8px',
+              verticalAlign: 'middle',
+              textAlign: 'center',
+            }}
+          >
+            <img
+              src="/logo.png"
+              alt="Logo"
+              style={{ maxWidth: '170px', height: 'auto', marginBottom: '5px' }}
+            />
+            <div
+              style={{
+                fontSize: '16px',
+                fontWeight: 'bold',
+                color: '#000000ff',
+                marginTop: '5px',
+              }}
+            >
+              Healthcare Division
+            </div>
+          </td>
 
-      {/* Center - Document Title */}
-      <div className="content-header-title">
-        <div className="content-header-title-row">
-          <span className="title-label-en">Document Title:</span>
-          <span className="title-value-en">{headerData.Doc_Title_en || 'Documentation System'}</span>
-        </div>
-        <div className="content-header-title-row-ar">
-          <span className="title-value-ar">{headerData.Doc_Title_ar || 'نظام التوثيق'}</span>
-          <span className="title-label-ar">:عنوان الوثيقة</span>
-        </div>
-      </div>
+          {/* Middle Column - Document Title */}
+          <td
+            style={{
+              width: '50%',
+              border: '2px solid #000',
+              padding: '4px',
+              verticalAlign: 'middle',
+              textAlign: 'center',
+            }}
+          >
+            <div style={{ marginBottom: '8px' }}>
+              <span style={{ fontSize: '14px' }}>Document Title: </span>
+              <span style={{ fontSize: '20px', fontWeight: 'bold' }}>
+                {headerData.Doc_Title_en || 'Documentation System'}
+              </span>
+            </div>
+            <div style={{ direction: 'rtl' }}>
+              <span style={{ fontSize: '14px' }}>عنوان الوثيقة: </span>
+              <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
+                {headerData.Doc_Title_ar || 'نظام التوثيق'}
+              </span>
+            </div>
+          </td>
 
-      {/* Right - Code/Version/Page */}
-      <div className="content-header-info">
-        <table>
-          <tbody>
-            <tr>
-              <td className="info-label">Code #</td>
-              <td className="info-value">: {headerData.Doc_Code}</td>
-            </tr>
-            <tr>
-              <td className="info-label">Version #</td>
-              <td className="info-value">: {headerData.Version}</td>
-            </tr>
-            <tr>
-              <td className="info-label">Page #</td>
-              <td className="info-value">: {currentPage} of {totalPages}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+          {/* Right Column - Code/Version/Page */}
+          <td
+            style={{
+              width: '25%',
+              border: '2px solid #000',
+              padding: '3px',
+              verticalAlign: 'middle',
+            }}
+          >
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <tbody>
+                <tr>
+                  <td style={{ fontSize: '14px', fontWeight: 'bold', padding: '1px 0' }}>
+                    Code #
+                  </td>
+                  <td style={{ fontSize: '14px', padding: '1px 0' }}>
+                    : {headerData.Doc_Code}
+                  </td>
+                </tr>
+                <tr>
+                  <td style={{ fontSize: '14px', fontWeight: 'bold', padding: '1px 0' }}>
+                    Version #:
+                  </td>
+                  <td style={{ fontSize: '14px', padding: '1px 0' }}>
+                    {headerData.version ?? headerData.Version ?? 0}
+                  </td>
+                </tr>
+                <tr>
+                  <td style={{ fontSize: '14px', fontWeight: 'bold', padding: '1px 0' }}>
+                    Page #
+                  </td>
+                  <td style={{ fontSize: '14px', padding: '1px 0' }}>
+                    : {currentPage} of {totalPages}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   );
 };
 

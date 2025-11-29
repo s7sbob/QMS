@@ -1,5 +1,5 @@
 // src/components/SafetyConcernsSection.tsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import axiosServices from "src/utils/axiosServices";
 import {
   Box,
@@ -13,6 +13,7 @@ import {
   Typography,
 } from "@mui/material";
 import EditDialog from "./EditDialog";
+import { UserContext } from "src/context/UserContext";
 
 export interface SafetyConcern {
   Id: string;
@@ -35,6 +36,9 @@ interface SafetyConcernsSectionProps {
 }
 
 const SafetyConcernsSection: React.FC<SafetyConcernsSectionProps> = ({ initialData }) => {
+  const user = useContext(UserContext);
+  const userRole = user?.Users_Departments_Users_Departments_User_IdToUser_Data?.[0]?.User_Roles?.Name || '';
+
   const [safetyConcern, setSafetyConcern] = useState<SafetyConcern | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [historyData, setHistoryData] = useState<SafetyConcern[]>([]);
@@ -57,33 +61,54 @@ const SafetyConcernsSection: React.FC<SafetyConcernsSectionProps> = ({ initialDa
       .catch((error) => console.error("Error fetching historical safety concerns:", error));
   };
 
-  const handleDialogSave = (newContentEn: string, newContentAr: string, newReviewerComment: string) => {
+  // Send notification to QA Associates when a comment is added
+  const sendNotificationToQAAssociates = async (headerId: string, sectionName: string) => {
+    try {
+      const response = await axiosServices.get(`/api/user/getUsersByRole/QA Associate`);
+      const qaAssociates = response.data || [];
+      for (const qaUser of qaAssociates) {
+        await axiosServices.post('/api/notification/pushNotification', {
+          targetUserId: qaUser.Id,
+          message: `A reviewer has added a comment on the "${sectionName}" section. Please review and update.`,
+          data: { headerId, sectionName, type: 'reviewer_comment' }
+        });
+      }
+    } catch (error) {
+      console.error('Error sending notifications:', error);
+    }
+  };
+
+  const handleDialogSave = async (newContentEn: string, newContentAr: string, newReviewerComment: string) => {
     if (!safetyConcern) return;
-    if (newContentEn !== safetyConcern.Content_en || newContentAr !== safetyConcern.Content_ar) {
-      axiosServices
-        .post("/api/sopSafetyConcerns/addSop-SafetyConcerns", {
+
+    const isReviewer = userRole === 'QA Supervisor' || userRole === 'QA Manager';
+    const hasNewComment = newReviewerComment && newReviewerComment !== safetyConcern.reviewer_Comment;
+
+    try {
+      let res;
+      if (newContentEn !== safetyConcern.Content_en || newContentAr !== safetyConcern.Content_ar) {
+        res = await axiosServices.post("/api/sopSafetyConcerns/addSop-SafetyConcerns", {
           Content_en: newContentEn,
           Content_ar: newContentAr,
           reviewer_Comment: newReviewerComment,
           Sop_HeaderId: safetyConcern.Sop_HeaderId,
-        })
-        .then((res) => {
-          setSafetyConcern(res.data);
-          setOpenDialog(false);
-        })
-        .catch((error) => console.error("Error inserting safety concern:", error));
-    } else {
-      axiosServices
-        .post(`/api/sopSafetyConcerns/updateSop-SafetyConcerns/${safetyConcern.Id}`, {
+        });
+      } else {
+        res = await axiosServices.post(`/api/sopSafetyConcerns/updateSop-SafetyConcerns/${safetyConcern.Id}`, {
           Content_en: newContentEn,
           Content_ar: newContentAr,
           reviewer_Comment: newReviewerComment,
-        })
-        .then((res) => {
-          setSafetyConcern(res.data);
-          setOpenDialog(false);
-        })
-        .catch((error) => console.error("Error updating safety concern:", error));
+        });
+      }
+
+      setSafetyConcern(res.data);
+      setOpenDialog(false);
+
+      if (isReviewer && hasNewComment) {
+        await sendNotificationToQAAssociates(safetyConcern.Sop_HeaderId, 'Safety Concerns');
+      }
+    } catch (error) {
+      console.error("Error saving safety concern:", error);
     }
   };
 
@@ -133,6 +158,7 @@ const SafetyConcernsSection: React.FC<SafetyConcernsSectionProps> = ({ initialDa
             modifiedBy: safetyConcern.Modified_by,
           }}
           historyData={historyData}
+          userRole={userRole}
           onSave={handleDialogSave}
           onClose={() => setOpenDialog(false)}
         />

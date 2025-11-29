@@ -1,5 +1,5 @@
 // src/components/ScopeSection.tsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import axiosServices from "src/utils/axiosServices";
 import {
   Box,
@@ -13,6 +13,7 @@ import {
   Typography,
 } from "@mui/material";
 import EditDialog from "./EditDialog";
+import { UserContext } from "src/context/UserContext";
 
 export interface Scope {
   Id: string;
@@ -35,6 +36,9 @@ interface ScopeSectionProps {
 }
 
 const ScopeSection: React.FC<ScopeSectionProps> = ({ initialData }) => {
+  const user = useContext(UserContext);
+  const userRole = user?.Users_Departments_Users_Departments_User_IdToUser_Data?.[0]?.User_Roles?.Name || '';
+
   const [scope, setScope] = useState<Scope | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [historyData, setHistoryData] = useState<Scope[]>([]);
@@ -57,33 +61,54 @@ const ScopeSection: React.FC<ScopeSectionProps> = ({ initialData }) => {
       .catch((error) => console.error("Error fetching historical scope:", error));
   };
 
-  const handleDialogSave = (newContentEn: string, newContentAr: string, newReviewerComment: string) => {
+  // Send notification to QA Associates when a comment is added
+  const sendNotificationToQAAssociates = async (headerId: string, sectionName: string) => {
+    try {
+      const response = await axiosServices.get(`/api/user/getUsersByRole/QA Associate`);
+      const qaAssociates = response.data || [];
+      for (const qaUser of qaAssociates) {
+        await axiosServices.post('/api/notification/pushNotification', {
+          targetUserId: qaUser.Id,
+          message: `A reviewer has added a comment on the "${sectionName}" section. Please review and update.`,
+          data: { headerId, sectionName, type: 'reviewer_comment' }
+        });
+      }
+    } catch (error) {
+      console.error('Error sending notifications:', error);
+    }
+  };
+
+  const handleDialogSave = async (newContentEn: string, newContentAr: string, newReviewerComment: string) => {
     if (!scope) return;
-    if (newContentEn !== scope.Content_en || newContentAr !== scope.Content_ar) {
-      axiosServices
-        .post("/api/sopScope/addSop-Scope", {
+
+    const isReviewer = userRole === 'QA Supervisor' || userRole === 'QA Manager';
+    const hasNewComment = newReviewerComment && newReviewerComment !== scope.reviewer_Comment;
+
+    try {
+      let res;
+      if (newContentEn !== scope.Content_en || newContentAr !== scope.Content_ar) {
+        res = await axiosServices.post("/api/sopScope/addSop-Scope", {
           Content_en: newContentEn,
           Content_ar: newContentAr,
           reviewer_Comment: newReviewerComment,
           Sop_HeaderId: scope.Sop_HeaderId,
-        })
-        .then((res) => {
-          setScope(res.data);
-          setOpenDialog(false);
-        })
-        .catch((error) => console.error("Error inserting scope:", error));
-    } else {
-      axiosServices
-        .post(`/api/sopScope/updateSop-Scope/${scope.Id}`, {
+        });
+      } else {
+        res = await axiosServices.post(`/api/sopScope/updateSop-Scope/${scope.Id}`, {
           Content_en: newContentEn,
           Content_ar: newContentAr,
           reviewer_Comment: newReviewerComment,
-        })
-        .then((res) => {
-          setScope(res.data);
-          setOpenDialog(false);
-        })
-        .catch((error) => console.error("Error updating scope:", error));
+        });
+      }
+
+      setScope(res.data);
+      setOpenDialog(false);
+
+      if (isReviewer && hasNewComment) {
+        await sendNotificationToQAAssociates(scope.Sop_HeaderId, 'Scope');
+      }
+    } catch (error) {
+      console.error("Error saving scope:", error);
     }
   };
 
@@ -133,6 +158,7 @@ const ScopeSection: React.FC<ScopeSectionProps> = ({ initialData }) => {
             modifiedBy: scope.Modified_by,
           }}
           historyData={historyData}
+          userRole={userRole}
           onSave={handleDialogSave}
           onClose={() => setOpenDialog(false)}
         />

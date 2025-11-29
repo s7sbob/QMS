@@ -90,8 +90,8 @@ const Notifications: React.FC = () => {
     if (notification.data?.sopHeaderId) {
       const status = String(notification.data?.status);
 
-      // Status 16 (approved by QA Document Officer) - open in New_Creation_SOP to complete remaining data
-      if (status === '16') {
+      // Status 16 (approved by QA Document Officer) or Status 1 (In Progress) - open in New_Creation_SOP to complete/edit data
+      if (status === '16' || status === '1') {
         navigate(`/documentation-control/New_Creation_SOP?headerId=${notification.data.sopHeaderId}`);
       // Statuses 8, 12, 13, 14, 15, 17 - open in Request Form
       } else if (REQUEST_FORM_STATUS_IDS.includes(status)) {

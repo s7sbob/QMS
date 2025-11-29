@@ -1,5 +1,5 @@
 // src/components/PurposeSection.tsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import axiosServices from "src/utils/axiosServices";
 import {
   Box,
@@ -13,6 +13,7 @@ import {
   Typography,
 } from "@mui/material";
 import EditDialog from "./EditDialog";
+import { UserContext } from "src/context/UserContext";
 
 export interface Purpose {
   Id: string;
@@ -35,6 +36,9 @@ interface PurposeSectionProps {
 }
 
 const PurposeSection: React.FC<PurposeSectionProps> = ({ initialData }) => {
+  const user = useContext(UserContext);
+  const userRole = user?.Users_Departments_Users_Departments_User_IdToUser_Data?.[0]?.User_Roles?.Name || '';
+
   const [purpose, setPurpose] = useState<Purpose | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [historyData, setHistoryData] = useState<Purpose[]>([]);
@@ -57,33 +61,58 @@ const PurposeSection: React.FC<PurposeSectionProps> = ({ initialData }) => {
       .catch((error) => console.error("Error fetching historical purposes:", error));
   };
 
-  const handleDialogSave = (newContentEn: string, newContentAr: string, newReviewerComment: string) => {
+  // Send notification to QA Associates when a comment is added
+  const sendNotificationToQAAssociates = async (headerId: string, sectionName: string) => {
+    try {
+      // Get all QA Associates for the department
+      const response = await axiosServices.get(`/api/user/getUsersByRole/QA Associate`);
+      const qaAssociates = response.data || [];
+
+      // Send notification to each QA Associate
+      for (const qaUser of qaAssociates) {
+        await axiosServices.post('/api/notification/pushNotification', {
+          targetUserId: qaUser.Id,
+          message: `A reviewer has added a comment on the "${sectionName}" section. Please review and update.`,
+          data: { headerId, sectionName, type: 'reviewer_comment' }
+        });
+      }
+    } catch (error) {
+      console.error('Error sending notifications:', error);
+    }
+  };
+
+  const handleDialogSave = async (newContentEn: string, newContentAr: string, newReviewerComment: string) => {
     if (!purpose) return;
-    if (newContentEn !== purpose.Content_en || newContentAr !== purpose.Content_ar) {
-      axiosServices
-        .post("/api/soppurpose/addSop-Purpose", {
+
+    const isReviewer = userRole === 'QA Supervisor' || userRole === 'QA Manager';
+    const hasNewComment = newReviewerComment && newReviewerComment !== purpose.reviewer_Comment;
+
+    try {
+      let res;
+      if (newContentEn !== purpose.Content_en || newContentAr !== purpose.Content_ar) {
+        res = await axiosServices.post("/api/soppurpose/addSop-Purpose", {
           Content_en: newContentEn,
           Content_ar: newContentAr,
           reviewer_Comment: newReviewerComment,
           Sop_HeaderId: purpose.Sop_HeaderId,
-        })
-        .then((res) => {
-          setPurpose(res.data);
-          setOpenDialog(false);
-        })
-        .catch((error) => console.error("Error inserting purpose:", error));
-    } else {
-      axiosServices
-        .post(`/api/soppurpose/updateSop-Purpose/${purpose.Id}`, {
+        });
+      } else {
+        res = await axiosServices.post(`/api/soppurpose/updateSop-Purpose/${purpose.Id}`, {
           Content_en: newContentEn,
           Content_ar: newContentAr,
           reviewer_Comment: newReviewerComment,
-        })
-        .then((res) => {
-          setPurpose(res.data);
-          setOpenDialog(false);
-        })
-        .catch((error) => console.error("Error updating purpose:", error));
+        });
+      }
+
+      setPurpose(res.data);
+      setOpenDialog(false);
+
+      // Send notification if reviewer added a new comment
+      if (isReviewer && hasNewComment) {
+        await sendNotificationToQAAssociates(purpose.Sop_HeaderId, 'Purpose');
+      }
+    } catch (error) {
+      console.error("Error saving purpose:", error);
     }
   };
 
@@ -133,6 +162,7 @@ const PurposeSection: React.FC<PurposeSectionProps> = ({ initialData }) => {
             modifiedBy: purpose.Modified_by,
           }}
           historyData={historyData}
+          userRole={userRole}
           onSave={handleDialogSave}
           onClose={() => setOpenDialog(false)}
         />

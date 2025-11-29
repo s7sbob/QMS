@@ -89,9 +89,9 @@ const SOPCard: React.FC<SOPCardProps> = ({ sop }) => {
       statusNameLower: statusName,
     });
 
-    // Status 16 (Approved by Document Officer) - Open in New_Creation_SOP to complete remaining data
-    if (statusId === '16') {
-      console.log('Status 16 - Navigating to New_Creation_SOP');
+    // Status 16 (Approved by Document Officer) or Status 1 (In Progress) - Open in New_Creation_SOP to complete/edit data
+    if (statusId === '16' || statusId === '1') {
+      console.log(`Status ${statusId} - Navigating to New_Creation_SOP`);
       navigate(`/documentation-control/New_Creation_SOP?headerId=${sop.Id}`);
       return;
     }

@@ -139,11 +139,12 @@
 }
 
 .cover-title-label {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   margin-bottom: 15px;
   text-transform: uppercase;
   letter-spacing: 1px;
+  text-align: center;
 }
 
 .cover-title-en {
@@ -225,6 +226,7 @@
   display: flex;
   gap: 10px;
   margin-bottom: 5px;
+  text-align: center;
 }
 
 .content-header-title-row-ar {
@@ -232,17 +234,19 @@
   gap: 10px;
   direction: rtl;
   justify-content: flex-start;
+  text-align: right;
 }
 
 .title-label-en,
 .title-label-ar {
   font-weight: bold;
-  font-size: 12px;
+  font-size: 18px;
+  text-align: center;
 }
 
 .title-value-en,
 .title-value-ar {
-  font-size: 12px;
+  font-size: 18px;
 }
 
 .content-header-info {

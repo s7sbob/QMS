@@ -42,11 +42,17 @@ const SOPTableOfContents: React.FC<SOPTableOfContentsProps> = ({
   const userRole = user?.Users_Departments_Users_Departments_User_IdToUser_Data?.[0]?.User_Roles?.Name || '';
   const isQAAssociate = userRole === 'QA Associate';
 
+  // Allow editing if user is QA Associate OR document status is 1 (In Progress) or 16 (Approved by Doc Officer)
+  const canEdit = isQAAssociate || headerData?.status === '1' || headerData?.status === '16';
+
   const [entries, setEntries] = useState<TableOfContentsEntry[]>(initialEntries);
   const [editingCell, setEditingCell] = useState<{ row: number; field: string } | null>(null);
+  const [hasChanges, setHasChanges] = useState<boolean>(false);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   useEffect(() => {
     setEntries(initialEntries);
+    setHasChanges(false);
   }, [initialEntries]);
 
   if (!headerData) return null;
@@ -87,7 +93,7 @@ const SOPTableOfContents: React.FC<SOPTableOfContentsProps> = ({
 
   // Handle cell edit
   const handleCellClick = (rowIndex: number, field: string) => {
-    if (isQAAssociate) {
+    if (canEdit) {
       setEditingCell({ row: rowIndex, field });
     }
   };
@@ -99,30 +105,38 @@ const SOPTableOfContents: React.FC<SOPTableOfContentsProps> = ({
       newEntries[rowIndex] = { ...newEntries[rowIndex], [field]: field === 'pageNumber' ? (parseInt(value) || '') : value };
     }
     setEntries(newEntries);
+    setHasChanges(true);
   };
 
-  // Handle cell blur - save changes
-  const handleCellBlur = async () => {
+  // Handle cell blur - close editing mode
+  const handleCellBlur = () => {
     setEditingCell(null);
-    if (onEntriesChange) {
-      onEntriesChange(entries);
-    }
-    // Auto-save to database
-    if (headerData?.Id) {
-      try {
-        await axiosServices.post('/api/sopheader/addEditSopHeader', {
-          Id: headerData.Id,
-          Content_Table: JSON.stringify(entries),
-        });
-      } catch (err) {
-        console.error('Error saving table of contents:', err);
+  };
+
+  // Handle save to database
+  const handleSave = async () => {
+    if (!headerData?.Id) return;
+
+    setIsSaving(true);
+    try {
+      await axiosServices.post('/api/sopheader/addEditSopHeader', {
+        Id: headerData.Id,
+        Content_Table: JSON.stringify(entries),
+      });
+      if (onEntriesChange) {
+        onEntriesChange(entries);
       }
+      setHasChanges(false);
+    } catch (err) {
+      console.error('Error saving table of contents:', err);
+    } finally {
+      setIsSaving(false);
     }
   };
 
   // Handle adding new row when clicking empty row
   const handleEmptyRowClick = (field: string) => {
-    if (!isQAAssociate) return;
+    if (!canEdit) return;
 
     const nextSerial = entries.filter(e => !e.isSubItem).length + 1;
     const newEntry: TableOfContentsEntry = {
@@ -135,13 +149,14 @@ const SOPTableOfContents: React.FC<SOPTableOfContentsProps> = ({
     const newEntries = [...entries, newEntry];
     setEntries(newEntries);
     setEditingCell({ row: newEntries.length - 1, field });
+    setHasChanges(true);
   };
 
   // Render editable cell
   const renderEditableCell = (rowIndex: number, field: string, value: string | number, style: React.CSSProperties) => {
     const isEditing = editingCell?.row === rowIndex && editingCell?.field === field;
 
-    if (isEditing && isQAAssociate) {
+    if (isEditing && canEdit) {
       return (
         <input
           type={field === 'pageNumber' ? 'number' : 'text'}
@@ -168,7 +183,7 @@ const SOPTableOfContents: React.FC<SOPTableOfContentsProps> = ({
       <span
         onClick={() => handleCellClick(rowIndex, field)}
         style={{
-          cursor: isQAAssociate ? 'text' : 'default',
+          cursor: canEdit ? 'text' : 'default',
           display: 'block',
           minHeight: '12px',
         }}
@@ -271,20 +286,20 @@ const SOPTableOfContents: React.FC<SOPTableOfContentsProps> = ({
             {emptyRows.map((_, index) => (
               <tr key={`empty-${index}`}>
                 <td
-                  style={{ border: '1px solid #000', padding: '2px', textAlign: 'center', fontSize: '9px', height: '16px', cursor: isQAAssociate ? 'pointer' : 'default' }}
+                  style={{ border: '1px solid #000', padding: '2px', textAlign: 'center', fontSize: '9px', height: '16px', cursor: canEdit ? 'pointer' : 'default' }}
                   onClick={() => handleEmptyRowClick('serial')}
                 >&nbsp;</td>
                 <td
-                  style={{ border: '1px solid #000', padding: '2px', fontSize: '9px', cursor: isQAAssociate ? 'pointer' : 'default' }}
+                  style={{ border: '1px solid #000', padding: '2px', fontSize: '9px', cursor: canEdit ? 'pointer' : 'default' }}
                   onClick={() => handleEmptyRowClick('contentEn')}
                 >&nbsp;</td>
                 <td
-                  style={{ border: '1px solid #000', padding: '2px', textAlign: 'center', fontSize: '9px', cursor: isQAAssociate ? 'pointer' : 'default' }}
+                  style={{ border: '1px solid #000', padding: '2px', textAlign: 'center', fontSize: '9px', cursor: canEdit ? 'pointer' : 'default' }}
                   onClick={() => handleEmptyRowClick('pageNumber')}
                 >&nbsp;</td>
                 <td style={{ border: '1px solid #000', padding: '2px', textAlign: 'center', fontSize: '9px' }}>&nbsp;</td>
                 <td
-                  style={{ border: '1px solid #000', padding: '2px', textAlign: 'right', fontSize: '9px', cursor: isQAAssociate ? 'pointer' : 'default' }}
+                  style={{ border: '1px solid #000', padding: '2px', textAlign: 'right', fontSize: '9px', cursor: canEdit ? 'pointer' : 'default' }}
                   onClick={() => handleEmptyRowClick('contentAr')}
                 >&nbsp;</td>
                 <td style={{ border: '1px solid #000', padding: '2px', textAlign: 'center', fontSize: '9px' }}>&nbsp;</td>
@@ -292,6 +307,35 @@ const SOPTableOfContents: React.FC<SOPTableOfContentsProps> = ({
             ))}
           </tbody>
         </table>
+
+        {/* Save Button - appears when there are unsaved changes */}
+        {hasChanges && canEdit && (
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            marginTop: '10px',
+            marginBottom: '10px'
+          }}>
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              style={{
+                backgroundColor: '#1976d2',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                padding: '8px 24px',
+                fontSize: '14px',
+                fontWeight: 'bold',
+                cursor: isSaving ? 'not-allowed' : 'pointer',
+                opacity: isSaving ? 0.7 : 1,
+                boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+              }}
+            >
+              {isSaving ? 'Saving...' : 'Save Table of Contents'}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Footer Section - Standard PreparedBySection and Footer */}

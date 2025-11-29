@@ -26,9 +26,8 @@ export interface SopDetailTracking {
   Sop_Procedures: any;
   Sop_Res: any;
   Sop_Safety_Concerns?: any;
-  Sop_References?: any;
-  Sop_Critical_Control_Points?: any; // ← NEW
-  Sop_Refrence?: any;
+  Sop_Refrences?: any; // API returns Sop_Refrences (with 's')
+  sop_CriticalControlPoints?: any; // API returns sop_CriticalControlPoints (lowercase 's', no underscores)
   Is_Active: number;
   crt_date: string;
   Sop_header: any;
@@ -219,16 +218,16 @@ const SOPFullDocument: React.FC = () => {
         <SafetyConcernsSection initialData={sopDetail?.Sop_Safety_Concerns || null} />
         {/* ⭐ NEW – قسم Procedures */}
         <ProceduresSection initialData={sopDetail?.Sop_Procedures || null} />
-        {/* ⭐ NEW – قسم Critical Control Points */}
         {/* ⭐ NEW – Critical Control Points */}
         <CriticalControlPointsSection
-          initialData={sopDetail?.Sop_Critical_Control_Points || null}
+          initialData={sopDetail?.sop_CriticalControlPoints || null}
         />
+
+        {/* ⭐ NEW – قسم References */}
+        <ReferenceDocumentsSection initialData={sopDetail?.Sop_Refrences || null} />
 
         {/* ⭐ NEW – قسم Attachments */}
         {headerId && <AttachmentsSection headerId={headerId} />}
-        {/* ⭐ NEW – قسم References */}
-        <ReferenceDocumentsSection initialData={(sopDetail?.Sop_Refrence as any) || null} />
       </SOPTemplate>
 
       {sopDetail && <StatusControl sopDetail={sopDetail} setSopDetail={setSopDetail} />}
