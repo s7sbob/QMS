@@ -61,7 +61,13 @@
         "sendRequest": "Send Request",
         "managerApproval": "Manager Approval",
         "qaManagerApproval": "QA Manager Approval",
-        "rejectRequest": "Reject Request"
+        "rejectRequest": "Reject Request",
+        "toBeFixed": "To Be Fixed",
+        "submitForReview": "Submit for Review",
+        "submitReview": "Submit Review",
+        "approveAndIssue": "Approve & Issue",
+        "returnForRevision": "Return For Revision",
+        "saveAndSubmit": "Save and Submit"
     },
 
     "status": {
@@ -89,6 +95,11 @@
     "messages": {
         "success": "Success",
         "error": "Error",
+        "sentForFixing": "Sent for Fixing",
+        "documentSentForFixing": "Document sent back to associate for fixing",
+        "reviewCompleted": "Review Completed",
+        "documentReviewedSuccess": "Document reviewed successfully",
+        "failedUpdateStatus": "Failed to update document status",
         "savingData": "Saving data...",
         "dataSavedSuccess": "Data saved successfully!",
         "failedFetchRequest": "Failed to fetch request data",

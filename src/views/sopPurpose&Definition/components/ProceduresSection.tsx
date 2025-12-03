@@ -8,10 +8,7 @@ import {
   TableBody,
   TableCell,
   TableContainer,
-  TableHead,
   TableRow,
-  Paper,
-  Typography,
 } from '@mui/material';
 import EditDialog from './EditDialog';
 import { UserContext } from 'src/context/UserContext';
@@ -34,9 +31,10 @@ export interface Procedure {
 
 interface ProceduresSectionProps {
   initialData: Procedure | null;
+  isReadOnly?: boolean;
 }
 
-const ProceduresSection: React.FC<ProceduresSectionProps> = ({ initialData }) => {
+const ProceduresSection: React.FC<ProceduresSectionProps> = ({ initialData, isReadOnly = false }) => {
   const user = useContext(UserContext);
   const userRole = user?.Users_Departments_Users_Departments_User_IdToUser_Data?.[0]?.User_Roles?.Name || '';
 
@@ -51,7 +49,7 @@ const ProceduresSection: React.FC<ProceduresSectionProps> = ({ initialData }) =>
   }, [initialData]);
 
   const handleDoubleClick = () => {
-    if (!procedure) return;
+    if (!procedure || isReadOnly) return;
     axiosServices
       .get(`/api/sopprocedures/getAllHistory/${procedure.Sop_HeaderId}`)
       .then((res) => {
@@ -111,6 +109,14 @@ const ProceduresSection: React.FC<ProceduresSectionProps> = ({ initialData }) =>
 
       if (isReviewer && hasNewComment) {
         await sendNotificationToQAAssociates(procedure.Sop_HeaderId, 'Procedures');
+
+        // Update SOP header status to 3 when QA Supervisor adds a comment
+        if (userRole === 'QA Supervisor') {
+          await axiosServices.patch(
+            `/api/sopheader/updateSopStatusByReviewer/${procedure.Sop_HeaderId}`,
+            { status: { newStatus: '3' } }
+          );
+        }
       }
     } catch (error) {
       console.error('Error saving procedure:', error);
@@ -118,36 +124,70 @@ const ProceduresSection: React.FC<ProceduresSectionProps> = ({ initialData }) =>
   };
 
   return (
-    <Box sx={{ mt: 2 }}>
-      <Typography
-        variant="h6"
-        gutterBottom
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          color: procedure && procedure.reviewer_Comment ? 'red' : 'inherit', // الشرط هنا لتلوين العنوان بالاحمر عند وجود تعليق
-        }}
-      >
-        <span>6. Procedures:</span>
-        <span dir="rtl">6. الإجراءات</span>
-      </Typography>
-      <TableContainer component={Paper} sx={{ mt: 1 }}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ fontWeight: 'bold', width: '50%' }}>English Content</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', width: '50%' }} align="right">
-                المحتوى العربي
+    <Box sx={{ mt: 0 }}>
+      <TableContainer sx={{ border: 'none', boxShadow: 'none' }}>
+        <Table sx={{ tableLayout: 'fixed', backgroundColor: '#fff' }}>
+          <TableBody>
+            {/* Section Title Row - Gray Background */}
+            <TableRow
+              onDoubleClick={handleDoubleClick}
+              sx={{
+                cursor: isReadOnly ? 'default' : 'pointer',
+                '&:hover': { '& td': { backgroundColor: isReadOnly ? '#fff' : '#f5f5f5' } },
+              }}
+            >
+              <TableCell
+                sx={{
+                  fontWeight: 'bold',
+                  fontSize: '14px',
+                  width: '50%',
+                  borderRight: '2px solid #000',
+                  borderBottom: 'none',
+                  backgroundColor: '#fff',
+                  color: procedure && procedure.reviewer_Comment ? 'red' : 'inherit',
+                  padding: '8px 12px',
+                }}
+              >
+                6. Procedures:
+              </TableCell>
+              <TableCell
+                align="right"
+                sx={{
+                  fontWeight: 'bold',
+                  fontSize: '14px',
+                  width: '50%',
+                  direction: 'rtl',
+                  borderBottom: 'none',
+                  backgroundColor: '#fff',
+                  color: procedure && procedure.reviewer_Comment ? 'red' : 'inherit',
+                  padding: '8px 12px',
+                }}
+              >
+                ٦- الإجراءات:
               </TableCell>
             </TableRow>
-          </TableHead>
-          <TableBody>
+            {/* Content Row */}
             {procedure && (
-              <TableRow onDoubleClick={handleDoubleClick} hover sx={{ cursor: 'pointer' }}>
-                <TableCell>
+              <TableRow>
+                <TableCell
+                  sx={{
+                    borderRight: '2px solid #000',
+                    verticalAlign: 'top',
+                    backgroundColor: '#fff',
+                    padding: '12px',
+                  }}
+                >
                   <div dangerouslySetInnerHTML={{ __html: procedure.Content_en }} />
                 </TableCell>
-                <TableCell align="right" style={{ direction: 'rtl' }}>
+                <TableCell
+                  align="right"
+                  sx={{
+                    direction: 'rtl',
+                    verticalAlign: 'top',
+                    backgroundColor: '#fff',
+                    padding: '12px',
+                  }}
+                >
                   <div dangerouslySetInnerHTML={{ __html: procedure.Content_ar }} />
                 </TableCell>
               </TableRow>

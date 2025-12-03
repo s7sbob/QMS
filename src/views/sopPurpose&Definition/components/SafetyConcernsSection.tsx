@@ -7,10 +7,7 @@ import {
   TableBody,
   TableCell,
   TableContainer,
-  TableHead,
   TableRow,
-  Paper,
-  Typography,
 } from "@mui/material";
 import EditDialog from "./EditDialog";
 import { UserContext } from "src/context/UserContext";
@@ -33,24 +30,36 @@ export interface SafetyConcern {
 
 interface SafetyConcernsSectionProps {
   initialData: SafetyConcern | null;
+  isReadOnly?: boolean;
 }
 
-const SafetyConcernsSection: React.FC<SafetyConcernsSectionProps> = ({ initialData }) => {
+const SafetyConcernsSection: React.FC<SafetyConcernsSectionProps> = ({ initialData, isReadOnly = false }) => {
   const user = useContext(UserContext);
   const userRole = user?.Users_Departments_Users_Departments_User_IdToUser_Data?.[0]?.User_Roles?.Name || '';
 
   const [safetyConcern, setSafetyConcern] = useState<SafetyConcern | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [historyData, setHistoryData] = useState<SafetyConcern[]>([]);
+  const [creatorName, setCreatorName] = useState<string>('');
 
   useEffect(() => {
     if (initialData) {
       setSafetyConcern(initialData);
+      if (initialData.Crt_by) {
+        axiosServices.get(`/api/user/getUserById/${initialData.Crt_by}`)
+          .then((res) => {
+            const userData = res.data;
+            if (userData) {
+              setCreatorName(`${userData.FName || ''} ${userData.LName || ''}`.trim());
+            }
+          })
+          .catch((err) => console.error('Error fetching creator name:', err));
+      }
     }
   }, [initialData]);
 
   const handleDoubleClick = () => {
-    if (!safetyConcern) return;
+    if (!safetyConcern || isReadOnly) return;
     axiosServices
       .get(`/api/sopSafetyConcerns/getAllHistory/${safetyConcern.Sop_HeaderId}`)
       .then((res) => {
@@ -106,6 +115,14 @@ const SafetyConcernsSection: React.FC<SafetyConcernsSectionProps> = ({ initialDa
 
       if (isReviewer && hasNewComment) {
         await sendNotificationToQAAssociates(safetyConcern.Sop_HeaderId, 'Safety Concerns');
+
+        // Update SOP header status to 3 when QA Supervisor adds a comment
+        if (userRole === 'QA Supervisor') {
+          await axiosServices.patch(
+            `/api/sopheader/updateSopStatusByReviewer/${safetyConcern.Sop_HeaderId}`,
+            { status: { newStatus: '3' } }
+          );
+        }
       }
     } catch (error) {
       console.error("Error saving safety concern:", error);
@@ -113,29 +130,70 @@ const SafetyConcernsSection: React.FC<SafetyConcernsSectionProps> = ({ initialDa
   };
 
   return (
-    <Box sx={{ mt: 2 }}>
-      <Typography variant="h6" gutterBottom sx={{ display: "flex", justifyContent: "space-between",     color: safetyConcern && safetyConcern.reviewer_Comment ? "red" : "inherit", // الشرط هنا لتلوين العنوان بالاحمر عند وجود تعليق
- }}>
-        <span>5. Safety Concerns:</span>
-        <span dir="rtl">5. اشتراطات السلامة</span>
-      </Typography>
-      <TableContainer component={Paper} sx={{ mt: 1 }}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ fontWeight: "bold", width: "50%" }}>English Content</TableCell>
-              <TableCell sx={{ fontWeight: "bold", width: "50%" }} align="right">
-                المحتوى العربي
+    <Box sx={{ mt: 0 }}>
+      <TableContainer sx={{ border: "none", boxShadow: "none" }}>
+        <Table sx={{ tableLayout: "fixed", backgroundColor: "#fff" }}>
+          <TableBody>
+            {/* Section Title Row - Gray Background */}
+            <TableRow
+              onDoubleClick={handleDoubleClick}
+              sx={{
+                cursor: isReadOnly ? "default" : "pointer",
+                "&:hover": { "& td": { backgroundColor: isReadOnly ? "#fff" : "#f5f5f5" } },
+              }}
+            >
+              <TableCell
+                sx={{
+                  fontWeight: "bold",
+                  fontSize: "14px",
+                  width: "50%",
+                  borderRight: "2px solid #000",
+                  borderBottom: "none",
+                  backgroundColor: "#fff",
+                  color: safetyConcern && safetyConcern.reviewer_Comment ? "red" : "inherit",
+                  padding: "8px 12px",
+                }}
+              >
+                5. Safety Concerns:
+              </TableCell>
+              <TableCell
+                align="right"
+                sx={{
+                  fontWeight: "bold",
+                  fontSize: "14px",
+                  width: "50%",
+                  direction: "rtl",
+                  borderBottom: "none",
+                  backgroundColor: "#fff",
+                  color: safetyConcern && safetyConcern.reviewer_Comment ? "red" : "inherit",
+                  padding: "8px 12px",
+                }}
+              >
+                ٥- اشتراطات السلامة:
               </TableCell>
             </TableRow>
-          </TableHead>
-          <TableBody>
+            {/* Content Row */}
             {safetyConcern && (
-              <TableRow onDoubleClick={handleDoubleClick} hover sx={{ cursor: "pointer" }}>
-                <TableCell>
+              <TableRow>
+                <TableCell
+                  sx={{
+                    borderRight: "2px solid #000",
+                    verticalAlign: "top",
+                    backgroundColor: "#fff",
+                    padding: "12px",
+                  }}
+                >
                   <div dangerouslySetInnerHTML={{ __html: safetyConcern.Content_en }} />
                 </TableCell>
-                <TableCell align="right" style={{ direction: "rtl" }}>
+                <TableCell
+                  align="right"
+                  sx={{
+                    direction: "rtl",
+                    verticalAlign: "top",
+                    backgroundColor: "#fff",
+                    padding: "12px",
+                  }}
+                >
                   <div dangerouslySetInnerHTML={{ __html: safetyConcern.Content_ar }} />
                 </TableCell>
               </TableRow>
@@ -151,11 +209,8 @@ const SafetyConcernsSection: React.FC<SafetyConcernsSectionProps> = ({ initialDa
           initialContentAr={safetyConcern.Content_ar}
           initialReviewerComment={safetyConcern.reviewer_Comment || ""}
           additionalInfo={{
-            version: safetyConcern.Version,
             crtDate: safetyConcern.Crt_Date,
-            modifiedDate: safetyConcern.Modified_Date,
-            crtBy: safetyConcern.Crt_by,
-            modifiedBy: safetyConcern.Modified_by,
+            crtByName: creatorName,
           }}
           historyData={historyData}
           userRole={userRole}

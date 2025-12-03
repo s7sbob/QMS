@@ -7,10 +7,7 @@ import {
   TableBody,
   TableCell,
   TableContainer,
-  TableHead,
   TableRow,
-  Paper,
-  Typography,
 } from "@mui/material";
 import EditDialog from "./EditDialog";
 import { UserContext } from "src/context/UserContext";
@@ -33,24 +30,36 @@ export interface Scope {
 
 interface ScopeSectionProps {
   initialData: Scope | null;
+  isReadOnly?: boolean;
 }
 
-const ScopeSection: React.FC<ScopeSectionProps> = ({ initialData }) => {
+const ScopeSection: React.FC<ScopeSectionProps> = ({ initialData, isReadOnly = false }) => {
   const user = useContext(UserContext);
   const userRole = user?.Users_Departments_Users_Departments_User_IdToUser_Data?.[0]?.User_Roles?.Name || '';
 
   const [scope, setScope] = useState<Scope | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [historyData, setHistoryData] = useState<Scope[]>([]);
+  const [creatorName, setCreatorName] = useState<string>('');
 
   useEffect(() => {
     if (initialData) {
       setScope(initialData);
+      if (initialData.Crt_by) {
+        axiosServices.get(`/api/user/getUserById/${initialData.Crt_by}`)
+          .then((res) => {
+            const userData = res.data;
+            if (userData) {
+              setCreatorName(`${userData.FName || ''} ${userData.LName || ''}`.trim());
+            }
+          })
+          .catch((err) => console.error('Error fetching creator name:', err));
+      }
     }
   }, [initialData]);
 
   const handleDoubleClick = () => {
-    if (!scope) return;
+    if (!scope || isReadOnly) return;
     axiosServices
       .get(`/api/sopScope/getAllHistory/${scope.Sop_HeaderId}`)
       .then((res) => {
@@ -106,6 +115,14 @@ const ScopeSection: React.FC<ScopeSectionProps> = ({ initialData }) => {
 
       if (isReviewer && hasNewComment) {
         await sendNotificationToQAAssociates(scope.Sop_HeaderId, 'Scope');
+
+        // Update SOP header status to 3 when QA Supervisor adds a comment
+        if (userRole === 'QA Supervisor') {
+          await axiosServices.patch(
+            `/api/sopheader/updateSopStatusByReviewer/${scope.Sop_HeaderId}`,
+            { status: { newStatus: '3' } }
+          );
+        }
       }
     } catch (error) {
       console.error("Error saving scope:", error);
@@ -113,29 +130,70 @@ const ScopeSection: React.FC<ScopeSectionProps> = ({ initialData }) => {
   };
 
   return (
-    <Box sx={{ mt: 2 }}>
-      <Typography variant="h6" gutterBottom sx={{ display: "flex", justifyContent: "space-between",     color: scope && scope.reviewer_Comment ? "red" : "inherit", // الشرط هنا لتلوين العنوان بالاحمر عند وجود تعليق
- }}>
-        <span>3. Scope:</span>
-        <span dir="rtl">3. النطاق</span>
-      </Typography>
-      <TableContainer component={Paper} sx={{ mt: 1 }}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ fontWeight: "bold", width: "50%" }}>English Content</TableCell>
-              <TableCell sx={{ fontWeight: "bold", width: "50%" }} align="right">
-                المحتوى العربي
+    <Box sx={{ mt: 0 }}>
+      <TableContainer sx={{ border: "none", boxShadow: "none" }}>
+        <Table sx={{ tableLayout: "fixed", backgroundColor: "#fff" }}>
+          <TableBody>
+            {/* Section Title Row - Gray Background */}
+            <TableRow
+              onDoubleClick={handleDoubleClick}
+              sx={{
+                cursor: isReadOnly ? "default" : "pointer",
+                "&:hover": { "& td": { backgroundColor: isReadOnly ? "#fff" : "#f5f5f5" } },
+              }}
+            >
+              <TableCell
+                sx={{
+                  fontWeight: "bold",
+                  fontSize: "14px",
+                  width: "50%",
+                  borderRight: "2px solid #000",
+                  borderBottom: "none",
+                  backgroundColor: "#fff",
+                  color: scope && scope.reviewer_Comment ? "red" : "inherit",
+                  padding: "8px 12px",
+                }}
+              >
+                3. Scope:
+              </TableCell>
+              <TableCell
+                align="right"
+                sx={{
+                  fontWeight: "bold",
+                  fontSize: "14px",
+                  width: "50%",
+                  direction: "rtl",
+                  borderBottom: "none",
+                  backgroundColor: "#fff",
+                  color: scope && scope.reviewer_Comment ? "red" : "inherit",
+                  padding: "8px 12px",
+                }}
+              >
+                ٣- النطاق:
               </TableCell>
             </TableRow>
-          </TableHead>
-          <TableBody>
+            {/* Content Row */}
             {scope && (
-              <TableRow onDoubleClick={handleDoubleClick} hover sx={{ cursor: "pointer" }}>
-                <TableCell>
+              <TableRow>
+                <TableCell
+                  sx={{
+                    borderRight: "2px solid #000",
+                    verticalAlign: "top",
+                    backgroundColor: "#fff",
+                    padding: "12px",
+                  }}
+                >
                   <div dangerouslySetInnerHTML={{ __html: scope.Content_en }} />
                 </TableCell>
-                <TableCell align="right" style={{ direction: "rtl" }}>
+                <TableCell
+                  align="right"
+                  sx={{
+                    direction: "rtl",
+                    verticalAlign: "top",
+                    backgroundColor: "#fff",
+                    padding: "12px",
+                  }}
+                >
                   <div dangerouslySetInnerHTML={{ __html: scope.Content_ar }} />
                 </TableCell>
               </TableRow>
@@ -151,11 +209,8 @@ const ScopeSection: React.FC<ScopeSectionProps> = ({ initialData }) => {
           initialContentAr={scope.Content_ar}
           initialReviewerComment={scope.reviewer_Comment || ""}
           additionalInfo={{
-            version: scope.Version,
             crtDate: scope.Crt_Date,
-            modifiedDate: scope.Modified_Date,
-            crtBy: scope.Crt_by,
-            modifiedBy: scope.Modified_by,
+            crtByName: creatorName,
           }}
           historyData={historyData}
           userRole={userRole}

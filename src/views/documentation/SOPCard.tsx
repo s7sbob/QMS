@@ -1,8 +1,7 @@
 import React from 'react';
 import { Card, CardContent, Typography, Box, Chip, Stack, CardActionArea } from '@mui/material';
 import { IconFileText } from '@tabler/icons-react';
-import { useNavigate } from 'react-router-dom';
-import axiosServices from 'src/utils/axiosServices';
+import { useSopNavigation } from 'src/hooks/useSopNavigation';
 
 export interface SopStatus {
   Id: string;
@@ -38,27 +37,8 @@ interface SOPCardProps {
   sop: SopHeader;
 }
 
-// Status names that should open in Request Form instead of SOP Full Document
-// These statuses indicate the document is in the request/approval workflow
-const REQUEST_FORM_STATUS_NAMES = [
-  'request for new creation',
-  'request for new creation approved',
-  'request for new creation rejected',
-  'request for new creation rejected by qa manager',
-  'new request',
-  'approved',
-  'rejected',
-  'rejected by qa manager',
-  'approved by qa manager',
-  'approved by qa officer',
-  'rejected by qa officer',
-];
-
-// Status IDs that should open in Request Form
-const REQUEST_FORM_STATUS_IDS = ['8', '12', '13', '14', '15',  '17'];
-
 const SOPCard: React.FC<SOPCardProps> = ({ sop }) => {
-  const navigate = useNavigate();
+  const { navigateToSop } = useSopNavigation();
 
   // Color mapping for statuses (adjust as needed)
   const statusColorMapping: Record<string, "default" | "primary" | "secondary" | "error" | "warning" | "info" | "success"> = {
@@ -78,58 +58,8 @@ const SOPCard: React.FC<SOPCardProps> = ({ sop }) => {
   };
 
   const handleClick = async () => {
-    // Check if status requires opening in Request Form (check by name or ID)
-    const statusName = sop.Sop_Status.Name_en?.toLowerCase() || '';
-    const statusId = sop.Sop_Status.Id;
-
-    console.log('SOPCard handleClick:', {
-      sopId: sop.Id,
-      statusId: sop.Sop_Status.Id,
-      statusName: sop.Sop_Status.Name_en,
-      statusNameLower: statusName,
-    });
-
-    // Status 16 (Approved by Document Officer) or Status 1 (In Progress) - Open in New_Creation_SOP to complete/edit data
-    if (statusId === '16' || statusId === '1') {
-      console.log(`Status ${statusId} - Navigating to New_Creation_SOP`);
-      navigate(`/documentation-control/New_Creation_SOP?headerId=${sop.Id}`);
-      return;
-    }
-
-    // Check by status ID first (more reliable), then by name
-    const shouldOpenRequestForm = REQUEST_FORM_STATUS_IDS.includes(statusId) ||
-      REQUEST_FORM_STATUS_NAMES.some(
-        (name) => statusName.includes(name.toLowerCase()) || name.toLowerCase().includes(statusName)
-      );
-
-    if (shouldOpenRequestForm) {
-      try {
-        // Get the docRequestForm by SOP Header ID
-        const response = await axiosServices.get(`/api/docrequest-form/bysopheader/${sop.Id}`);
-        if (response.data && response.data.Id) {
-          // Navigate to Request Form with the docRequestForm ID
-          console.log('Navigating to existing request form:', response.data.Id);
-          navigate(`/documentation-control/Request_Form/${response.data.Id}`);
-        } else {
-          // If no request form found, navigate to Request Form to create new
-          console.log('No request form found, navigating to create new request');
-          navigate(`/documentation-control/Request_Form?headerId=${sop.Id}`);
-        }
-      } catch (error: any) {
-        console.error('Error fetching doc request form:', error);
-        // If 404 (no request form exists), navigate to Request Form to create new
-        if (error.response?.status === 404) {
-          console.log('404 - No request form exists, navigating to create new request');
-          navigate(`/documentation-control/Request_Form?headerId=${sop.Id}`);
-        } else {
-          // For other errors, fallback to SOP Full Document
-          navigate(`/sopFullDocument?headerId=${sop.Id}`);
-        }
-      }
-    } else {
-      // Navigate to the details page with the headerId in the query string
-      navigate(`/sopFullDocument?headerId=${sop.Id}`);
-    }
+    console.log('SOPCard handleClick - SOP ID:', sop.Id);
+    await navigateToSop(sop.Id);
   };
 
   return (

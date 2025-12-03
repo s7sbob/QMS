@@ -194,7 +194,7 @@ const SOPTableOfContents: React.FC<SOPTableOfContentsProps> = ({
   };
 
   return (
-    <div className="sop-page sop-content-page" style={{ marginBottom: '25px' }}>
+    <div className="sop-page sop-toc-page" style={{ marginBottom: '25px' }}>
       {/* Page Header */}
       <SOPContentPageHeader
         headerData={headerData}

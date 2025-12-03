@@ -24,19 +24,17 @@
 /* ===== Individual A4 Page ===== */
 .sop-page {
   width: var(--a4-width);
-  height: var(--a4-height);
   min-height: var(--a4-height);
-  max-height: var(--a4-height);
   background: white;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   padding: var(--page-padding);
   box-sizing: border-box;
   position: relative;
   page-break-after: always;
-  page-break-inside: avoid;
+  page-break-inside: auto;
+  break-inside: auto;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 /* ===== COVER PAGE STYLES ===== */
@@ -276,40 +274,75 @@
 /* Content Area */
 .sop-content-area {
   flex: 1;
-  overflow: hidden;
-  padding: 10px 0;
+  overflow: visible;
+  padding: 0;
+  min-height: 0; /* Allow flex shrinking */
+  border: 2px solid #000; /* Single outer border around all content */
+  position: relative;
 }
 
-/* Ensure sections don't overflow */
+/* Vertical divider that extends full height */
+.sop-content-area::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  background-color: #000;
+  transform: translateX(-50%);
+}
+
+/* Ensure content wraps properly */
 .sop-content-area > * {
   max-width: 100%;
   overflow-wrap: break-word;
+  page-break-inside: auto;
+  break-inside: auto;
+}
+
+/* Allow table content to split across pages */
+.sop-content-area table {
+  page-break-inside: auto;
+  break-inside: auto;
+}
+
+.sop-content-area tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+.sop-content-area td,
+.sop-content-area th {
+  page-break-inside: auto;
+  break-inside: auto;
 }
 
 /* Content Footer Section */
 .content-footer-section {
-  margin-top: auto;
+  margin-top: 20px;
   padding-top: 10px;
 }
 
 /* ===== SECTION STYLES ===== */
 .sop-section {
   margin-bottom: 15px;
-  page-break-inside: avoid;
+  page-break-inside: auto;
+  break-inside: auto;
 }
 
 .sop-section-header {
   display: flex;
-  border: 1px solid #000;
-  background-color: #e3f2fd;
-  margin-bottom: 10px;
+  border: none;
+  background-color: #fff;
+  margin-bottom: 0;
 }
 
 .sop-section-number {
   width: 30px;
   padding: 8px;
   font-weight: bold;
-  border-right: 1px solid #000;
+  border-right: none;
   text-align: center;
 }
 
@@ -317,7 +350,7 @@
   flex: 1;
   padding: 8px 15px;
   font-weight: bold;
-  border-right: 1px solid #000;
+  border-right: 2px solid #000;  /* Keep vertical divider between columns */
 }
 
 .sop-section-title-ar {
@@ -330,14 +363,13 @@
 
 .sop-section-content {
   display: flex;
-  border: 1px solid #000;
-  border-top: none;
+  border: none;
 }
 
 .sop-section-content-en {
   flex: 1;
   padding: 10px 15px;
-  border-right: 1px solid #000;
+  border-right: 2px solid #000;  /* Keep vertical divider between columns */
 }
 
 .sop-section-content-ar {
@@ -359,15 +391,22 @@
     padding: 0;
     gap: 0;
     background: white;
+    width: 100%;
   }
 
   .sop-page {
     width: var(--a4-width);
+    min-height: var(--a4-height);
     height: var(--a4-height);
     margin: 0;
-    padding: var(--page-margin);
+    padding: var(--page-padding);
     box-shadow: none;
     page-break-after: always;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
   }
 
   .sop-page:last-child {
@@ -378,11 +417,146 @@
   .no-print {
     display: none !important;
   }
+
+  /* Hide image preview overlay when printing */
+  .image-preview-overlay {
+    display: none !important;
+  }
+
+  /* Print-specific image styles */
+  .sop-content-area img,
+  .sop-document-wrapper .MuiTableCell-root img {
+    width: 450px;
+    height: 200px;
+    object-fit: contain;
+    box-shadow: none;
+    transform: none;
+  }
+
+  /* Allow sections to split across pages when printing */
+  .sop-section {
+    page-break-inside: auto;
+    break-inside: auto;
+  }
+
+  /* Content area in print - match screen view */
+  .sop-content-area {
+    flex: 1;
+    overflow: hidden;
+    border: 2px solid #000;
+    position: relative;
+  }
+
+  /* Keep vertical divider in print */
+  .sop-content-area::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 2px;
+    background-color: #000;
+    transform: translateX(-50%);
+  }
+
+  .sop-content-area > * {
+    page-break-inside: auto;
+    break-inside: auto;
+  }
+
+  /* Tables should split across pages */
+  .sop-content-area table,
+  .sop-document-wrapper table {
+    page-break-inside: auto;
+    break-inside: auto;
+  }
+
+  /* Keep individual rows together but allow table to split */
+  .sop-content-area tr,
+  .sop-document-wrapper tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Allow table cells content to split if needed */
+  .sop-content-area td,
+  .sop-content-area th,
+  .sop-document-wrapper td,
+  .sop-document-wrapper th {
+    page-break-inside: auto;
+    break-inside: auto;
+  }
+
+  /* Footer section in print - match screen view */
+  .content-footer-section {
+    margin-top: auto;
+    padding-top: 10px;
+  }
 }
 
 @page {
   size: A4;
-  margin: 10mm;
+  margin: 0;
+}
+
+/* ===== SOP CONTENT IMAGES ===== */
+.sop-content-area img,
+.sop-document-wrapper .MuiTableCell-root img {
+  width: 450px;
+  height: 200px;
+  object-fit: contain;
+  display: block;
+  margin: 10px auto;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-radius: 4px;
+}
+
+.sop-content-area img:hover,
+.sop-document-wrapper .MuiTableCell-root img:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Image Preview Overlay */
+.image-preview-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  cursor: pointer;
+}
+
+.image-preview-overlay img {
+  max-width: 90vw;
+  max-height: 90vh;
+  width: auto !important;
+  height: auto !important;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.image-preview-close {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  color: white;
+  font-size: 40px;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 10000;
+  transition: color 0.2s ease;
+}
+
+.image-preview-close:hover {
+  color: #ff5252;
 }
 
 /* ===== LEGACY TABLE SUPPORT ===== */

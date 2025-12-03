@@ -6,14 +6,11 @@ import React, { useEffect, useState, useContext } from "react";
 import axiosServices from "src/utils/axiosServices";
 import {
   Box,
-  Paper,
   Table,
   TableBody,
   TableCell,
   TableContainer,
-  TableHead,
   TableRow,
-  Typography,
 } from "@mui/material";
 import EditDialog, { HistoryRecord } from "./EditDialog"; // ⬅️ استيراد النوع
 import { UserContext } from "src/context/UserContext";
@@ -37,6 +34,7 @@ export interface CriticalControlPoint {
 /* ── Props الخاصة بالقسم ─────────────────────────────────────── */
 interface Props {
   initialData: CriticalControlPoint | null;
+  isReadOnly?: boolean;
 }
 
 /* ── تحويل سجل CCP → HistoryRecord  (لتوافق EditDialog) ─────── */
@@ -53,7 +51,7 @@ const toHistoryRecord = (rec: CriticalControlPoint): HistoryRecord => ({
 });
 
 /* ── مكوّن القسم ─────────────────────────────────────────────── */
-const CriticalControlPointsSection: React.FC<Props> = ({ initialData }) => {
+const CriticalControlPointsSection: React.FC<Props> = ({ initialData, isReadOnly = false }) => {
   const user = useContext(UserContext);
   const userRole = user?.Users_Departments_Users_Departments_User_IdToUser_Data?.[0]?.User_Roles?.Name || '';
 
@@ -66,7 +64,7 @@ const CriticalControlPointsSection: React.FC<Props> = ({ initialData }) => {
 
   /* ───── فتح الـ dialog مع جلب التاريخ ─────────────────────── */
   const handleDoubleClick = () => {
-    if (!ccp) return;
+    if (!ccp || isReadOnly) return;
 
     axiosServices
       .get(`/api/sopCriticalControlPoints/getAllHistory/${ccp.Sop_HeaderId}`)
@@ -125,6 +123,14 @@ const CriticalControlPointsSection: React.FC<Props> = ({ initialData }) => {
 
       if (isReviewer && hasNewComment) {
         await sendNotificationToQAAssociates(ccp.Sop_HeaderId, 'Critical Control Points');
+
+        // Update SOP header status to 3 when QA Supervisor adds a comment
+        if (userRole === 'QA Supervisor') {
+          await axiosServices.patch(
+            `/api/sopheader/updateSopStatusByReviewer/${ccp.Sop_HeaderId}`,
+            { status: { newStatus: '3' } }
+          );
+        }
       }
     } catch (err) {
       console.error("CCP save error:", err);
@@ -133,47 +139,70 @@ const CriticalControlPointsSection: React.FC<Props> = ({ initialData }) => {
 
   /* ───── واجهة المستخدم ───────────────────────────────────── */
   return (
-    <Box sx={{ mt: 2 }}>
-      {/* رأس القسم */}
-      <Typography
-        variant="h6"
-        gutterBottom
-        sx={{
-          display : "flex",
-          justifyContent: "space-between",
-          color   : ccp?.reviewer_Comment ? "red" : "inherit",
-        }}
-      >
-        <span>7. Critical Control Points:</span>
-        <span dir="rtl">7. نقاط التحكم الحرجة</span>
-      </Typography>
-
-      {/* الجدول */}
-      <TableContainer component={Paper} sx={{ mt: 1 }}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ fontWeight: "bold", width: "50%" }}>English</TableCell>
+    <Box sx={{ mt: 0 }}>
+      <TableContainer sx={{ border: "none", boxShadow: "none" }}>
+        <Table sx={{ tableLayout: "fixed", backgroundColor: "#fff" }}>
+          <TableBody>
+            {/* Section Title Row - Gray Background */}
+            <TableRow
+              onDoubleClick={handleDoubleClick}
+              sx={{
+                cursor: isReadOnly ? "default" : "pointer",
+                "&:hover": { "& td": { backgroundColor: isReadOnly ? "#fff" : "#f5f5f5" } },
+              }}
+            >
               <TableCell
-                sx={{ fontWeight: "bold", width: "50%" }}
-                align="right"
+                sx={{
+                  fontWeight: "bold",
+                  fontSize: "14px",
+                  width: "50%",
+                  borderRight: "2px solid #000",
+                  borderBottom: "none",
+                  backgroundColor: "#fff",
+                  color: ccp?.reviewer_Comment ? "red" : "inherit",
+                  padding: "8px 12px",
+                }}
               >
-                العربية
+                7. Critical Control Points:
+              </TableCell>
+              <TableCell
+                align="right"
+                sx={{
+                  fontWeight: "bold",
+                  fontSize: "14px",
+                  width: "50%",
+                  direction: "rtl",
+                  borderBottom: "none",
+                  backgroundColor: "#fff",
+                  color: ccp?.reviewer_Comment ? "red" : "inherit",
+                  padding: "8px 12px",
+                }}
+              >
+                ٧- نقاط التحكم الحرجة:
               </TableCell>
             </TableRow>
-          </TableHead>
-
-          <TableBody>
+            {/* Content Row */}
             {ccp && (
-              <TableRow
-                hover
-                sx={{ cursor: "pointer" }}
-                onDoubleClick={handleDoubleClick}
-              >
-                <TableCell>
+              <TableRow>
+                <TableCell
+                  sx={{
+                    borderRight: "2px solid #000",
+                    verticalAlign: "top",
+                    backgroundColor: "#fff",
+                    padding: "12px",
+                  }}
+                >
                   <div dangerouslySetInnerHTML={{ __html: ccp.Content_en }} />
                 </TableCell>
-                <TableCell align="right" style={{ direction: "rtl" }}>
+                <TableCell
+                  align="right"
+                  sx={{
+                    direction: "rtl",
+                    verticalAlign: "top",
+                    backgroundColor: "#fff",
+                    padding: "12px",
+                  }}
+                >
                   <div dangerouslySetInnerHTML={{ __html: ccp.Content_ar }} />
                 </TableCell>
               </TableRow>

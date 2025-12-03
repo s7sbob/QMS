@@ -1,5 +1,5 @@
 // src/components/Notifications.tsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import {
   IconButton,
   Box,
@@ -10,13 +10,15 @@ import {
   Typography,
   Button,
   Chip,
-  Stack
+  Stack,
+  Tooltip
 } from "@mui/material";
-import { IconBellRinging } from "@tabler/icons-react";
-import { Link, useNavigate } from "react-router-dom";
+import { IconBellRinging, IconWifi, IconWifiOff } from "@tabler/icons-react";
+import { Link } from "react-router-dom";
 import axiosServices from "src/utils/axiosServices";
 import Scrollbar from "./Scrollbar";
 import socket from "src/socket";
+import { useSopNavigation } from "src/hooks/useSopNavigation";
 
 interface NotificationItem {
   id: string;
@@ -28,10 +30,20 @@ interface NotificationItem {
   updatedAt: string;
 }
 
+// Polling interval when WebSocket is disconnected (in milliseconds)
+const FALLBACK_POLLING_INTERVAL = 30000; // 30 seconds
+
 const Notifications: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const navigate = useNavigate();
+  const { navigateToSop } = useSopNavigation();
+
+  // Connection status tracking
+  const [isSocketConnected, setIsSocketConnected] = useState(socket.connected);
+
+  // Refs for managing polling and requests
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -41,33 +53,139 @@ const Notifications: React.FC = () => {
     setAnchorEl(null);
   };
 
-  const fetchNotifications = async () => {
+  // Fetch notifications with AbortController support
+  const fetchNotifications = useCallback(async () => {
+    // Cancel any previous pending request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // Create new AbortController for this request
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     try {
-      const res = await axiosServices.get<NotificationItem[]>("/api/notifications/getNotifications");
-      setNotifications(res.data);
-    } catch (error) {
+      const res = await axiosServices.get<NotificationItem[]>(
+        "/api/notifications/getNotifications",
+        { signal: controller.signal }
+      );
+      // Only update state if request wasn't cancelled
+      if (!controller.signal.aborted) {
+        setNotifications(res.data);
+      }
+    } catch (error: any) {
+      // Ignore cancelled request errors (they're intentional)
+      if (error.name === 'CanceledError' || error.name === 'AbortError') {
+        return;
+      }
       console.error("Error fetching notifications:", error);
     }
-  };
+  }, []);
+
+  // Start polling fallback
+  const startPolling = useCallback(() => {
+    // Don't start if already polling
+    if (pollingIntervalRef.current) return;
+
+    console.log('📡 WebSocket disconnected - Starting fallback polling (every 30s)');
+    pollingIntervalRef.current = setInterval(() => {
+      fetchNotifications();
+    }, FALLBACK_POLLING_INTERVAL);
+  }, [fetchNotifications]);
+
+  // Stop polling
+  const stopPolling = useCallback(() => {
+    if (pollingIntervalRef.current) {
+      console.log('🔌 WebSocket connected - Stopping fallback polling');
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+  }, []);
 
   useEffect(() => {
-    // استخدام socket للاستماع لحدث notification
-    socket.on("notification", (notif: NotificationItem) => {
-      setNotifications((prev) => [notif, ...prev]);
-    });
+    // ============================================================
+    // WEBSOCKET EVENT HANDLERS
+    // ============================================================
 
+    // Handle incoming notifications via WebSocket (real-time)
+    const handleNotification = (notif: NotificationItem) => {
+      setNotifications((prev) => [notif, ...prev]);
+    };
+
+    // Handle socket connection
+    const handleConnect = () => {
+      console.log('✅ WebSocket connected - Real-time notifications active');
+      setIsSocketConnected(true);
+      stopPolling(); // Stop polling when connected
+      fetchNotifications(); // Fetch to catch any missed notifications
+    };
+
+    // Handle socket disconnection
+    const handleDisconnect = (reason: string) => {
+      console.log('❌ WebSocket disconnected:', reason);
+      setIsSocketConnected(false);
+      startPolling(); // Start polling as fallback
+    };
+
+    // Handle reconnection
+    const handleReconnect = (attemptNumber: number) => {
+      console.log('🔄 WebSocket reconnected after', attemptNumber, 'attempts');
+      setIsSocketConnected(true);
+      stopPolling();
+      fetchNotifications(); // Fetch to catch any missed during disconnect
+    };
+
+    // Handle connection error
+    const handleConnectError = (error: Error) => {
+      console.error('⚠️ WebSocket connection error:', error.message);
+      setIsSocketConnected(false);
+      startPolling(); // Start polling as fallback
+    };
+
+    // ============================================================
+    // REGISTER EVENT LISTENERS
+    // ============================================================
+    socket.on("notification", handleNotification);
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+    socket.on("reconnect", handleReconnect);
+    socket.on("connect_error", handleConnectError);
+
+    // ============================================================
+    // INITIAL SETUP
+    // ============================================================
+
+    // Fetch notifications on mount
     fetchNotifications();
 
+    // Check initial connection status and start polling if needed
+    if (!socket.connected) {
+      console.log('📡 WebSocket not connected on mount - Starting fallback polling');
+      startPolling();
+    } else {
+      console.log('✅ WebSocket already connected on mount');
+      setIsSocketConnected(true);
+    }
+
+    // ============================================================
+    // CLEANUP ON UNMOUNT
+    // ============================================================
     return () => {
-      socket.off("notification");
+      socket.off("notification", handleNotification);
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
+      socket.off("reconnect", handleReconnect);
+      socket.off("connect_error", handleConnectError);
+      stopPolling();
+      // Cancel any pending request on unmount
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
     };
-  }, []);
+  }, [fetchNotifications, startPolling, stopPolling]);
 
   // حساب عدد الإشعارات غير المقروءة فقط
   const unreadCount = notifications.filter(notification => !notification.isRead).length;
-
-  // Status IDs that should open in Request Form
-  const REQUEST_FORM_STATUS_IDS = ['8', '12', '13', '14', '15', '17'];
 
   const handleNotificationClick = async (notification: NotificationItem) => {
     handleClose();
@@ -87,33 +205,48 @@ const Notifications: React.FC = () => {
       }
     }
 
-    if (notification.data?.sopHeaderId) {
-      const status = String(notification.data?.status);
+    const sopHeaderId = notification.data?.sopHeaderId;
 
-      // Status 16 (approved by QA Document Officer) or Status 1 (In Progress) - open in New_Creation_SOP to complete/edit data
-      if (status === '16' || status === '1') {
-        navigate(`/documentation-control/New_Creation_SOP?headerId=${notification.data.sopHeaderId}`);
-      // Statuses 8, 12, 13, 14, 15, 17 - open in Request Form
-      } else if (REQUEST_FORM_STATUS_IDS.includes(status)) {
-        navigate(`/documentation-control/Request_Form?headerId=${notification.data.sopHeaderId}`);
-      } else {
-        navigate(`/SOPFullDocument?headerId=${notification.data.sopHeaderId}`);
-      }
+    console.log('Notification click - sopHeaderId:', sopHeaderId);
+
+    // Use the navigation hook to determine where to open based on current SOP status
+    if (sopHeaderId) {
+      await navigateToSop(sopHeaderId);
     }
   };
 
   return (
-    <Box>
-      <IconButton
-        size="large"
-        color="inherit"
-        onClick={handleClick}
-        sx={{ color: anchorEl ? "primary.main" : "text.secondary" }}
+    <Box sx={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+      <Tooltip
+        title={isSocketConnected ? "Real-time notifications active" : "Using polling (every 30s)"}
+        arrow
       >
-        <Badge color="primary" badgeContent={unreadCount}>
-          <IconBellRinging size="21" stroke="1.5" />
-        </Badge>
-      </IconButton>
+        <IconButton
+          size="large"
+          color="inherit"
+          onClick={handleClick}
+          sx={{ color: anchorEl ? "primary.main" : "text.secondary" }}
+        >
+          <Badge color="primary" badgeContent={unreadCount}>
+            <IconBellRinging size="21" stroke="1.5" />
+          </Badge>
+        </IconButton>
+      </Tooltip>
+      {/* Connection status indicator */}
+      <Box
+        sx={{
+          position: 'absolute',
+          bottom: 8,
+          right: 8,
+          width: 8,
+          height: 8,
+          borderRadius: '50%',
+          backgroundColor: isSocketConnected ? '#4caf50' : '#ff9800',
+          border: '1px solid white',
+          boxShadow: '0 0 2px rgba(0,0,0,0.3)',
+        }}
+        title={isSocketConnected ? 'Connected (Real-time)' : 'Disconnected (Polling)'}
+      />
 
       <Menu
         id="notification-menu"
@@ -127,7 +260,19 @@ const Notifications: React.FC = () => {
         }}
       >
         <Stack direction="row" py={2} px={4} justifyContent="space-between" alignItems="center">
-          <Typography variant="h6">Notifications</Typography>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Typography variant="h6">Notifications</Typography>
+            {/* Connection status in header */}
+            <Tooltip title={isSocketConnected ? "Real-time" : "Polling mode"} arrow>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                {isSocketConnected ? (
+                  <IconWifi size={16} color="#4caf50" />
+                ) : (
+                  <IconWifiOff size={16} color="#ff9800" />
+                )}
+              </Box>
+            </Tooltip>
+          </Stack>
           {unreadCount > 0 && <Chip label={`${unreadCount} new`} color="primary" size="small" />}
         </Stack>
         <Scrollbar sx={{ height: "385px" }}>

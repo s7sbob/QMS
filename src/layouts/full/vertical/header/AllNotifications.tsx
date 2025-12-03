@@ -3,7 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { Container, Paper, Typography, List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, Box, CircularProgress, Button } from '@mui/material';
 import { IconTrash } from '@tabler/icons-react';
 import axiosServices from 'src/utils/axiosServices';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { useSopNavigation } from 'src/hooks/useSopNavigation';
 
 interface NotificationItem {
   id: string;
@@ -18,7 +19,7 @@ interface NotificationItem {
 const AllNotifications: React.FC = () => {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const navigate = useNavigate();
+  const { navigateToSop } = useSopNavigation();
 
   const fetchNotifications = async () => {
     try {
@@ -31,9 +32,6 @@ const AllNotifications: React.FC = () => {
       setLoading(false);
     }
   };
-
-  // Status IDs that should open in Request Form
-  const REQUEST_FORM_STATUS_IDS = ['8', '12', '13', '14', '15', '17'];
 
   const handleNotificationClick = async (notification: NotificationItem) => {
     // Mark notification as read if it's unread
@@ -51,18 +49,13 @@ const AllNotifications: React.FC = () => {
       }
     }
 
-    if (notification.data?.sopHeaderId) {
-      const status = String(notification.data?.status);
+    const sopHeaderId = notification.data?.sopHeaderId;
 
-      // Status 16 (approved by QA Document Officer) or Status 1 (In Progress) - open in New_Creation_SOP to complete/edit data
-      if (status === '16' || status === '1') {
-        navigate(`/documentation-control/New_Creation_SOP?headerId=${notification.data.sopHeaderId}`);
-      // Statuses 8, 12, 13, 14, 15, 17 - open in Request Form
-      } else if (REQUEST_FORM_STATUS_IDS.includes(status)) {
-        navigate(`/documentation-control/Request_Form?headerId=${notification.data.sopHeaderId}`);
-      } else {
-        navigate(`/SOPFullDocument?headerId=${notification.data.sopHeaderId}`);
-      }
+    console.log('Notification click - sopHeaderId:', sopHeaderId);
+
+    // Use the navigation hook to determine where to open based on current SOP status
+    if (sopHeaderId) {
+      await navigateToSop(sopHeaderId);
     }
   };
 

@@ -14,8 +14,8 @@ interface SOPPaginatedDocumentProps {
 }
 
 // A4 page content height (excluding header and footer) in pixels
-// A4 = 297mm, at 96 DPI ≈ 1123px. Minus header (~80px) and footer (~200px) = ~843px usable
-const CONTENT_HEIGHT_PER_PAGE = 750;
+// A4 = 297mm, at 96 DPI ≈ 1123px. Minus header (~80px) and footer/signature (~200px) = ~650px usable
+const CONTENT_HEIGHT_PER_PAGE = 650;
 
 interface PageContent {
   pageNumber: number;
@@ -43,10 +43,11 @@ const SOPPaginatedDocument: React.FC<SOPPaginatedDocumentProps> = ({ children, h
   // Always show TOC page (second page after cover)
   const hasTocPage = true;
 
-  // Prepare footer data
+  // Prepare footer data - using data from SOP header and related user data
   const footerData = useMemo(() => {
     if (!headerData) return null;
 
+    // Get names from user data relations
     const preparedName = headerData?.User_Data_Sop_header_Prepared_ByToUser_Data
       ? `${headerData.User_Data_Sop_header_Prepared_ByToUser_Data.FName} ${headerData.User_Data_Sop_header_Prepared_ByToUser_Data.LName}`
       : '';
@@ -57,14 +58,31 @@ const SOPPaginatedDocument: React.FC<SOPPaginatedDocumentProps> = ({ children, h
       ? `${headerData.User_Data_Sop_header_Approved_byToUser_Data.FName} ${headerData.User_Data_Sop_header_Approved_byToUser_Data.LName}`
       : '';
 
+    // Get signatures from user data relations (signUrl), fallback to header sign fields
+    const preparedSignatureUrl =
+      headerData?.User_Data_Sop_header_Prepared_ByToUser_Data?.signUrl ||
+      headerData?.prepared_by_sign || '';
+
+    // Only show QA Supervisor (reviewed) signature when status is 4 or higher
+    // Status 3 means under review, status 4+ means reviewed/approved
+    const sopStatus = parseInt(headerData?.status || '0', 10);
+    const reviewedSignatureUrl = sopStatus >= 4
+      ? (headerData?.User_Data_Sop_header_reviewed_byToUser_Data?.signUrl ||
+         headerData?.reviewed_by_sign || '')
+      : '';
+
+    const approvedSignatureUrl =
+      headerData?.User_Data_Sop_header_Approved_byToUser_Data?.signUrl ||
+      headerData?.approved_by_sign || '';
+
     return {
       preparedName,
       reviewedName,
       approvedName,
       stampImageUrl: headerData?.sop_stamp_url || './public/Stamps/QaApproval.svg',
-      preparedSignatureUrl: headerData?.prepared_by_sign || '',
-      reviewedSignatureUrl: headerData?.reviewed_by_sign || '',
-      approvedSignatureUrl: headerData?.approved_by_sign || '',
+      preparedSignatureUrl,
+      reviewedSignatureUrl,
+      approvedSignatureUrl,
       prepared_date: headerData?.prepared_date,
       reviewed_date: headerData?.reviewed_date,
       approved_date: headerData?.approved_date,
@@ -91,18 +109,22 @@ const SOPPaginatedDocument: React.FC<SOPPaginatedDocumentProps> = ({ children, h
       elements.forEach((element, index) => {
         const elementHeight = element.getBoundingClientRect().height + 15; // Add margin
 
-        if (currentPageHeight + elementHeight > CONTENT_HEIGHT_PER_PAGE && index > currentPageStartIndex) {
-          // Save current page
+        // Always add element to current page first
+        currentPageHeight += elementHeight;
+
+        // If current page height exceeds limit, finalize this page and start a new one
+        // But include the current element on this page (let CSS handle overflow splitting)
+        if (currentPageHeight >= CONTENT_HEIGHT_PER_PAGE) {
+          // Save current page including this element
           pages.push({
             pageNumber: pageNum,
             startIndex: currentPageStartIndex,
-            endIndex: index - 1,
+            endIndex: index,
           });
           pageNum++;
-          currentPageStartIndex = index;
-          currentPageHeight = elementHeight;
-        } else {
-          currentPageHeight += elementHeight;
+          currentPageStartIndex = index + 1;
+          // Reset height - if element was taller than page, it will overflow naturally
+          currentPageHeight = 0;
         }
       });
 
@@ -211,6 +233,7 @@ const SOPPaginatedDocument: React.FC<SOPPaginatedDocumentProps> = ({ children, h
               {childrenArray.slice(page.startIndex, page.endIndex + 1)}
             </div>
 
+            {/* Signature table on every page */}
             {renderPageFooter()}
           </div>
         ))}

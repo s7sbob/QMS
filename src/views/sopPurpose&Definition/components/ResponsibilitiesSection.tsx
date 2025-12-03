@@ -8,10 +8,7 @@ import {
   TableBody,
   TableCell,
   TableContainer,
-  TableHead,
   TableRow,
-  Paper,
-  Typography,
 } from '@mui/material';
 import EditDialog from './EditDialog';
 import { UserContext } from 'src/context/UserContext';
@@ -34,24 +31,36 @@ export interface Responsibility {
 
 interface ResponsibilitiesSectionProps {
   initialData: Responsibility | null;
+  isReadOnly?: boolean;
 }
 
-const ResponsibilitiesSection: React.FC<ResponsibilitiesSectionProps> = ({ initialData }) => {
+const ResponsibilitiesSection: React.FC<ResponsibilitiesSectionProps> = ({ initialData, isReadOnly = false }) => {
   const user = useContext(UserContext);
   const userRole = user?.Users_Departments_Users_Departments_User_IdToUser_Data?.[0]?.User_Roles?.Name || '';
 
   const [responsibility, setResponsibility] = useState<Responsibility | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [historyData, setHistoryData] = useState<Responsibility[]>([]);
+  const [creatorName, setCreatorName] = useState<string>('');
 
   useEffect(() => {
     if (initialData) {
       setResponsibility(initialData);
+      if (initialData.Crt_by) {
+        axiosServices.get(`/api/user/getUserById/${initialData.Crt_by}`)
+          .then((res) => {
+            const userData = res.data;
+            if (userData) {
+              setCreatorName(`${userData.FName || ''} ${userData.LName || ''}`.trim());
+            }
+          })
+          .catch((err) => console.error('Error fetching creator name:', err));
+      }
     }
   }, [initialData]);
 
   const handleDoubleClick = () => {
-    if (!responsibility) return;
+    if (!responsibility || isReadOnly) return;
     axiosServices
       .get(`/api/sopRes/getAllHistory/${responsibility.Sop_HeaderId}`)
       .then((res) => {
@@ -111,6 +120,14 @@ const ResponsibilitiesSection: React.FC<ResponsibilitiesSectionProps> = ({ initi
 
       if (isReviewer && hasNewComment) {
         await sendNotificationToQAAssociates(responsibility.Sop_HeaderId, 'Responsibilities');
+
+        // Update SOP header status to 3 when QA Supervisor adds a comment
+        if (userRole === 'QA Supervisor') {
+          await axiosServices.patch(
+            `/api/sopheader/updateSopStatusByReviewer/${responsibility.Sop_HeaderId}`,
+            { status: { newStatus: '3' } }
+          );
+        }
       }
     } catch (error) {
       console.error('Error saving responsibility:', error);
@@ -118,36 +135,70 @@ const ResponsibilitiesSection: React.FC<ResponsibilitiesSectionProps> = ({ initi
   };
 
   return (
-    <Box sx={{ mt: 2 }}>
-      <Typography
-        variant="h6"
-        gutterBottom
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          color: responsibility && responsibility.reviewer_Comment ? 'red' : 'inherit', // الشرط هنا لتلوين العنوان بالاحمر عند وجود تعليق
-        }}
-      >
-        <span>4. Responsibilities:</span>
-        <span dir="rtl">4. المسؤوليات</span>
-      </Typography>
-      <TableContainer component={Paper} sx={{ mt: 1 }}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ fontWeight: 'bold', width: '50%' }}>English Content</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', width: '50%' }} align="right">
-                المحتوى العربي
+    <Box sx={{ mt: 0 }}>
+      <TableContainer sx={{ border: 'none', boxShadow: 'none' }}>
+        <Table sx={{ tableLayout: 'fixed', backgroundColor: '#fff' }}>
+          <TableBody>
+            {/* Section Title Row - Gray Background */}
+            <TableRow
+              onDoubleClick={handleDoubleClick}
+              sx={{
+                cursor: isReadOnly ? 'default' : 'pointer',
+                '&:hover': { '& td': { backgroundColor: isReadOnly ? '#fff' : '#f5f5f5' } },
+              }}
+            >
+              <TableCell
+                sx={{
+                  fontWeight: 'bold',
+                  fontSize: '14px',
+                  width: '50%',
+                  borderRight: '2px solid #000',
+                  borderBottom: 'none',
+                  backgroundColor: '#fff',
+                  color: responsibility && responsibility.reviewer_Comment ? 'red' : 'inherit',
+                  padding: '8px 12px',
+                }}
+              >
+                4. Responsibilities:
+              </TableCell>
+              <TableCell
+                align="right"
+                sx={{
+                  fontWeight: 'bold',
+                  fontSize: '14px',
+                  width: '50%',
+                  direction: 'rtl',
+                  borderBottom: 'none',
+                  backgroundColor: '#fff',
+                  color: responsibility && responsibility.reviewer_Comment ? 'red' : 'inherit',
+                  padding: '8px 12px',
+                }}
+              >
+                ٤- المسؤوليات:
               </TableCell>
             </TableRow>
-          </TableHead>
-          <TableBody>
+            {/* Content Row */}
             {responsibility && (
-              <TableRow onDoubleClick={handleDoubleClick} hover sx={{ cursor: 'pointer' }}>
-                <TableCell>
+              <TableRow>
+                <TableCell
+                  sx={{
+                    borderRight: '2px solid #000',
+                    verticalAlign: 'top',
+                    backgroundColor: '#fff',
+                    padding: '12px',
+                  }}
+                >
                   <div dangerouslySetInnerHTML={{ __html: responsibility.Content_en }} />
                 </TableCell>
-                <TableCell align="right" style={{ direction: 'rtl' }}>
+                <TableCell
+                  align="right"
+                  sx={{
+                    direction: 'rtl',
+                    verticalAlign: 'top',
+                    backgroundColor: '#fff',
+                    padding: '12px',
+                  }}
+                >
                   <div dangerouslySetInnerHTML={{ __html: responsibility.Content_ar }} />
                 </TableCell>
               </TableRow>
@@ -163,11 +214,8 @@ const ResponsibilitiesSection: React.FC<ResponsibilitiesSectionProps> = ({ initi
           initialContentAr={responsibility.Content_ar}
           initialReviewerComment={responsibility.reviewer_Comment || ''}
           additionalInfo={{
-            version: responsibility.Version,
             crtDate: responsibility.Crt_Date,
-            modifiedDate: responsibility.Modified_Date,
-            crtBy: responsibility.Crt_by,
-            modifiedBy: responsibility.Modified_by,
+            crtByName: creatorName,
           }}
           historyData={historyData}
           userRole={userRole}

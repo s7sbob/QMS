@@ -61,7 +61,13 @@
         "sendRequest": "إرسال الطلب",
         "managerApproval": "موافقة المدير",
         "qaManagerApproval": "موافقة مدير الجودة",
-        "rejectRequest": "رفض الطلب"
+        "rejectRequest": "رفض الطلب",
+        "toBeFixed": "إرسال للتعديل",
+        "submitForReview": "تمت المراجعة",
+        "submitReview": "إرسال المراجعة",
+        "approveAndIssue": "الموافقة والإصدار",
+        "returnForRevision": "إرجاع للمراجعة",
+        "saveAndSubmit": "حفظ وإرسال"
     },
 
     "status": {
@@ -89,6 +95,11 @@
     "messages": {
         "success": "تم",
         "error": "خطأ",
+        "sentForFixing": "تم الإرسال",
+        "documentSentForFixing": "تم إرسال المستند للتعديل",
+        "reviewCompleted": "تمت المراجعة",
+        "documentReviewedSuccess": "تمت مراجعة المستند بنجاح",
+        "failedUpdateStatus": "فشل في تحديث حالة المستند",
         "savingData": "جاري حفظ البيانات...",
         "dataSavedSuccess": "تم حفظ البيانات بنجاح!",
         "failedFetchRequest": "فشل في جلب بيانات الطلب",

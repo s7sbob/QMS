@@ -1,5 +1,5 @@
 // src/pages/DocumentRequestManagement.tsx
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef, useCallback } from 'react';
 import {
   Container,
   Paper,
@@ -113,7 +113,7 @@ const initialState: FormState = {
 };
 
 const DocumentRequestManagement: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const headerId = searchParams.get('headerId'); // Get headerId from URL query params
@@ -134,29 +134,102 @@ const DocumentRequestManagement: React.FC = () => {
   const [documentOption, setDocumentOption] = useState<'new' | 'merge'>('new');
   const [selectedSopCode, setSelectedSopCode] = useState<string>('');
   const [sopCodes, setSopCodes] = useState<{ Id: string; Doc_Code: string; Doc_Title_en: string }[]>([]);
+  const [sopHeaderStatus, setSopHeaderStatus] = useState<string | number | null>(null);
 
-  // تحديد الخطوات والحالات
-  const getStatusSteps = () => [
-    { label: t('New Request'), status: 8 },                    // Step 1: طلب إنشاء جديد
-    { label: t('Reviewed'), status: 11 },                     // Step 1: تم مراجعه طلب الانشاء
-    { label: t('Approved By Dept Manager'), status: 12 },        // Step 2: تم الموافقه بواسطه رئيس القسم
-    { label: t('Rejected By Dept Manager'), status: 13 },        // Step 2: تم الرفض بواسطه رئيس القسم
-    { label: t('Rejected By QA Manager'), status: 14 },          // Step 3: تم الرفض بواسطه مدير الجوده
-    { label: t('Approved By QA Manager'), status: 15 },          // Step 3: تم الموافقه بواسطه مدير الجوده
-    { label: t('ApprovedBy QA Document Officer'), status: 16 },          // Step 4: تم الموافقه بواسطه مسؤول الجوده
-    { label: t('Rejected By QA Document Officer'), status: 17 },          // Step 4: تم الرفض بواسطه مسؤول الجوده
-  ];
+  // Track original form values to detect changes (only update changed sections)
+  const originalFormRef = useRef<FormState | null>(null);
+
+  // Helper to detect which sections have changed
+  const getChangedSections = useCallback(() => {
+    const original = originalFormRef.current;
+    if (!original) {
+      // No original data means new form - all sections are "changed"
+      return {
+        header: true,
+        purpose: true,
+        scope: true,
+        docRequest: true,
+      };
+    }
+
+    return {
+      // Header section: docTitle, docTitleAr, department, docType
+      header:
+        form.docTitle !== original.docTitle ||
+        form.docTitleAr !== original.docTitleAr ||
+        form.department !== original.department ||
+        form.docType !== original.docType,
+
+      // Purpose section: purposeEn, purposeAr
+      purpose:
+        form.purposeEn !== original.purposeEn ||
+        form.purposeAr !== original.purposeAr,
+
+      // Scope section: scopeEn, scopeAr
+      scope:
+        form.scopeEn !== original.scopeEn ||
+        form.scopeAr !== original.scopeAr,
+
+      // Doc Request section: qaComment, docType
+      docRequest:
+        form.qaComment !== original.qaComment ||
+        form.docType !== original.docType,
+    };
+  }, [form]);
+
+  // تحديد الخطوات والحالات - Status names from database
+  const getStatusSteps = () => {
+    const isArabic = i18n.language === 'ar';
+
+    return [
+      {
+        label: isArabic ? 'طلب إنشاء جديد' : 'Request For New Creation',
+        status: 8
+      },
+      {
+        label: isArabic ? 'تم مراجعه طلب الانشاء' : 'New Creation Request Reviewed',
+        status: 11
+      },
+      {
+        label: isArabic ? 'تم الموافقه علي الأنشاء بواسطه رئيس القسم' : 'Approved by Department Manager',
+        status: 12
+      },
+      {
+        label: isArabic ? 'تم الرفض بواسطه رئيس القسم' : 'Refused by Department Manager',
+        status: 13
+      },
+      {
+        label: isArabic ? 'تم الرفض بواسطه مدير الجوده' : 'Refused by QA Manager',
+        status: 14
+      },
+      {
+        label: isArabic ? 'تم الموافقه علي الإنشاء بواسطه مدير الجوده' : 'Accepted by QA Manager',
+        status: 15
+      },
+      {
+        label: isArabic ? 'تم الموافقه علي الإنشاء بواسطه مدير الوثائق' : 'Accepted by QA Officer',
+        status: 16
+      },
+      {
+        label: isArabic ? 'تم الرفض بواسطه مدير الوثائق' : 'Rejected by QA Officer',
+        status: 17
+      },
+    ];
+  };
 
   const getCurrentStepIndex = (status: number) => {
-    // For rejected by Dept Manager (13), show at step 1
+    // Filter out rejected statuses to match the displayed stepper
+    const filteredSteps = getStatusSteps().filter(step => ![13, 14, 17].includes(step.status));
+
+    // For rejected by Dept Manager (13), show at step 1 (after Request For New Creation)
     if (status === 13) return 1;
-    // For rejected by QA Manager (14), show at step 2
+    // For rejected by QA Manager (14), show at step 2 (after Approved by Dept Manager)
     if (status === 14) return 2;
-    // For rejected by QA Officer (17), show at step 3
+    // For rejected by QA Officer (17), show at step 3 (after Accepted by QA Manager)
     if (status === 17) return 3;
 
-    const steps = getStatusSteps();
-    const index = steps.findIndex(step => step.status === status);
+    // Find index in the filtered array (matches what's displayed in stepper)
+    const index = filteredSteps.findIndex(step => step.status === status);
     return index >= 0 ? index : 0;
   };
 
@@ -167,8 +240,8 @@ const DocumentRequestManagement: React.FC = () => {
       case 12: return 'success';       // Approved by Dept Manager
       case 15: return 'success';       // Approved by QA Manager
       case 16: return 'success';       // Approved by QA Officer
-      case 13:                         // Rejected by Dept Manager
-      case 14:                         // Rejected by QA Manager
+      case 13: return 'error';         // Rejected by Dept Manager
+      case 14: return 'error';         // Rejected by QA Manager
       case 17: return 'error';         // Rejected by QA Officer
       default: return 'default';
     }
@@ -191,6 +264,7 @@ const DocumentRequestManagement: React.FC = () => {
   useEffect(() => {
     // Only set current user data when creating NEW request (no id and no existing form data)
     // For existing requests, data comes from API in loadRequestFormData
+    // Note: Signature is NOT set here - it will be added only when user submits the form
     if (user && !id && !docRequestForm) {
       const currentDate = new Date().toISOString().split('T')[0];
       setForm(prev => ({
@@ -198,7 +272,7 @@ const DocumentRequestManagement: React.FC = () => {
         requested: {
           name: `${user.FName || ''} ${user.LName || ''}`.trim(),
           designation: userRole || '',
-          signature: user.signUrl || '',
+          signature: '', // Signature will be added on form submission
           date: currentDate,
         },
         // reviewed, qaManager, docOfficer should remain empty until approved
@@ -300,8 +374,7 @@ const DocumentRequestManagement: React.FC = () => {
         }
 
         // ملء النموذج بالبيانات
-        setForm(prev => ({
-          ...prev,
+        const loadedFormData: FormState = {
           Id: sopHeaderId,
           department: data.Sop_header?.Dept_Id || '',
           docTitle: data.Sop_header?.Doc_Title_en || '',
@@ -336,7 +409,11 @@ const DocumentRequestManagement: React.FC = () => {
             signature: data.User_Data_DocRequest_frm_QaDoc_officerIdToUser_Data?.signUrl || '',
             date: data.QaDoc_officerDate ? new Date(data.QaDoc_officerDate).toLocaleDateString() : '',
           },
-        }));
+        };
+
+        setForm(loadedFormData);
+        // Save original values for change detection
+        originalFormRef.current = { ...loadedFormData };
       } catch (err) {
         console.error(err);
         Swal.fire(String(t('messages.error')), String(t('messages.failedFetchRequest')), 'error');
@@ -365,6 +442,22 @@ const DocumentRequestManagement: React.FC = () => {
         const headerRes = await axiosServices.get(`/api/sopheader/getSopHeaderById/${sopHeaderId}`);
         const sopHeader = headerRes.data;
         console.log('Loaded SOP header data:', sopHeader);
+
+        // Store SOP header status for notification logic
+        setSopHeaderStatus(sopHeader.status || sopHeader.Status || null);
+
+        // Check if there's an existing DocRequest_frm for this SOP header
+        let existingDocRequest = null;
+        try {
+          const docRequestRes = await axiosServices.get(`/api/docrequest-form/bysopheader/${sopHeaderId}`);
+          if (docRequestRes.data) {
+            existingDocRequest = docRequestRes.data;
+            setDocRequestForm(existingDocRequest);
+            console.log('Found existing DocRequest_frm:', existingDocRequest);
+          }
+        } catch (err) {
+          console.log('No existing DocRequest_frm found for this SOP header');
+        }
 
         // Load scope data
         let scopeEn = '';
@@ -396,23 +489,63 @@ const DocumentRequestManagement: React.FC = () => {
           console.log('No purpose data found');
         }
 
-        setForm(prev => ({
-          ...prev,
+        // Build form data with signatures if existing DocRequest_frm found
+        const loadedFormData: Partial<FormState> = {
           Id: sopHeader.Id,
           department: sopHeader.Dept_Id || '',
           docTitle: sopHeader.Doc_Title_en || '',
           docTitleAr: sopHeader.Doc_Title_ar || '',
-          docType: sopHeader.doc_Type || '',
+          docType: existingDocRequest?.Doc_type || sopHeader.doc_Type || '',
           purposeEn,
           purposeAr,
           scopeEn,
           scopeAr,
-        }));
+          qaComment: existingDocRequest?.Qa_comment || '',
+        };
 
-        // Allow editing for this pre-loaded SOP
-        if (userRole === 'QA Associate' || userRole === 'Dept Manager') {
-          setCanEdit(true);
+        // Add user signatures if existing DocRequest_frm found
+        if (existingDocRequest) {
+          loadedFormData.requested = {
+            name: `${existingDocRequest.User_Data_DocRequest_frm_Requested_byToUser_Data?.FName || ''} ${existingDocRequest.User_Data_DocRequest_frm_Requested_byToUser_Data?.LName || ''}`.trim(),
+            designation: 'Requester',
+            signature: existingDocRequest.User_Data_DocRequest_frm_Requested_byToUser_Data?.signUrl || '',
+            date: existingDocRequest.Request_date ? new Date(existingDocRequest.Request_date).toLocaleDateString() : '',
+          };
+          loadedFormData.reviewed = {
+            name: `${existingDocRequest.User_Data_DocRequest_frm_Reviewed_byToUser_Data?.FName || ''} ${existingDocRequest.User_Data_DocRequest_frm_Reviewed_byToUser_Data?.LName || ''}`.trim(),
+            designation: 'Department Manager',
+            signature: existingDocRequest.User_Data_DocRequest_frm_Reviewed_byToUser_Data?.signUrl || '',
+            date: existingDocRequest.Reviewed_date ? new Date(existingDocRequest.Reviewed_date).toLocaleDateString() : '',
+          };
+          loadedFormData.qaManager = {
+            name: `${existingDocRequest.User_Data_DocRequest_frm_QaMan_IdToUser_Data?.FName || ''} ${existingDocRequest.User_Data_DocRequest_frm_QaMan_IdToUser_Data?.LName || ''}`.trim(),
+            designation: 'QA Manager',
+            signature: existingDocRequest.User_Data_DocRequest_frm_QaMan_IdToUser_Data?.signUrl || '',
+            date: existingDocRequest.QaManApprove_Date ? new Date(existingDocRequest.QaManApprove_Date).toLocaleDateString() : '',
+          };
+          loadedFormData.docOfficer = {
+            name: `${existingDocRequest.User_Data_DocRequest_frm_QaDoc_officerIdToUser_Data?.FName || ''} ${existingDocRequest.User_Data_DocRequest_frm_QaDoc_officerIdToUser_Data?.LName || ''}`.trim(),
+            designation: 'QA Officer',
+            signature: existingDocRequest.User_Data_DocRequest_frm_QaDoc_officerIdToUser_Data?.signUrl || '',
+            date: existingDocRequest.QaDoc_officerDate ? new Date(existingDocRequest.QaDoc_officerDate).toLocaleDateString() : '',
+          };
+
+          // Check edit permission based on existing doc request
+          const canUserEdit = checkEditPermission(existingDocRequest, userRole, user?.Id ?? '');
+          setCanEdit(canUserEdit);
+        } else {
+          // Allow editing for new request
+          if (userRole === 'QA Associate' || userRole === 'Dept Manager') {
+            setCanEdit(true);
+          }
         }
+
+        setForm(prev => {
+          const newForm = { ...prev, ...loadedFormData };
+          // Save original values for change detection
+          originalFormRef.current = { ...newForm };
+          return newForm;
+        });
       } catch (err) {
         console.error('Error loading SOP header:', err);
         Swal.fire(String(t('messages.error')), String(t('messages.failedFetchDocument')), 'error');
@@ -430,16 +563,31 @@ const DocumentRequestManagement: React.FC = () => {
     if (!docRequest || !role || !userId) return false;
 
     const status = docRequest.Request_status;
-    
+
+    // Status 13, 14, 16, 17 - readonly for everyone (rejected or finalized)
+    if ([13, 14, 16, 17].includes(status)) {
+      return false;
+    }
+
+    // Status 12 (Approved by Dept Manager) - readonly for creator only
+    if (status === 12 && docRequest.Requested_by === userId) {
+      return false;
+    }
+
+    // Status 15 (Approved by QA Manager) - only QA DocumentOfficer can edit
+    if (status === 15) {
+      return role === 'QA DocumentOfficer';
+    }
+
     switch (role) {
       case 'QA Associate':
         return docRequest.Requested_by === userId && (status === 8 || status === 9);
       case 'Dept Manager':
         return status === 9;
       case 'QA Manager':
-        return status === 10;
-      case 'QA Officer':
-        return status === 11;
+        return status === 10 || status === 12; // QA Manager can edit after Dept Manager approval
+      case 'QA DocumentOfficer':
+        return status === 11 || status === 15; // QA DocumentOfficer can edit at status 11 and 15
       default:
         return false;
     }
@@ -481,15 +629,14 @@ const DocumentRequestManagement: React.FC = () => {
     }
   };
 
-  // Check if current user is Dept Manager viewing a request in their department
+  // Check if current user is Dept Manager viewing a request at status 8
   const isDeptManagerViewingRequest = (): boolean => {
-    if (userRole !== 'Dept Manager' || !docRequestForm || !id) return false;
+    if (userRole !== 'Dept Manager' || !docRequestForm) return false;
+    // Must have either id (URL param) or headerId (query param)
+    if (!id && !headerId) return false;
     // Check if the request is in status 8 (new request)
     if (docRequestForm.Request_status !== 8) return false;
-    // Check if the user is the dept manager of the same department
-    const requestDeptId = docRequestForm.Sop_header?.Dept_Id;
-    const userDeptId = user?.Users_Departments_Users_Departments_User_IdToUser_Data?.[0]?.Department_Id;
-    return requestDeptId === userDeptId;
+    return true;
   };
 
   // Check if QA Associate is creating/editing a request (should hide QA sections)
@@ -551,14 +698,7 @@ const DocumentRequestManagement: React.FC = () => {
       const newStatus = action === 'approve' ? 12 : 13;
       const currentDate = new Date().toISOString();
 
-      // Update SOP header status using the correct endpoint for manager
-      // Pass signature URL for the reviewed_by_sign field
-      await axiosServices.patch(`/api/sopheader/updateSopStatusByManager/${docRequestForm.sop_HeaderId}`, {
-        signedBy: user?.signUrl || '',
-        status: { newStatus: String(newStatus) },
-      });
-
-      // Update doc request form status with manager data
+      // Update doc request form status only (not SOP header)
       await axiosServices.post('/api/docrequest-form/addEdit', {
         Id: docRequestForm.Id,
         Request_status: newStatus,
@@ -598,14 +738,7 @@ const DocumentRequestManagement: React.FC = () => {
       const newStatus = action === 'approve' ? 15 : 14;
       const currentDate = new Date().toISOString();
 
-      // Update SOP header status using the correct endpoint for manager
-      // Pass signature URL for the approved_by_sign field
-      await axiosServices.patch(`/api/sopheader/updateSopStatusByManager/${docRequestForm.sop_HeaderId}`, {
-        signedBy: user?.signUrl || '',
-        status: { newStatus: String(newStatus) },
-      });
-
-      // Update doc request form status with QA Manager data and QA comment
+      // Update doc request form status only (not SOP header)
       await axiosServices.post('/api/docrequest-form/addEdit', {
         Id: docRequestForm.Id,
         Request_status: newStatus,
@@ -624,6 +757,55 @@ const DocumentRequestManagement: React.FC = () => {
           date: new Date().toLocaleDateString(),
         },
       }));
+
+      // Send notifications when approved (status 15)
+      if (action === 'approve') {
+        const docTitle = form.docTitle || docRequestForm.Sop_header?.Doc_Title_en || 'Document';
+        const qaManagerName = `${user?.FName || ''} ${user?.LName || ''}`.trim();
+
+        // 1. Notify QA DocumentOfficer(s)
+        try {
+          const qaOfficerRes = await axiosServices.get('/api/user/getUsersByRole/QA DocumentOfficer');
+          const qaOfficers = Array.isArray(qaOfficerRes.data) ? qaOfficerRes.data : [];
+          for (const officer of qaOfficers) {
+            if (officer.Id) {
+              await sendNotification(
+                officer.Id,
+                `Document request "${docTitle}" has been approved by QA Manager "${qaManagerName}" and is waiting for your review.`,
+                { docRequestId: docRequestForm.Id, docTitle, sopHeaderId: docRequestForm.sop_HeaderId }
+              );
+            }
+          }
+        } catch (err) {
+          console.error('Error notifying QA DocumentOfficer:', err);
+        }
+
+        // 2. Notify the user who created the request
+        if (docRequestForm.Requested_by) {
+          try {
+            await sendNotification(
+              docRequestForm.Requested_by,
+              `Your document request "${docTitle}" has been approved by QA Manager "${qaManagerName}".`,
+              { docRequestId: docRequestForm.Id, docTitle, sopHeaderId: docRequestForm.sop_HeaderId }
+            );
+          } catch (err) {
+            console.error('Error notifying request creator:', err);
+          }
+        }
+
+        // 3. Notify the Dept Manager who approved the request
+        if (docRequestForm.Reviewed_by) {
+          try {
+            await sendNotification(
+              docRequestForm.Reviewed_by,
+              `Document request "${docTitle}" that you approved has been accepted by QA Manager "${qaManagerName}".`,
+              { docRequestId: docRequestForm.Id, docTitle, sopHeaderId: docRequestForm.sop_HeaderId }
+            );
+          } catch (err) {
+            console.error('Error notifying Dept Manager:', err);
+          }
+        }
+      }
 
       const message = action === 'approve' ? String(t('messages.requestApprovedSuccess')) : String(t('messages.requestRejectedSuccess'));
       Swal.fire(String(t('messages.success')), message, 'success').then(() => {
@@ -646,13 +828,7 @@ const DocumentRequestManagement: React.FC = () => {
       const newStatus = action === 'approve' ? 16 : 17;
       const currentDate = new Date().toISOString();
 
-      // Update SOP header status
-      await axiosServices.patch(`/api/sopheader/updateSopStatusByManager/${docRequestForm.sop_HeaderId}`, {
-        signedBy: user?.signUrl || '',
-        status: { newStatus: String(newStatus) },
-      });
-
-      // Update doc request form status with QA Officer data
+      // Update doc request form status only (not SOP header)
       await axiosServices.post('/api/docrequest-form/addEdit', {
         Id: docRequestForm.Id,
         Request_status: newStatus,
@@ -695,7 +871,7 @@ const DocumentRequestManagement: React.FC = () => {
         ...additionalData,
       };
 
-      // إضافة بيانات التوقيع حسب الدور
+      // إضافة بيانات التوقيع حسب الدور (update request form only, not SOP header)
       if (userRole === 'Dept Manager' && newStatus === 10) {
         payload.Reviewed_by = user?.Id;
         payload.Reviewed_date = new Date().toISOString();
@@ -705,12 +881,6 @@ const DocumentRequestManagement: React.FC = () => {
       } else if (userRole === 'QA DocumentOfficer' && (newStatus === 16 || newStatus === 17)) {
         payload.QaDoc_officerId = user?.Id;
         payload.QaDoc_officerDate = new Date().toISOString();
-
-        // Update SOP header status first for QA DocumentOfficer
-        await axiosServices.patch(`/api/sopheader/updateSopStatusByManager/${docRequestForm.sop_HeaderId}`, {
-          signedBy: user?.signUrl || '',
-          status: { newStatus: String(newStatus) },
-        });
       }
 
       await axiosServices.post('/api/docrequest-form/addEdit', payload);
@@ -726,10 +896,13 @@ const DocumentRequestManagement: React.FC = () => {
     }
   };
 
-  // Helper function to save scope and purpose
-  const saveScopeAndPurpose = async (sopHeaderId: string) => {
-    // Save Purpose
-    if (form.purposeEn || form.purposeAr) {
+  // Helper function to save scope and purpose (only if changed)
+  const saveScopeAndPurpose = async (
+    sopHeaderId: string,
+    changedSections: { purpose: boolean; scope: boolean }
+  ) => {
+    // Save Purpose only if changed
+    if (changedSections.purpose && (form.purposeEn || form.purposeAr)) {
       setSubmitStatus(`⏳ ${t('messages.savingPurpose')}`);
       await axiosServices.post('/api/soppurpose/addSop-Purpose', {
         Content_en: form.purposeEn,
@@ -740,8 +913,8 @@ const DocumentRequestManagement: React.FC = () => {
       });
     }
 
-    // Save Scope
-    if (form.scopeEn || form.scopeAr) {
+    // Save Scope only if changed
+    if (changedSections.scope && (form.scopeEn || form.scopeAr)) {
       setSubmitStatus(`⏳ ${t('messages.savingScope')}`);
       await axiosServices.post('/api/sopScope/addsop-scope', {
         Content_en: form.scopeEn,
@@ -762,46 +935,79 @@ const DocumentRequestManagement: React.FC = () => {
     try {
       setSubmitStatus(`⏳ ${t('messages.savingData')}`);
 
+      // Add user signature to form when submitting a new request (including headerId case from SOPCard)
+      // This covers: new request (!id && !docRequestForm) OR from SOPCard (headerId && !id)
+      if (!docRequestForm && (!id || headerId)) {
+        setForm(prev => ({
+          ...prev,
+          requested: {
+            ...prev.requested,
+            signature: user?.signUrl || '',
+          },
+        }));
+      }
+
+      // Detect which sections have changed
+      const changedSections = getChangedSections();
+      const hasAnyChanges = changedSections.header || changedSections.purpose ||
+                           changedSections.scope || changedSections.docRequest;
+
       if (docRequestForm) {
-        // تحديث طلب موجود
-        setSubmitStatus(`⏳ ${t('messages.updatingRequest')}`);
-        const payload = {
-          Id: docRequestForm.Id,
-          Qa_comment: form.qaComment,
-          Doc_type: form.docType,
-        };
+        // تحديث طلب موجود - only update changed sections
+        if (!hasAnyChanges) {
+          Swal.fire(String(t('messages.info')), String(t('messages.noChangesToSave') || 'No changes to save'), 'info');
+          setSubmitLoading(false);
+          return;
+        }
 
-        await axiosServices.post('/api/docrequest-form/addEdit', payload);
+        // Update Doc Request Form only if docRequest section changed
+        if (changedSections.docRequest) {
+          setSubmitStatus(`⏳ ${t('messages.updatingRequest')}`);
+          const payload = {
+            Id: docRequestForm.Id,
+            Qa_comment: form.qaComment,
+            Doc_type: form.docType,
+          };
+          await axiosServices.post('/api/docrequest-form/addEdit', payload);
+        }
 
-        // تحديث SOP Header
-        setSubmitStatus(`⏳ ${t('messages.updatingDocument')}`);
-        const sopHeaderPayload = {
-          Id: docRequestForm.sop_HeaderId,
-          Doc_Title_en: form.docTitle,
-          Doc_Title_ar: form.docTitleAr,
-          Dept_Id: form.department,
-          NOTES: form.qaComment,
-          doc_Type: form.docType,
-        };
-        await axiosServices.post('/api/sopheader/addEditSopHeader', sopHeaderPayload);
+        // تحديث SOP Header only if header section changed
+        if (changedSections.header) {
+          setSubmitStatus(`⏳ ${t('messages.updatingDocument')}`);
+          const sopHeaderPayload = {
+            Id: docRequestForm.sop_HeaderId,
+            Doc_Title_en: form.docTitle,
+            Doc_Title_ar: form.docTitleAr,
+            Dept_Id: form.department,
+            NOTES: form.qaComment,
+            doc_Type: form.docType,
+          };
+          await axiosServices.post('/api/sopheader/addEditSopHeader', sopHeaderPayload);
+        }
 
-        // Save scope and purpose
-        await saveScopeAndPurpose(docRequestForm.sop_HeaderId);
+        // Save scope and purpose (only changed sections)
+        await saveScopeAndPurpose(docRequestForm.sop_HeaderId, changedSections);
+
+        // Update original form ref after successful save
+        originalFormRef.current = { ...form };
       } else if (headerId) {
         // تحديث SOP موجود (من SOPCard navigation)
-        setSubmitStatus(`⏳ ${t('messages.updatingDocument')}`);
-        const sopHeaderPayload = {
-          Id: headerId,
-          Doc_Title_en: form.docTitle,
-          Doc_Title_ar: form.docTitleAr,
-          Dept_Id: form.department,
-          NOTES: form.qaComment,
-          doc_Type: form.docType,
-        };
-        await axiosServices.post('/api/sopheader/addEditSopHeader', sopHeaderPayload);
+        // For new request from SOPCard, update header if changed
+        if (changedSections.header) {
+          setSubmitStatus(`⏳ ${t('messages.updatingDocument')}`);
+          const sopHeaderPayload = {
+            Id: headerId,
+            Doc_Title_en: form.docTitle,
+            Doc_Title_ar: form.docTitleAr,
+            Dept_Id: form.department,
+            NOTES: form.qaComment,
+            doc_Type: form.docType,
+          };
+          await axiosServices.post('/api/sopheader/addEditSopHeader', sopHeaderPayload);
+        }
 
-        // Save scope and purpose
-        await saveScopeAndPurpose(headerId);
+        // Save scope and purpose (only changed sections)
+        await saveScopeAndPurpose(headerId, changedSections);
 
         // إنشاء طلب المستند إذا لم يكن موجوداً
         setSubmitStatus(`⏳ ${t('messages.creatingRequest')}`);
@@ -827,8 +1033,40 @@ const DocumentRequestManagement: React.FC = () => {
             requestedBy: user?.Id,
           });
         }
+
+        // If QA Associate submits for header with status 16 or 1, update status to 2 and notify QA Supervisor
+        const statusNum = Number(sopHeaderStatus);
+        if (userRole === 'QA Associate' && (statusNum === 16 || statusNum === 1)) {
+          // Update SOP header status to 2
+          await axiosServices.post('/api/sopheader/addEditSopHeader', {
+            Id: headerId,
+            status: '2',
+          });
+
+          // Send notification to QA Supervisor(s) in the same company
+          try {
+            const qaSupervisorRes = await axiosServices.get('/api/user/getUsersByRole/QA Supervisor');
+            const qaSupervisors = Array.isArray(qaSupervisorRes.data) ? qaSupervisorRes.data : [];
+            const employeeName = `${user?.FName || ''} ${user?.LName || ''}`.trim();
+
+            for (const supervisor of qaSupervisors) {
+              // Check if supervisor is in the same company
+              const supervisorCompId = supervisor.compId ||
+                supervisor.Users_Departments_Users_Departments_User_IdToUser_Data?.[0]?.Department_Data?.comp_ID;
+              if (supervisor.Id && supervisorCompId === compId) {
+                await sendNotification(
+                  supervisor.Id,
+                  `Document "${form.docTitle}" has been submitted by QA Associate "${employeeName}" and is waiting for your review.`,
+                  { sopHeaderId: headerId, docTitle: form.docTitle, requestedBy: user?.Id }
+                );
+              }
+            }
+          } catch (err) {
+            console.error('Error notifying QA Supervisor:', err);
+          }
+        }
       } else {
-        // إنشاء طلب جديد
+        // إنشاء طلب جديد - all sections are saved for new documents
         setSubmitStatus(`⏳ ${t('messages.creatingDocument')}`);
         const sopHeaderPayload = {
           Doc_Title_en: form.docTitle,
@@ -847,8 +1085,8 @@ const DocumentRequestManagement: React.FC = () => {
           throw new Error('failed to Create Document');
         }
 
-        // Save scope and purpose
-        await saveScopeAndPurpose(newHeaderId);
+        // Save scope and purpose (all sections for new document)
+        await saveScopeAndPurpose(newHeaderId, { purpose: true, scope: true });
 
         // إنشاء طلب المستند
         setSubmitStatus(`⏳ ${t('messages.creatingRequest')}`);
@@ -1214,7 +1452,7 @@ const DocumentRequestManagement: React.FC = () => {
                 />
               </Grid>
               <Grid item xs={12} md={6} sx={{ direction: 'rtl' }}>
-                <Typography fontWeight="bold" mb={1} sx={{ textAlign: 'right' }}>{t('documentRequest.purposeAr')}:</Typography>
+                <Typography fontWeight="bold" mb={1} sx={{ textAlign: 'right' }}>الغرض:</Typography>
                 <RichTextEditor
                   language="ar"
                   dir="rtl"
@@ -1235,7 +1473,7 @@ const DocumentRequestManagement: React.FC = () => {
                 />
               </Grid>
               <Grid item xs={12} md={6} sx={{ direction: 'rtl' }}>
-                <Typography fontWeight="bold" mb={1} sx={{ textAlign: 'right' }}>{t('documentRequest.scopeAr')}:</Typography>
+                <Typography fontWeight="bold" mb={1} sx={{ textAlign: 'right' }}>مجال التطبيق:</Typography>
                 <RichTextEditor
                   language="ar"
                   dir="rtl"
@@ -1505,18 +1743,6 @@ const DocumentRequestManagement: React.FC = () => {
             {!shouldHideQASections() && (
               <Box sx={{ mt: 3 }}>
                 {renderActionButtons()}
-
-                {canEdit && userRole === 'QA Manager' && (
-                  <Stack direction="row" justifyContent="center" spacing={2} sx={{ mt: 2 }}>
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      disabled={loading || submitLoading}
-                    >
-                      {t('buttons.saveChanges')}
-                    </Button>
-                  </Stack>
-                )}
               </Box>
             )}
           </Paper>

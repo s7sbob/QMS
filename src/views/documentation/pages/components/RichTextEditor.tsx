@@ -13,10 +13,13 @@ import {
   TextField,
   Button,
   DialogActions,
-  DialogTitle
+  DialogTitle,
+  Box
 } from '@mui/material';
 import { IconX } from '@tabler/icons-react';
 import $ from 'jquery';
+import StorageToggle from 'src/components/shared/StorageToggle';
+import { useStorage, StorageType } from 'src/context/StorageContext';
 
 export interface RichTextEditorProps {
   value: string;
@@ -74,6 +77,10 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const [uploading, setUploading] = useState(false);
 
+  // Storage type selection for image uploads
+  const { defaultStorage } = useStorage();
+  const [imageStorageType, setImageStorageType] = useState<StorageType>(defaultStorage);
+
   // Display value with Arabic numerals if language is Arabic
   const displayValue = language === 'ar' ? convertNumbersInHtml(value, true) : value;
 
@@ -127,6 +134,10 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const [pendingImageUrl, setPendingImageUrl] = useState('');
   const [pendingImageName, setPendingImageName] = useState('');
   const [imageCaption, setImageCaption] = useState('');
+  const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
+
+  // Save cursor position before dialog opens
+  const savedSelectionRef = useRef<Range | null>(null);
 
   // Cleanup modal backdrops on unmount
   useEffect(() => {
@@ -203,76 +214,103 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     };
   }, []);
 
-  // Insert image with caption after user confirms
-  const handleInsertImageWithCaption = useCallback(() => {
-    if (pendingImageUrl && editorRef.current) {
-      const caption = imageCaption.trim() || pendingImageName;
-
-      // Create HTML with image and caption (caption is centered and editable)
-      const imgHtml = `
-        <figure style="text-align: center; margin: 10px 0;">
-          <img src="${pendingImageUrl}" alt="${caption}" style="width: 300px; height: 150px; display: block; margin: 0 auto; cursor: pointer;" class="clickable-image" />
-          <figcaption contenteditable="true" style="font-size: 11px; color: #666; margin-top: 5px; font-style: italic; text-align: center; cursor: text;">${caption}</figcaption>
-        </figure>
-      `;
-
-      // Insert the HTML into the editor using pasteHTML
-      const $noteEditable = $(containerRef.current as HTMLDivElement).find('.note-editable');
-      if ($noteEditable.length) {
-        $noteEditable.focus();
-        document.execCommand('insertHTML', false, imgHtml);
-        // Trigger onChange with numeral conversion
-        const newContent = $noteEditable.html();
-        handleChange(newContent);
-      }
-    }
-
-    // Reset states
-    setCaptionDialogOpen(false);
-    setPendingImageUrl('');
-    setPendingImageName('');
-    setImageCaption('');
-  }, [pendingImageUrl, pendingImageName, imageCaption, handleChange]);
-
-  // Handle image upload from Summernote
-  const handleImageUpload = useCallback(async (files: FileList) => {
-    const file = files[0];
-    if (!file) return;
-
-    // Close the Summernote modal dialog immediately
-    ($('.note-modal') as any).modal('hide');
-    $('.modal-backdrop').remove();
-    $('body').removeClass('modal-open');
+  // Insert image with caption after user confirms - uploads with selected storage type
+  const handleInsertImageWithCaption = useCallback(async () => {
+    if (!pendingImageFile) return;
 
     setUploading(true);
+    setCaptionDialogOpen(false);
 
     try {
+      // Upload with selected storage type
       const fd = new FormData();
-      fd.append('files', file);
+      fd.append('files', pendingImageFile);
+      fd.append('storageType', imageStorageType);
+
       const res = await axiosServices.post('/api/files/upload', fd, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       const url = Array.isArray(res.data) ? res.data[0].file_Url : res.data.file_Url;
 
-      if (url) {
-        // Store the URL and open caption dialog
-        setPendingImageUrl(url);
-        setPendingImageName(file.name.replace(/\.[^/.]+$/, '')); // Remove extension
-        setImageCaption('');
-        setCaptionDialogOpen(true);
+      if (url && editorRef.current) {
+        const caption = imageCaption.trim() || pendingImageName;
+
+        // Create HTML with image and caption (image centered, caption centered below)
+        const imgHtml = `
+          <figure style="text-align: center; margin: 20px 0;">
+            <img src="${url}" alt="${caption}" style="width: 400px; height: 180px; display: block; margin: 0 auto; cursor: pointer;" class="clickable-image" />
+            <figcaption contenteditable="true" style="font-size: 12px; color: #666; margin-top: 8px; font-style: italic; text-align: center; cursor: text;">${caption}</figcaption>
+          </figure>
+          <p><br></p>
+        `;
+
+        // Insert the HTML into the editor at the saved cursor position
+        const $noteEditable = $(containerRef.current as HTMLDivElement).find('.note-editable');
+        if ($noteEditable.length) {
+          $noteEditable.focus();
+
+          // Restore the saved cursor position
+          if (savedSelectionRef.current) {
+            const selection = window.getSelection();
+            if (selection) {
+              selection.removeAllRanges();
+              selection.addRange(savedSelectionRef.current);
+            }
+          }
+
+          // Insert at cursor position
+          document.execCommand('insertHTML', false, imgHtml);
+
+          // Clear saved selection
+          savedSelectionRef.current = null;
+
+          // Trigger onChange with numeral conversion
+          const newContent = $noteEditable.html();
+          handleChange(newContent);
+        }
       }
     } catch (err) {
       console.error('Image upload failed', err);
       alert(language === 'ar' ? 'فشل رفع الصورة' : 'Failed to upload image');
     } finally {
       setUploading(false);
-      // Final cleanup of any remaining backdrops
-      setTimeout(() => {
-        $('.modal-backdrop').remove();
-        $('body').removeClass('modal-open');
-      }, 100);
+      // Reset states
+      setPendingImageFile(null);
+      setPendingImageUrl('');
+      setPendingImageName('');
+      setImageCaption('');
     }
-  }, [language]);
+  }, [pendingImageFile, pendingImageName, imageCaption, imageStorageType, handleChange, language]);
+
+  // Handle image upload from Summernote - opens dialog first, upload happens on confirm
+  const handleImageUpload = useCallback(async (files: FileList) => {
+    const file = files[0];
+    if (!file) return;
+
+    // Save current cursor position before dialog opens
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      savedSelectionRef.current = selection.getRangeAt(0).cloneRange();
+    }
+
+    // Close the Summernote modal dialog immediately
+    ($('.note-modal') as any).modal('hide');
+    $('.modal-backdrop').remove();
+    $('body').removeClass('modal-open');
+
+    // Store the file and open caption/storage dialog (don't upload yet)
+    setPendingImageFile(file);
+    setPendingImageName(file.name.replace(/\.[^/.]+$/, '')); // Remove extension
+    setImageCaption('');
+    setImageStorageType(defaultStorage); // Reset to default storage
+    setCaptionDialogOpen(true);
+
+    // Final cleanup of any remaining backdrops
+    setTimeout(() => {
+      $('.modal-backdrop').remove();
+      $('body').removeClass('modal-open');
+    }, 100);
+  }, [defaultStorage]);
 
   // Close preview modal
   const handleClosePreview = () => {
@@ -283,9 +321,11 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   // Cancel caption dialog
   const handleCancelCaption = () => {
     setCaptionDialogOpen(false);
+    setPendingImageFile(null);
     setPendingImageUrl('');
     setPendingImageName('');
     setImageCaption('');
+    savedSelectionRef.current = null; // Clear saved cursor position
   };
 
   const options = {
@@ -330,9 +370,18 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         fullWidth
       >
         <DialogTitle>
-          {language === 'ar' ? 'إضافة وصف للصورة' : 'Add Image Caption'}
+          {language === 'ar' ? 'إضافة صورة' : 'Add Image'}
         </DialogTitle>
         <DialogContent>
+          {/* Storage Type Selection */}
+          <Box sx={{ mb: 3, mt: 1 }}>
+            <StorageToggle
+              value={imageStorageType}
+              onChange={setImageStorageType}
+            />
+          </Box>
+
+          {/* Caption Input */}
           <TextField
             autoFocus
             margin="dense"
