@@ -307,7 +307,7 @@ const NewCreation: React.FC = () => {
     if (url.includes('SopReponsibility-create')) return isArabic ? 'المسؤولية' : 'Responsibilities';
     if (url.includes('addSop-Procedure')) return isArabic ? 'الإجراءات' : 'Procedure';
     if (url.includes('addSop-Scope')) return isArabic ? 'مجال التطبيق' : 'Scope';
-    if (url.includes('addsop-safety-concerns')) return isArabic ? 'اشتراطات السلامة' : 'Safety Concerns';
+    if (url.includes('addsop-safety-concerns')) return isArabic ? '	الاحتياطات الواجبة:' : 'Safety Concerns';
     if (url.includes('/sopRefrences/Create')) return isArabic ? 'الوثائق المرجعية' : 'References';
     if (url.includes('addSop-CriticalControlPoint')) return isArabic ? 'نقاط التحكم الحرجة' : 'Critical Control Points';
     return url;
@@ -633,9 +633,9 @@ const NewCreation: React.FC = () => {
                   onChange={(c: any) => setFormData((p) => ({ ...p, responsibilityAr: c }))}
                 />
 
-                {/* اشتراطات السلامة */}
+                {/* الاحتياطات الواجبة:*/}
                 <Typography variant="h4" sx={{ mt: 2 }}>
-                  اشتراطات السلامة:
+              	الاحتياطات الواجبة:
                 </Typography>
                 <RichTextEditor
                   language="ar"

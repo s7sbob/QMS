@@ -1,5 +1,5 @@
 // src/components/SOPPaginatedDocument.tsx
-import React, { ReactNode, useState, useRef, useMemo, useLayoutEffect } from 'react';
+import React, { ReactNode, useState, useRef, useMemo, useEffect, useCallback } from 'react';
 import SOPCoverPage from './SOPCoverPage';
 import SOPContentPageHeader from './SOPContentPageHeader';
 import SOPTableOfContents, { TableOfContentsEntry } from './SOPTableOfContents';
@@ -13,11 +13,10 @@ interface SOPPaginatedDocumentProps {
   headerData?: SopHeader | null;
 }
 
-// A4 page content height (excluding header and footer) in pixels
-// A4 = 297mm, at 96 DPI ≈ 1123px. Minus header (~80px) and footer/signature (~200px) = ~650px usable
-const CONTENT_HEIGHT_PER_PAGE = 650;
+// A4 page layout constants (in pixels)
+const AVAILABLE_CONTENT_HEIGHT = 720;
 
-interface PageContent {
+interface PageData {
   pageNumber: number;
   startIndex: number;
   endIndex: number;
@@ -25,11 +24,11 @@ interface PageContent {
 
 const SOPPaginatedDocument: React.FC<SOPPaginatedDocumentProps> = ({ children, headerData }) => {
   const measureContainerRef = useRef<HTMLDivElement>(null);
-  const [pageBreaks, setPageBreaks] = useState<PageContent[]>([]);
+  const [pages, setPages] = useState<PageData[]>([]);
   const [isReady, setIsReady] = useState(false);
-  const childrenArray = useMemo(() => React.Children.toArray(children), [children]);
+  const hasMeasured = useRef(false);
 
-  // Parse table of contents from headerData
+  // Parse table of contents
   const tableOfContents = useMemo<TableOfContentsEntry[]>(() => {
     if (!headerData?.Content_Table) return [];
     try {
@@ -40,14 +39,13 @@ const SOPPaginatedDocument: React.FC<SOPPaginatedDocumentProps> = ({ children, h
     }
   }, [headerData?.Content_Table]);
 
-  // Always show TOC page (second page after cover)
   const hasTocPage = true;
+  const startPageNumber = hasTocPage ? 3 : 2;
 
-  // Prepare footer data - using data from SOP header and related user data
+  // Footer data
   const footerData = useMemo(() => {
     if (!headerData) return null;
 
-    // Get names from user data relations
     const preparedName = headerData?.User_Data_Sop_header_Prepared_ByToUser_Data
       ? `${headerData.User_Data_Sop_header_Prepared_ByToUser_Data.FName} ${headerData.User_Data_Sop_header_Prepared_ByToUser_Data.LName}`
       : '';
@@ -58,13 +56,10 @@ const SOPPaginatedDocument: React.FC<SOPPaginatedDocumentProps> = ({ children, h
       ? `${headerData.User_Data_Sop_header_Approved_byToUser_Data.FName} ${headerData.User_Data_Sop_header_Approved_byToUser_Data.LName}`
       : '';
 
-    // Get signatures from user data relations (signUrl), fallback to header sign fields
     const preparedSignatureUrl =
       headerData?.User_Data_Sop_header_Prepared_ByToUser_Data?.signUrl ||
       headerData?.prepared_by_sign || '';
 
-    // Only show QA Supervisor (reviewed) signature when status is 4 or higher
-    // Status 3 means under review, status 4+ means reviewed/approved
     const sopStatus = parseInt(headerData?.status || '0', 10);
     const reviewedSignatureUrl = sopStatus >= 4
       ? (headerData?.User_Data_Sop_header_reviewed_byToUser_Data?.signUrl ||
@@ -89,77 +84,137 @@ const SOPPaginatedDocument: React.FC<SOPPaginatedDocumentProps> = ({ children, h
     };
   }, [headerData]);
 
-  // Calculate page breaks after content is rendered
-  useLayoutEffect(() => {
-    const timer = setTimeout(() => {
-      if (!measureContainerRef.current || childrenArray.length === 0) {
-        setIsReady(true);
+  // Measure and distribute elements - only runs once
+  useEffect(() => {
+    if (hasMeasured.current || !headerData) return;
+
+    const measureAndDistribute = () => {
+      const container = measureContainerRef.current;
+      if (!container) {
+        console.log('No measurement container yet');
         return;
       }
 
-      const container = measureContainerRef.current;
-      const elements = Array.from(container.children) as HTMLElement[];
+      // Find all pageable elements
+      const pageableElements = container.querySelectorAll('.pageable-section-header, .pageable-content-row');
 
-      const pages: PageContent[] = [];
-      let currentPageHeight = 0;
-      let currentPageStartIndex = 0;
-      // Start from page 3 if TOC exists (page 1 = cover, page 2 = TOC), otherwise page 2
-      let pageNum = hasTocPage ? 3 : 2;
+      if (pageableElements.length === 0) {
+        console.log('No pageable elements found, retrying...');
+        return; // Will retry
+      }
 
-      elements.forEach((element, index) => {
-        const elementHeight = element.getBoundingClientRect().height + 15; // Add margin
+      console.log(`Found ${pageableElements.length} pageable elements`);
+      hasMeasured.current = true;
 
-        // Always add element to current page first
-        currentPageHeight += elementHeight;
-
-        // If current page height exceeds limit, finalize this page and start a new one
-        // But include the current element on this page (let CSS handle overflow splitting)
-        if (currentPageHeight >= CONTENT_HEIGHT_PER_PAGE) {
-          // Save current page including this element
-          pages.push({
-            pageNumber: pageNum,
-            startIndex: currentPageStartIndex,
-            endIndex: index,
-          });
-          pageNum++;
-          currentPageStartIndex = index + 1;
-          // Reset height - if element was taller than page, it will overflow naturally
-          currentPageHeight = 0;
-        }
+      // Measure each element
+      const measurements: { index: number; height: number }[] = [];
+      pageableElements.forEach((element, index) => {
+        const rect = element.getBoundingClientRect();
+        const height = rect.height + 8;
+        measurements.push({ index, height });
+        console.log(`Element ${index}: height = ${rect.height}px`);
       });
 
-      // Add last page with remaining content
-      if (currentPageStartIndex < elements.length) {
-        pages.push({
+      // Distribute across pages
+      const newPages: PageData[] = [];
+      let currentPageStart = 0;
+      let currentPageHeight = 0;
+      let pageNum = startPageNumber;
+
+      measurements.forEach(({ height }, i) => {
+        if (currentPageHeight + height > AVAILABLE_CONTENT_HEIGHT && i > currentPageStart) {
+          newPages.push({
+            pageNumber: pageNum,
+            startIndex: currentPageStart,
+            endIndex: i - 1,
+          });
+          console.log(`Page ${pageNum}: elements ${currentPageStart} to ${i - 1}, height: ${currentPageHeight}px`);
+
+          pageNum++;
+          currentPageStart = i;
+          currentPageHeight = 0;
+        }
+        currentPageHeight += height;
+      });
+
+      // Add final page
+      if (currentPageStart < measurements.length) {
+        newPages.push({
           pageNumber: pageNum,
-          startIndex: currentPageStartIndex,
-          endIndex: elements.length - 1,
+          startIndex: currentPageStart,
+          endIndex: measurements.length - 1,
         });
+        console.log(`Page ${pageNum} (final): elements ${currentPageStart} to ${measurements.length - 1}, height: ${currentPageHeight}px`);
       }
 
-      // Ensure at least one content page
-      if (pages.length === 0 && childrenArray.length > 0) {
-        pages.push({
-          pageNumber: hasTocPage ? 3 : 2,
+      if (newPages.length === 0) {
+        newPages.push({
+          pageNumber: startPageNumber,
           startIndex: 0,
-          endIndex: childrenArray.length - 1,
+          endIndex: Math.max(0, measurements.length - 1),
         });
       }
 
-      setPageBreaks(pages);
+      console.log(`Total pages: ${newPages.length}`);
+      setPages(newPages);
       setIsReady(true);
-    }, 100); // Small delay to ensure content is rendered
+    };
 
-    return () => clearTimeout(timer);
-  }, [childrenArray, hasTocPage]);
+    // Retry mechanism
+    let retryCount = 0;
+    const maxRetries = 10;
 
-  // Total pages = content pages + cover page + TOC page (if exists)
-  const totalPages = pageBreaks.length + 1 + (hasTocPage ? 1 : 0);
+    const tryMeasure = () => {
+      if (hasMeasured.current) return;
 
-  // Render page footer
-  const renderPageFooter = () => {
+      measureAndDistribute();
+
+      if (!hasMeasured.current && retryCount < maxRetries) {
+        retryCount++;
+        setTimeout(tryMeasure, 300);
+      } else if (!hasMeasured.current) {
+        // Fallback: show all content on one page
+        console.warn('Max retries reached, showing all content');
+        hasMeasured.current = true;
+        setPages([{ pageNumber: startPageNumber, startIndex: 0, endIndex: 999 }]);
+        setIsReady(true);
+      }
+    };
+
+    // Start measuring after initial render
+    const timeoutId = setTimeout(tryMeasure, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [headerData, startPageNumber]); // Only depend on headerData, not children
+
+  // Get page content
+  const getPageContent = useCallback((pageData: PageData): ReactNode[] => {
+    const container = measureContainerRef.current;
+    if (!container) return [];
+
+    const pageableElements = container.querySelectorAll('.pageable-section-header, .pageable-content-row');
+    const elements: ReactNode[] = [];
+
+    for (let i = pageData.startIndex; i <= pageData.endIndex && i < pageableElements.length; i++) {
+      const element = pageableElements[i];
+      elements.push(
+        <div
+          key={`page-${pageData.pageNumber}-element-${i}`}
+          className={element.className}
+          dangerouslySetInnerHTML={{ __html: element.innerHTML }}
+        />
+      );
+    }
+
+    return elements;
+  }, []);
+
+  // Total pages
+  const totalPages = Math.max(pages.length, 1) + 1 + (hasTocPage ? 1 : 0);
+
+  // Render footer
+  const renderPageFooter = useCallback(() => {
     if (!footerData) return null;
-
     return (
       <div className="content-footer-section">
         <PreparedBySection
@@ -180,7 +235,7 @@ const SOPPaginatedDocument: React.FC<SOPPaginatedDocumentProps> = ({ children, h
         <Footer />
       </div>
     );
-  };
+  }, [footerData]);
 
   if (!headerData) {
     return (
@@ -191,69 +246,81 @@ const SOPPaginatedDocument: React.FC<SOPPaginatedDocumentProps> = ({ children, h
   }
 
   return (
-    <>
-      {/* Hidden measurement container - always render to measure */}
+    <div className="sop-document-wrapper">
+      {/* Hidden measurement container */}
       <div
         ref={measureContainerRef}
-        className="sop-measure-container"
         style={{
           position: 'absolute',
           left: '-9999px',
-          width: '180mm', // A4 width minus padding
+          top: '0',
+          width: '170mm',
           visibility: 'hidden',
+          pointerEvents: 'none',
+          zIndex: -1000,
         }}
       >
-        {childrenArray}
+        {children}
       </div>
 
-      {/* Visible paginated document */}
-      <div className="sop-document-wrapper">
-        {/* Page 1: Cover Page */}
-        <SOPCoverPage headerData={headerData} totalPages={totalPages || 2} />
+      {/* Cover Page */}
+      <SOPCoverPage headerData={headerData} totalPages={totalPages} />
 
-        {/* Page 2: Table of Contents (if exists) */}
-        {hasTocPage && (
-          <SOPTableOfContents
+      {/* Table of Contents */}
+      {hasTocPage && (
+        <SOPTableOfContents
+          headerData={headerData}
+          totalPages={totalPages}
+          entries={tableOfContents}
+        />
+      )}
+
+      {/* Content Pages */}
+      {isReady && pages.map((pageData) => (
+        <div key={`page-${pageData.pageNumber}`} className="sop-page sop-content-page">
+          <SOPContentPageHeader
             headerData={headerData}
+            currentPage={pageData.pageNumber}
             totalPages={totalPages}
-            entries={tableOfContents}
           />
-        )}
-
-        {/* Content Pages */}
-        {isReady && pageBreaks.map((page) => (
-          <div key={page.pageNumber} className="sop-page sop-content-page">
-            <SOPContentPageHeader
-              headerData={headerData}
-              currentPage={page.pageNumber}
-              totalPages={totalPages}
-            />
-
-            <div className="sop-content-area">
-              {childrenArray.slice(page.startIndex, page.endIndex + 1)}
-            </div>
-
-            {/* Signature table on every page */}
-            {renderPageFooter()}
+          <div className="sop-content-area">
+            {getPageContent(pageData)}
           </div>
-        ))}
+          {renderPageFooter()}
+        </div>
+      ))}
 
-        {/* Fallback: Show all content on one page if pagination not ready */}
-        {!isReady && (
-          <div className="sop-page sop-content-page">
-            <SOPContentPageHeader
-              headerData={headerData}
-              currentPage={hasTocPage ? 3 : 2}
-              totalPages={hasTocPage ? 3 : 2}
-            />
-            <div className="sop-content-area">
-              {childrenArray}
-            </div>
-            {renderPageFooter()}
+      {/* Loading */}
+      {!isReady && (
+        <div className="sop-page sop-content-page">
+          <SOPContentPageHeader
+            headerData={headerData}
+            currentPage={startPageNumber}
+            totalPages={startPageNumber}
+          />
+          <div className="sop-content-area" style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            flexDirection: 'column',
+            gap: '10px',
+            minHeight: '400px',
+          }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              border: '4px solid #f3f3f3',
+              borderTop: '4px solid #3498db',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+            }} />
+            <p>Preparing document...</p>
+            <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
           </div>
-        )}
-      </div>
-    </>
+          {renderPageFooter()}
+        </div>
+      )}
+    </div>
   );
 };
 

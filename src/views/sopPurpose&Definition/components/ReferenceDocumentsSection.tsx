@@ -58,7 +58,7 @@ const ReferenceDocumentsSection: React.FC<{ initialData: ReferenceDoc | null; is
   // Send notification to QA Associates when a comment is added
   const sendNotificationToQAAssociates = async (headerId: string, sectionName: string) => {
     try {
-      const response = await axiosServices.get(`/api/user/getUsersByRole/QA Associate`);
+      const response = await axiosServices.get(`/api/users/getUsersByRole/QA Associate`);
       const qaAssociates = response.data || [];
       for (const qaUser of qaAssociates) {
         await axiosServices.post('/api/notification/pushNotification', {

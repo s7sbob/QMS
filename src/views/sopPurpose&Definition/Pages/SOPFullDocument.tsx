@@ -92,7 +92,7 @@ const SOPFullDocument: React.FC = () => {
         const creatorId = sopDetail.Sop_header.Prepared_By;
 
         // Get QA Managers
-        const managersResponse = await axiosServices.get('/api/user/getUsersByRole/QA Manager');
+        const managersResponse = await axiosServices.get('/api/users/getUsersByRole/QA Manager');
         const qaManagers = managersResponse.data || [];
 
         const statusMessages: { [key: string]: string } = {

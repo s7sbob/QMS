@@ -1,5 +1,5 @@
 // src/components/DefinitionsSection.tsx
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState, useContext, useMemo } from "react";
 import axiosServices from "src/utils/axiosServices";
 import {
   Box,
@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import EditDialog from "./EditDialog";
 import { UserContext } from "src/context/UserContext";
+import { splitHtmlContent } from "../utils/htmlContentSplitter";
 
 export interface Definition {
   Id: string;
@@ -58,6 +59,12 @@ const DefinitionsSection: React.FC<DefinitionsSectionProps> = ({ initialData, is
     }
   }, [initialData]);
 
+  // Split content into chunks for pagination
+  const contentChunks = useMemo(() => {
+    if (!definition) return [];
+    return splitHtmlContent(definition.Content_en || '', definition.Content_ar || '');
+  }, [definition]);
+
   const handleDoubleClick = () => {
     if (!definition || isReadOnly) return;
     axiosServices
@@ -73,7 +80,7 @@ const DefinitionsSection: React.FC<DefinitionsSectionProps> = ({ initialData, is
   // Send notification to QA Associates when a comment is added
   const sendNotificationToQAAssociates = async (headerId: string, sectionName: string) => {
     try {
-      const response = await axiosServices.get(`/api/user/getUsersByRole/QA Associate`);
+      const response = await axiosServices.get(`/api/users/getUsersByRole/QA Associate`);
       const qaAssociates = response.data || [];
       for (const qaUser of qaAssociates) {
         await axiosServices.post('/api/notification/pushNotification', {
@@ -133,12 +140,35 @@ const DefinitionsSection: React.FC<DefinitionsSectionProps> = ({ initialData, is
     }
   };
 
-  return (
-    <Box sx={{ mt: 0 }}>
+  // Common table cell styles
+  const cellStyleEn = {
+    borderRight: '2px solid #000',
+    verticalAlign: 'top' as const,
+    backgroundColor: '#fff',
+    padding: '12px',
+    width: '50%',
+  };
+
+  const cellStyleAr = {
+    direction: 'rtl' as const,
+    verticalAlign: 'top' as const,
+    backgroundColor: '#fff',
+    padding: '12px',
+    width: '50%',
+  };
+
+  const tableStyle = {
+    tableLayout: 'fixed' as const,
+    backgroundColor: '#fff',
+    width: '100%',
+  };
+
+  // Render section header as a separate pageable element
+  const renderSectionHeader = () => (
+    <Box key="definitions-header" sx={{ mt: 0 }} className="pageable-section-header">
       <TableContainer sx={{ border: "none", boxShadow: "none" }}>
-        <Table sx={{ tableLayout: "fixed", backgroundColor: "#fff" }}>
+        <Table sx={tableStyle}>
           <TableBody>
-            {/* Section Title Row - Gray Background */}
             <TableRow
               onDoubleClick={handleDoubleClick}
               sx={{
@@ -176,35 +206,42 @@ const DefinitionsSection: React.FC<DefinitionsSectionProps> = ({ initialData, is
                 ٢- التعريفات:
               </TableCell>
             </TableRow>
-            {/* Content Row */}
-            {definition && (
-              <TableRow>
-                <TableCell
-                  sx={{
-                    borderRight: "2px solid #000",
-                    verticalAlign: "top",
-                    backgroundColor: "#fff",
-                    padding: "12px",
-                  }}
-                >
-                  <div dangerouslySetInnerHTML={{ __html: definition.Content_en }} />
-                </TableCell>
-                <TableCell
-                  align="right"
-                  sx={{
-                    direction: "rtl",
-                    verticalAlign: "top",
-                    backgroundColor: "#fff",
-                    padding: "12px",
-                  }}
-                >
-                  <div dangerouslySetInnerHTML={{ __html: definition.Content_ar }} />
-                </TableCell>
-              </TableRow>
-            )}
           </TableBody>
         </Table>
       </TableContainer>
+    </Box>
+  );
+
+  // Render each content chunk as a separate pageable element
+  const renderContentChunk = (chunk: { id: string; htmlEn: string; htmlAr: string }, index: number) => (
+    <Box key={`definitions-content-${index}`} sx={{ mt: 0 }} className="pageable-content-row">
+      <TableContainer sx={{ border: "none", boxShadow: "none" }}>
+        <Table sx={tableStyle}>
+          <TableBody>
+            <TableRow>
+              <TableCell sx={cellStyleEn}>
+                <div dangerouslySetInnerHTML={{ __html: chunk.htmlEn }} />
+              </TableCell>
+              <TableCell align="right" sx={cellStyleAr}>
+                <div dangerouslySetInnerHTML={{ __html: chunk.htmlAr }} />
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
+  );
+
+  // Return multiple elements wrapped in a Fragment for pagination
+  return (
+    <>
+      {/* Section Header - pageable element 1 */}
+      {renderSectionHeader()}
+
+      {/* Content Chunks - pageable elements 2+ */}
+      {definition && contentChunks.map((chunk, index) => renderContentChunk(chunk, index))}
+
+      {/* Edit Dialog - not pageable, positioned outside */}
       {definition && (
         <EditDialog
           open={openDialog}
@@ -222,7 +259,7 @@ const DefinitionsSection: React.FC<DefinitionsSectionProps> = ({ initialData, is
           onClose={() => setOpenDialog(false)}
         />
       )}
-    </Box>
+    </>
   );
 };
 

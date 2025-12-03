@@ -99,15 +99,23 @@ interface ISopHeader {
   Doc_Title_en: string;
 }
 
+// Default font settings - Calibri 12 bold for English
+const DEFAULT_FONT_EN = 'Calibri';
+const DEFAULT_FONT_SIZE = '12';
+
 // إعدادات الـToolbar للـSummernote (نفس ما في NewCreation أو قريبة منه)
 const summernoteOptions = {
   height: 200,
   toolbar: [
     ['style', ['style']],
-    ['font', ['bold', 'italic', 'underline', 'clear']],
+    ['font', ['fontname', 'fontsize', 'bold', 'italic', 'underline', 'clear']],
     ['para', ['ul', 'ol', 'paragraph']],
     ['table', ['table']],
   ],
+  fontNames: ['Calibri', 'Arial', 'Times New Roman', 'Tahoma', 'Helvetica', 'Courier New'],
+  fontSizes: ['8', '10', '12', '14', '16', '18', '20', '24', '28', '32', '36', '48'],
+  fontName: DEFAULT_FONT_EN,
+  fontSize: DEFAULT_FONT_SIZE,
 };
 
 const CancellationForm: React.FC = () => {

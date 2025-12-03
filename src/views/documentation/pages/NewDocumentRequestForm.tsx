@@ -765,7 +765,7 @@ const DocumentRequestManagement: React.FC = () => {
 
         // 1. Notify QA DocumentOfficer(s)
         try {
-          const qaOfficerRes = await axiosServices.get('/api/user/getUsersByRole/QA DocumentOfficer');
+          const qaOfficerRes = await axiosServices.get('/api/users/getUsersByRole/QA DocumentOfficer');
           const qaOfficers = Array.isArray(qaOfficerRes.data) ? qaOfficerRes.data : [];
           for (const officer of qaOfficers) {
             if (officer.Id) {
@@ -1045,7 +1045,7 @@ const DocumentRequestManagement: React.FC = () => {
 
           // Send notification to QA Supervisor(s) in the same company
           try {
-            const qaSupervisorRes = await axiosServices.get('/api/user/getUsersByRole/QA Supervisor');
+            const qaSupervisorRes = await axiosServices.get('/api/users/getUsersByRole/QA Supervisor');
             const qaSupervisors = Array.isArray(qaSupervisorRes.data) ? qaSupervisorRes.data : [];
             const employeeName = `${user?.FName || ''} ${user?.LName || ''}`.trim();
 

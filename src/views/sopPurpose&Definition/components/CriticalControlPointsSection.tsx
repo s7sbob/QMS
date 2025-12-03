@@ -2,7 +2,7 @@
    CriticalControlPointsSection.tsx
    § يظهر قسم "Critical Control Points" داخل مستند الـ SOP
    ─────────────────────────────────────────────────────────────── */
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState, useContext, useMemo } from "react";
 import axiosServices from "src/utils/axiosServices";
 import {
   Box,
@@ -12,14 +12,15 @@ import {
   TableContainer,
   TableRow,
 } from "@mui/material";
-import EditDialog, { HistoryRecord } from "./EditDialog"; // ⬅️ استيراد النوع
+import EditDialog, { HistoryRecord } from "./EditDialog";
 import { UserContext } from "src/context/UserContext";
+import { splitHtmlContent } from "../utils/htmlContentSplitter";
 
 /* ── نوع السجل الأساسى الراجع من الـ API ─────────────────────── */
 export interface CriticalControlPoint {
   Id: string;
-  Content_en: string;  // API returns Content_en
-  Content_ar: string;  // API returns Content_ar
+  Content_en: string;
+  Content_ar: string;
   Version: number | null;
   Is_Current: number;
   Is_Active: number;
@@ -62,6 +63,12 @@ const CriticalControlPointsSection: React.FC<Props> = ({ initialData, isReadOnly
   /* عند تغيّر الـ prop من الأب */
   useEffect(() => { if (initialData) setCcp(initialData); }, [initialData]);
 
+  // Split content into chunks for pagination
+  const contentChunks = useMemo(() => {
+    if (!ccp) return [];
+    return splitHtmlContent(ccp.Content_en || '', ccp.Content_ar || '');
+  }, [ccp]);
+
   /* ───── فتح الـ dialog مع جلب التاريخ ─────────────────────── */
   const handleDoubleClick = () => {
     if (!ccp || isReadOnly) return;
@@ -70,7 +77,7 @@ const CriticalControlPointsSection: React.FC<Props> = ({ initialData, isReadOnly
       .get(`/api/sopCriticalControlPoints/getAllHistory/${ccp.Sop_HeaderId}`)
       .then(res => {
         const hist: HistoryRecord[] = res.data
-          .filter((r: any) => r.Is_Active === 0) // inactive ⇒ تاريخ
+          .filter((r: any) => r.Is_Active === 0)
           .map(toHistoryRecord);
         setHistory(hist);
         setOpenDialog(true);
@@ -81,7 +88,7 @@ const CriticalControlPointsSection: React.FC<Props> = ({ initialData, isReadOnly
   // Send notification to QA Associates when a comment is added
   const sendNotificationToQAAssociates = async (headerId: string, sectionName: string) => {
     try {
-      const response = await axiosServices.get(`/api/user/getUsersByRole/QA Associate`);
+      const response = await axiosServices.get(`/api/users/getUsersByRole/QA Associate`);
       const qaAssociates = response.data || [];
       for (const qaUser of qaAssociates) {
         await axiosServices.post('/api/notification/pushNotification', {
@@ -115,10 +122,10 @@ const CriticalControlPointsSection: React.FC<Props> = ({ initialData, isReadOnly
 
     try {
       const res = (newEn !== ccp.Content_en || newAr !== ccp.Content_ar)
-        ? await axiosServices.post("/api/sopCriticalControlPoints/add", data)              // insert
-        : await axiosServices.post(`/api/sopCriticalControlPoints/updateSop-CriticalControlPoint/${ccp.Id}`, data); // update
+        ? await axiosServices.post("/api/sopCriticalControlPoints/add", data)
+        : await axiosServices.post(`/api/sopCriticalControlPoints/updateSop-CriticalControlPoint/${ccp.Id}`, data);
 
-      setCcp(res.data); // حدِّث النسخة الحالية من الخادم
+      setCcp(res.data);
       setOpenDialog(false);
 
       if (isReviewer && hasNewComment) {
@@ -137,13 +144,35 @@ const CriticalControlPointsSection: React.FC<Props> = ({ initialData, isReadOnly
     }
   };
 
-  /* ───── واجهة المستخدم ───────────────────────────────────── */
-  return (
-    <Box sx={{ mt: 0 }}>
+  // Common table cell styles
+  const cellStyleEn = {
+    borderRight: '2px solid #000',
+    verticalAlign: 'top' as const,
+    backgroundColor: '#fff',
+    padding: '12px',
+    width: '50%',
+  };
+
+  const cellStyleAr = {
+    direction: 'rtl' as const,
+    verticalAlign: 'top' as const,
+    backgroundColor: '#fff',
+    padding: '12px',
+    width: '50%',
+  };
+
+  const tableStyle = {
+    tableLayout: 'fixed' as const,
+    backgroundColor: '#fff',
+    width: '100%',
+  };
+
+  // Render section header as a separate pageable element
+  const renderSectionHeader = () => (
+    <Box key="ccp-header" sx={{ mt: 0 }} className="pageable-section-header">
       <TableContainer sx={{ border: "none", boxShadow: "none" }}>
-        <Table sx={{ tableLayout: "fixed", backgroundColor: "#fff" }}>
+        <Table sx={tableStyle}>
           <TableBody>
-            {/* Section Title Row - Gray Background */}
             <TableRow
               onDoubleClick={handleDoubleClick}
               sx={{
@@ -181,35 +210,40 @@ const CriticalControlPointsSection: React.FC<Props> = ({ initialData, isReadOnly
                 ٧- نقاط التحكم الحرجة:
               </TableCell>
             </TableRow>
-            {/* Content Row */}
-            {ccp && (
-              <TableRow>
-                <TableCell
-                  sx={{
-                    borderRight: "2px solid #000",
-                    verticalAlign: "top",
-                    backgroundColor: "#fff",
-                    padding: "12px",
-                  }}
-                >
-                  <div dangerouslySetInnerHTML={{ __html: ccp.Content_en }} />
-                </TableCell>
-                <TableCell
-                  align="right"
-                  sx={{
-                    direction: "rtl",
-                    verticalAlign: "top",
-                    backgroundColor: "#fff",
-                    padding: "12px",
-                  }}
-                >
-                  <div dangerouslySetInnerHTML={{ __html: ccp.Content_ar }} />
-                </TableCell>
-              </TableRow>
-            )}
           </TableBody>
         </Table>
       </TableContainer>
+    </Box>
+  );
+
+  // Render each content chunk as a separate pageable element
+  const renderContentChunk = (chunk: { id: string; htmlEn: string; htmlAr: string }, index: number) => (
+    <Box key={`ccp-content-${index}`} sx={{ mt: 0 }} className="pageable-content-row">
+      <TableContainer sx={{ border: "none", boxShadow: "none" }}>
+        <Table sx={tableStyle}>
+          <TableBody>
+            <TableRow>
+              <TableCell sx={cellStyleEn}>
+                <div dangerouslySetInnerHTML={{ __html: chunk.htmlEn }} />
+              </TableCell>
+              <TableCell align="right" sx={cellStyleAr}>
+                <div dangerouslySetInnerHTML={{ __html: chunk.htmlAr }} />
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
+  );
+
+  /* ───── واجهة المستخدم ───────────────────────────────────── */
+  return (
+    <>
+      {/* Section Header - pageable element 1 */}
+      {renderSectionHeader()}
+
+      {/* Content Chunks - pageable elements 2+ */}
+      {ccp && contentChunks.map((chunk, index) => renderContentChunk(chunk, index))}
 
       {/* الـ Dialog */}
       {ccp && (
@@ -232,7 +266,7 @@ const CriticalControlPointsSection: React.FC<Props> = ({ initialData, isReadOnly
           onClose={() => setOpenDialog(false)}
         />
       )}
-    </Box>
+    </>
   );
 };
 

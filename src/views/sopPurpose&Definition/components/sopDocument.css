@@ -24,17 +24,18 @@
 /* ===== Individual A4 Page ===== */
 .sop-page {
   width: var(--a4-width);
-  min-height: var(--a4-height);
+  height: var(--a4-height);  /* Strict A4 height - no overflow */
   background: white;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   padding: var(--page-padding);
   box-sizing: border-box;
   position: relative;
   page-break-after: always;
-  page-break-inside: auto;
-  break-inside: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
   display: flex;
   flex-direction: column;
+  overflow: hidden;  /* Prevent content overflow beyond A4 */
 }
 
 /* ===== COVER PAGE STYLES ===== */
@@ -274,7 +275,7 @@
 /* Content Area */
 .sop-content-area {
   flex: 1;
-  overflow: visible;
+  overflow: hidden;  /* Clip overflow content - pagination handles distribution */
   padding: 0;
   min-height: 0; /* Allow flex shrinking */
   border: 2px solid #000; /* Single outer border around all content */
@@ -439,7 +440,7 @@
     break-inside: auto;
   }
 
-  /* Content area in print - match screen view */
+  /* Content area in print - clip overflow, pagination handles distribution */
   .sop-content-area {
     flex: 1;
     overflow: hidden;
@@ -581,4 +582,63 @@
 
 .sop-table th, .sop-table td {
   vertical-align: top;
+}
+
+/* ===== PAGEABLE CONTENT ROW STYLES ===== */
+/* These styles support row-level pagination for sections like Procedures */
+
+.pageable-section-header,
+.pageable-content-row {
+  /* Ensure rows can be measured and paginated individually */
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+.pageable-section-header .MuiTableContainer-root,
+.pageable-content-row .MuiTableContainer-root {
+  /* Remove default MUI container styling for seamless appearance */
+  border: none;
+  box-shadow: none;
+}
+
+.pageable-section-header table,
+.pageable-content-row table {
+  width: 100%;
+  table-layout: fixed;
+  background-color: #fff;
+  border-collapse: collapse;
+}
+
+/* Ensure the vertical divider appears between columns */
+.pageable-section-header td:first-child,
+.pageable-content-row td:first-child {
+  border-right: 2px solid #000;
+}
+
+/* Remove gaps between consecutive pageable rows */
+.pageable-content-row {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.pageable-content-row + .pageable-content-row {
+  /* No gap between content rows of the same section */
+  margin-top: 0;
+}
+
+/* Print styles for pageable rows */
+@media print {
+  .pageable-section-header,
+  .pageable-content-row {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Ensure proper border rendering in print */
+  .pageable-section-header td:first-child,
+  .pageable-content-row td:first-child {
+    border-right: 2px solid #000 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
 }

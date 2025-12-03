@@ -36,10 +36,18 @@ const toolbar = [
   ['height', ['height']],
   ['insert', ['picture', 'link', 'table']],
 ];
-const fontAr = ['Cairo', 'Amiri', 'Tahoma', 'Arial', 'Times New Roman'];
-const fontEn = ['Arial', 'Times New Roman', 'Calibri', 'Tahoma', 'Helvetica', 'Courier New'];
+// Arabic fonts - Arial first as default
+const fontAr = ['Arial', 'Cairo', 'Amiri', 'Tahoma', 'Times New Roman'];
+// English fonts - Calibri first as default
+const fontEn = ['Calibri', 'Arial', 'Times New Roman', 'Tahoma', 'Helvetica', 'Courier New'];
 const sizes  = ['8','10','12','14','16','18','20','24','28','32','36','48'];
 const lines  = ['0.5','1.0','1.15','1.5','2.0','3.0'];
+
+// Default font settings
+const DEFAULT_FONT_EN = 'Calibri';
+const DEFAULT_FONT_AR = 'Arial';
+const DEFAULT_FONT_SIZE = '12';
+const DEFAULT_FONT_WEIGHT = 'bold';
 
 // Convert Western numerals (0-9) to Arabic-Indic numerals (٠-٩)
 const toArabicNumerals = (str: string): string => {
@@ -147,18 +155,24 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     };
   }, []);
 
-  // Apply Arabic numerals styling when language is Arabic
+  // Apply default font styling and Arabic numerals when needed
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    const applyArabicNumerals = () => {
+    const applyDefaultStyling = () => {
       const noteEditable = container.querySelector('.note-editable') as HTMLElement;
       if (noteEditable) {
+        // Apply default font settings - Calibri 12 bold for English, Arial 12 bold for Arabic
+        const defaultFont = language === 'ar' ? DEFAULT_FONT_AR : DEFAULT_FONT_EN;
+        noteEditable.style.fontFamily = defaultFont;
+        noteEditable.style.fontSize = `${DEFAULT_FONT_SIZE}pt`;
+        noteEditable.style.fontWeight = DEFAULT_FONT_WEIGHT;
+
         if (language === 'ar') {
           noteEditable.setAttribute('lang', 'ar');
           noteEditable.style.fontFeatureSettings = '"locl"';
-          // Add CSS for Arabic-Indic numerals
+          // Add CSS for Arabic-Indic numerals and default Arabic font styling
           const styleId = 'arabic-numerals-style';
           if (!document.getElementById(styleId)) {
             const style = document.createElement('style');
@@ -166,6 +180,9 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
             style.textContent = `
               .note-editable[lang="ar"] {
                 font-feature-settings: "locl";
+                font-family: ${DEFAULT_FONT_AR}, sans-serif !important;
+                font-size: ${DEFAULT_FONT_SIZE}pt !important;
+                font-weight: ${DEFAULT_FONT_WEIGHT} !important;
               }
               .note-editable[lang="ar"] ol {
                 list-style-type: arabic-indic;
@@ -180,12 +197,26 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         } else {
           noteEditable.removeAttribute('lang');
           noteEditable.style.fontFeatureSettings = '';
+          // Add CSS for default English font styling
+          const styleId = 'english-font-style';
+          if (!document.getElementById(styleId)) {
+            const style = document.createElement('style');
+            style.id = styleId;
+            style.textContent = `
+              .note-editable:not([lang="ar"]) {
+                font-family: ${DEFAULT_FONT_EN}, sans-serif !important;
+                font-size: ${DEFAULT_FONT_SIZE}pt !important;
+                font-weight: ${DEFAULT_FONT_WEIGHT} !important;
+              }
+            `;
+            document.head.appendChild(style);
+          }
         }
       }
     };
 
     // Apply after a short delay to ensure Summernote has initialized
-    const timer = setTimeout(applyArabicNumerals, 100);
+    const timer = setTimeout(applyDefaultStyling, 100);
     return () => clearTimeout(timer);
   }, [language]);
 
@@ -336,6 +367,9 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     lineHeights: lines,
     dialogsInBody: true,
     placeholder: language === 'ar' ? 'اكتب هنا…' : 'Type here…',
+    // Default font settings - Calibri 12 bold for English, Arial 12 bold for Arabic
+    fontName: language === 'ar' ? DEFAULT_FONT_AR : DEFAULT_FONT_EN,
+    fontSize: DEFAULT_FONT_SIZE,
   };
 
   return (

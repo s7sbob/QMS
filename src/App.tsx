@@ -2,6 +2,7 @@ import './setup-jquery'; // ⬅️ يجب أن يكون قبل أيّ كود Rea
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-summernote/dist/react-summernote.css';
+import './assets/css/richTextEditorDefaults.css'; // Default fonts: Calibri 12 bold (EN), Arial 12 bold (AR)
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import { useRoutes } from 'react-router-dom';
 import { useSelector } from 'src/store/Store';

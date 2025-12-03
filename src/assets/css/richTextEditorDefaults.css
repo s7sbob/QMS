@@ -1,0 +1,64 @@
+/**
+ * Rich Text Editor Default Font Styles
+ * English: Calibri, 12pt, bold
+ * Arabic: Arial, 12pt, bold
+ */
+
+/* Summernote Editor Defaults */
+.note-editable {
+  font-family: 'Calibri', 'Arial', sans-serif !important;
+  font-size: 12pt !important;
+  font-weight: bold !important;
+}
+
+/* Arabic Summernote Editor */
+.note-editable[lang="ar"],
+.note-editable[dir="rtl"] {
+  font-family: 'Arial', sans-serif !important;
+  font-size: 12pt !important;
+  font-weight: bold !important;
+}
+
+/* Summernote placeholder */
+.note-placeholder {
+  font-family: 'Calibri', 'Arial', sans-serif;
+  font-size: 12pt;
+  font-weight: bold;
+}
+
+/* Quill Editor Defaults - handled in Quill.css */
+
+/* CKEditor Defaults (if used) */
+.ck-editor__editable,
+.ck-content {
+  font-family: 'Calibri', 'Arial', sans-serif !important;
+  font-size: 12pt !important;
+  font-weight: bold !important;
+}
+
+.ck-editor__editable[dir="rtl"],
+.ck-content[dir="rtl"] {
+  font-family: 'Arial', sans-serif !important;
+  font-size: 12pt !important;
+  font-weight: bold !important;
+}
+
+/* TipTap Editor Defaults (if used) */
+.ProseMirror {
+  font-family: 'Calibri', 'Arial', sans-serif !important;
+  font-size: 12pt !important;
+  font-weight: bold !important;
+}
+
+.ProseMirror[dir="rtl"] {
+  font-family: 'Arial', sans-serif !important;
+  font-size: 12pt !important;
+  font-weight: bold !important;
+}
+
+/* Ensure Calibri font is available (with fallbacks) */
+@font-face {
+  font-family: 'Calibri';
+  src: local('Calibri'), local('Calibri-Bold');
+  font-weight: bold;
+}

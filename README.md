@@ -33,7 +33,18 @@
 | 🔔 **Real-time Notifications** | Live updates via WebSocket integration |
 | 🌐 **Multilingual Support** | Full English/Arabic interface with RTL layout support |
 | 📄 **PDF Generation** | Generate and view PDF documents directly in the application |
-| 💻 **IT Management** | IT infrastructure and asset tracking module |
+| 💻 **IT Management** | IT infrastructure, asset tracking, and organizational hierarchy management |
+| ✅ **Validation & Qualification** | IQ/OQ/PQ protocols, validation master plans, equipment qualification logging |
+| 📖 **Guidelines Library** | Reference library for GDP, GMP, GVP, ISO, FDA, ICH regulatory guidelines |
+| 🔍 **Advanced Audit Management** | Multiple audit types (GDP, ISO, HSE, GVP) with specialized compliance checklists |
+| ⚠️ **Quality Risk Management** | QRM team approval workflows, risk assessment forms, risk notification, meeting minutes |
+| 🏭 **Vendor/Supplier Management** | Service provider questionnaires, approved vendor registry, recall management workflows |
+| 📋 **NCR & Deviation Management** | Non-conformity reports, deviation tracking, NCR logbook with trend analysis |
+| 🔎 **Root Cause Analysis** | Root causes trend analysis tools for quality improvement |
+| 📑 **Master Document List** | Centralized document registry management |
+| ✍️ **Approved Signatures** | Digital signature list management for document approvals |
+| 📞 **Contact Management** | Contact list management for vendors, suppliers, and customers |
+| 🔄 **Recall Management** | Recall checklists, notification letters, recall logbook, and request reports |
 
 ![Features Overview](https://via.placeholder.com/800x300?text=QMS+Features+Overview)
 
@@ -149,12 +160,31 @@ npm run preview
 ### 📋 Quality Forms
 ![Quality Forms](https://via.placeholder.com/600x200?text=Quality+Forms+Module)
 
-- ✅ **CAPA Forms**: Logbook, effectiveness checks, action plans
-- 🔄 **Change Control**: Request forms and logbooks
-- 📢 **Customer Complaints**: Complaint tracking with trend analysis
-- ⚠️ **Deviation Reports**: Non-conformance documentation
-- 📊 **Audit Logbooks**: Audit scheduling and tracking
-- 📅 **Annual Training Plans**: Training management
+**CAPA & Deviation:**
+- ✅ **CAPA Forms**: Report, Logbook, Effectiveness Check, Action Plan
+- ⚠️ **Deviation Reports**: Non-conformance documentation with NCR logbook
+- 🔎 **Root Cause Analysis**: Trend analysis tools
+
+**Change Control:**
+- 🔄 **Change Control**: Request forms and logbooks with multi-level approval
+
+**Auditing:**
+- 📊 **Audit Management**: Internal Audit Reports, Audit Logbook
+- 📝 **Audit Checklists**: GDP, ISO, HSE, GVP compliance checklists
+
+**Training:**
+- 📅 **Training Management**: Matrix, Annual Plan, Needs Form, Attendance Sheet, Evaluation Form
+
+**Customer & Vendor:**
+- 📢 **Customer Complaints**: Complaint form, logbook, and trend analysis
+- 🏭 **Vendor Management**: Service Provider Questionnaire, Provider List, Contact List
+
+**Risk Management:**
+- ⚠️ **QRM Forms**: Risk Assessment, Follow-up, Notification, Risk Plan
+- 📝 **QRM Meetings**: Meeting Minutes, Team Approval Forms
+
+**Recall Management:**
+- 🔄 **Recall Workflow**: Checklist, Notification Letter, Logbook, Request Report
 
 ### 📁 Document Control
 ![Document Control](https://via.placeholder.com/600x200?text=Document+Control+Module)
@@ -167,10 +197,26 @@ npm run preview
 ### 👥 User & Role Management
 ![User Management](https://via.placeholder.com/600x200?text=User+Management+Module)
 
-- 🔐 **RBAC**: Admin, QA, and Auditor role types
+- 🔐 **RBAC**: Admin, QA Associate, QA Document Officer, QA Manager, QA Supervisor roles
 - 🏢 **Department assignment**: Users can belong to multiple departments
 - 📜 **Activity tracking**: Complete user action history
-- 🛡️ **Permission guards**: Route-level access control
+- 🛡️ **Permission guards**: Route-level access control with CASL
+
+### 🧭 Module Hubs
+
+The application organizes forms into dedicated module hubs for easy navigation:
+
+| Module Hub | Description |
+|------------|-------------|
+| 📁 **Documentation Forms** | SOP creation, revision, distribution, and document requests |
+| ⚠️ **Deviation & CAPA** | Non-conformity reports, deviation tracking, CAPA workflows |
+| 🔄 **Change Control** | Change requests, approvals, and change logbooks |
+| 📚 **Training** | Training matrix, plans, attendance, and evaluations |
+| 🔍 **Auditing** | Audit checklists (GDP, ISO, HSE, GVP), reports, and logbooks |
+| 🏭 **Vendor Management** | Supplier questionnaires, vendor registry, recalls |
+| ⚠️ **Risk Management** | Risk assessments, QRM workflows, meeting documentation |
+| ✅ **Validation** | IQ/OQ/PQ protocols and validation master plans |
+| 📖 **Guidelines** | Regulatory guidelines reference library |
 
 ---
 
