@@ -1,267 +1,159 @@
-# 🏭 QMS Frontend
+# QMS Frontend
 
-> **Enterprise-grade Quality Management System - Web Application** ✨
+Quality Management System (QMS) - Frontend Application
 
-[![React](https://img.shields.io/badge/React-18.3.1-61DAFB?logo=react)](https://reactjs.org)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?logo=typescript)](https://www.typescriptlang.org)
-[![Vite](https://img.shields.io/badge/Vite-4.4.5-646CFF?logo=vite)](https://vitejs.dev)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](CONTRIBUTING.md)
+A React-based web application for managing Standard Operating Procedures (SOPs) with bilingual support (English/Arabic) and OnlyOffice document integration.
 
----
+## Tech Stack
 
-## 📋 Overview
+- **Framework:** React 18 with TypeScript
+- **Build Tool:** Vite
+- **UI Library:** Material-UI (MUI) v5
+- **State Management:** Redux Toolkit
+- **Routing:** React Router v6
+- **HTTP Client:** Axios
+- **Document Editor:** OnlyOffice Document Server
+- **Rich Text Editors:** CKEditor, Jodit, TipTap
+- **PDF Generation:** React-PDF
+- **Real-time:** Socket.io Client
 
-**QMS (Quality Management System)** is a comprehensive web application designed for organizations seeking ISO 9001 compliance and operational excellence. This frontend application provides a rich, intuitive interface for managing Standard Operating Procedures (SOPs), document control, quality forms, audits, and organizational workflows.
+## Prerequisites
 
-🌍 The system supports bilingual operations (English/Arabic with RTL layout) and features real-time notifications, role-based access control, and comprehensive audit trails.
+- Node.js 18+
+- npm or yarn
+- OnlyOffice Document Server (hosted on VPS)
 
-![Dashboard Preview](https://via.placeholder.com/800x400?text=QMS+Dashboard+Preview)
+## Installation
 
----
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd QMS
+   ```
 
-## ✨ Key Features
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-| Module | Description |
-|--------|-------------|
-| 📝 **SOP Management** | Create, edit, version, and manage Standard Operating Procedures with multi-section support (Definition, Purpose, Scope, Procedures, Results, References, Safety Concerns, Critical Control Points) |
-| 📁 **Document Control** | Secure document uploads, distribution tracking, and file request workflows with AWS S3 integration |
-| 📋 **Quality Forms** | CAPA (Corrective & Preventive Actions), Change Control, Customer Complaints, Deviation Reports, Audit Logbooks |
-| 📊 **Dashboard & Analytics** | Visual dashboards with charts and metrics for quality performance tracking |
-| 👥 **User Management** | Role-based access control with Admin, QA, and Auditor roles |
-| 🔄 **Revision Workflows** | Document revision requests with multi-level approval processes |
-| 🔔 **Real-time Notifications** | Live updates via WebSocket integration |
-| 🌐 **Multilingual Support** | Full English/Arabic interface with RTL layout support |
-| 📄 **PDF Generation** | Generate and view PDF documents directly in the application |
-| 💻 **IT Management** | IT infrastructure, asset tracking, and organizational hierarchy management |
-| ✅ **Validation & Qualification** | IQ/OQ/PQ protocols, validation master plans, equipment qualification logging |
-| 📖 **Guidelines Library** | Reference library for GDP, GMP, GVP, ISO, FDA, ICH regulatory guidelines |
-| 🔍 **Advanced Audit Management** | Multiple audit types (GDP, ISO, HSE, GVP) with specialized compliance checklists |
-| ⚠️ **Quality Risk Management** | QRM team approval workflows, risk assessment forms, risk notification, meeting minutes |
-| 🏭 **Vendor/Supplier Management** | Service provider questionnaires, approved vendor registry, recall management workflows |
-| 📋 **NCR & Deviation Management** | Non-conformity reports, deviation tracking, NCR logbook with trend analysis |
-| 🔎 **Root Cause Analysis** | Root causes trend analysis tools for quality improvement |
-| 📑 **Master Document List** | Centralized document registry management |
-| ✍️ **Approved Signatures** | Digital signature list management for document approvals |
-| 📞 **Contact Management** | Contact list management for vendors, suppliers, and customers |
-| 🔄 **Recall Management** | Recall checklists, notification letters, recall logbook, and request reports |
+3. Create environment file:
+   ```bash
+   cp .env.example .env
+   ```
 
-![Features Overview](https://via.placeholder.com/800x300?text=QMS+Features+Overview)
+4. Configure environment variables (see below)
 
----
+## Environment Variables
 
-## 🛠️ Tech Stack
+Create a `.env` file in the root directory:
 
-| Category | Technologies |
-|----------|--------------|
-| ⚛️ **Framework** | React 18.3.1 |
-| 📘 **Language** | TypeScript 5.0 |
-| ⚡ **Build Tool** | Vite 4.4.5 |
-| 🗃️ **State Management** | Redux Toolkit, React Redux |
-| 🎨 **UI Library** | Material-UI (MUI) 5.16.6, MUI X DataGrid Premium |
-| ✏️ **Rich Text Editors** | CKEditor 5, TipTap, Jodit React, React Quill |
-| 📝 **Forms & Validation** | Formik, Yup |
-| 🌍 **Internationalization** | i18next, react-i18next |
-| 🔌 **Real-time** | Socket.IO Client |
-| 📈 **Charts** | ApexCharts |
-| 📄 **PDF** | React-PDF, @react-pdf/renderer |
-| 🖱️ **Drag & Drop** | React Beautiful DnD, React Dropzone |
-| 📅 **Date Handling** | MUI X Date Pickers, date-fns |
-| 🎯 **Icons** | Tabler Icons, MUI Icons |
-| 🎬 **Animations** | Framer Motion, React Spring |
-| 🔐 **Authorization** | CASL (role-based permissions) |
+```env
+# Backend API URL
+VITE_API_URL=https://localhost:3000
 
----
-
-## 🏗️ Architecture
-
-```
-src/
-├── 🧩 components/        # Reusable UI components
-├── 📱 views/             # Page components
-│   ├── 📊 Dashboard/     # Main dashboard
-│   ├── 📋 forms/         # Quality forms (CAPA, Change Control, etc.)
-│   ├── 📝 documentation/ # SOP and document management
-│   ├── 💻 ITManagement/  # IT infrastructure module
-│   └── 👥 Users/         # User management
-├── 🛤️ routes/            # React Router configuration
-├── 🗃️ store/             # Redux store and slices
-├── 🔌 services/          # API service layer
-├── 🎭 context/           # React Context providers
-├── 🎨 theme/             # Material-UI theme customization
-├── 📐 layouts/           # Page layout templates
-├── 🛡️ guards/            # Route protection/authorization
-├── 🪝 hooks/             # Custom React hooks
-├── 🔧 utils/             # Utility functions
-└── 🌐 locales/           # i18n translation files
+# OnlyOffice Document Server URL
+VITE_ONLYOFFICE_SERVER_URL=https://your-domain.com/onlyoffice/
 ```
 
----
+### Environment Variables Description
 
-## 🚀 Getting Started
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `VITE_API_URL` | Backend API base URL | `https://localhost:3000` |
+| `VITE_ONLYOFFICE_SERVER_URL` | OnlyOffice Document Server URL | `https://qualitylead-qms.duckdns.org/onlyoffice/` |
 
-### Prerequisites
+## Running the Application
 
-- 📦 Node.js 18.x or higher
-- 📥 npm, yarn, or pnpm
-
-### Installation
+### Development Mode
 
 ```bash
-# 1. Clone the repository 🚚
-git clone https://github.com/your-org/QMS.git && cd QMS
-
-# 2. Install dependencies 📦
-npm install   # or yarn / pnpm install
-
-# 3. Environment setup 🔑
-cp .env.example .env
-# Update API endpoint and other configuration
-
-# 4. Start development server 🔥
-npm run dev   # or yarn dev / pnpm dev
-
-# 🌐 Application runs on http://localhost:5173
+npm run dev
 ```
 
-### 🏗️ Build for Production
+The application will be available at `http://localhost:5173`
+
+### Production Build
 
 ```bash
-# Create production build
 npm run build
+```
 
-# Preview production build locally
+Build output will be in the `dist/` directory.
+
+### Preview Production Build
+
+```bash
 npm run preview
 ```
 
----
+## Project Structure
 
-## 🔧 Environment Variables
+```
+QMS/
+├── src/
+│   ├── components/         # Reusable UI components
+│   │   └── OnlyOffice/     # OnlyOffice editor integration
+│   ├── views/              # Page components
+│   │   └── sopPurpose&Definition/  # SOP section components
+│   ├── context/            # React contexts
+│   ├── redux/              # Redux store and slices
+│   ├── utils/              # Utility functions
+│   └── routes/             # Route definitions
+├── public/                 # Static assets
+├── index.html              # HTML entry point
+├── vite.config.ts          # Vite configuration
+└── package.json
+```
 
-| Variable | Description |
-|----------|-------------|
-| `VITE_API_URL` | 🔗 Backend API base URL |
-| `VITE_SOCKET_URL` | 🔌 WebSocket server URL |
-| `VITE_APP_TITLE` | 📛 Application title |
+## OnlyOffice Integration
 
----
+The application integrates with OnlyOffice Document Server for real-time document editing:
 
-## 🔍 Features Deep Dive
+1. **OnlyOffice API Script:** Loaded in `index.html`:
+   ```html
+   <script src="https://your-domain.com/onlyoffice/web-apps/apps/api/documents/api.js"></script>
+   ```
 
-### 📝 SOP Management
-![SOP Management](https://via.placeholder.com/600x200?text=SOP+Management+Module)
+2. **Editor Component:** Located at `src/components/OnlyOffice/OnlyOfficeEditor.tsx`
 
-- 📑 **Multi-section documents**: Definition, Purpose, Scope, Procedures, Results, References, Safety Concerns, Critical Control Points
-- 🌍 **Bilingual content**: English and Arabic content with automatic RTL switching
-- 📚 **Version control**: Full version history with audit trails
-- ✏️ **Rich text editing**: Multiple editor options for content creation
-- 🔄 **Status workflow**: Draft → Review → Approved → Archived
+3. **Configuration:** The editor receives configuration from the backend including:
+   - Document URL
+   - Document key
+   - JWT token for authentication
+   - User permissions
 
-### 📋 Quality Forms
-![Quality Forms](https://via.placeholder.com/600x200?text=Quality+Forms+Module)
+### Troubleshooting OnlyOffice
 
-**CAPA & Deviation:**
-- ✅ **CAPA Forms**: Report, Logbook, Effectiveness Check, Action Plan
-- ⚠️ **Deviation Reports**: Non-conformance documentation with NCR logbook
-- 🔎 **Root Cause Analysis**: Trend analysis tools
+- **JWT Token Error (-20):** Ensure the JWT secret matches between backend and OnlyOffice server
+- **Document not loading:** Verify the document URL is accessible from OnlyOffice server
+- **CORS errors:** Configure OnlyOffice server to allow your frontend domain
 
-**Change Control:**
-- 🔄 **Change Control**: Request forms and logbooks with multi-level approval
+## Features
 
-**Auditing:**
-- 📊 **Audit Management**: Internal Audit Reports, Audit Logbook
-- 📝 **Audit Checklists**: GDP, ISO, HSE, GVP compliance checklists
+- Bilingual SOP management (English/Arabic)
+- Real-time document editing with OnlyOffice
+- Role-based access control (QA Associate, QA Supervisor, QA Manager)
+- Document version history
+- Review and approval workflow
+- Notifications system
+- PDF export
 
-**Training:**
-- 📅 **Training Management**: Matrix, Annual Plan, Needs Form, Attendance Sheet, Evaluation Form
+## Scripts
 
-**Customer & Vendor:**
-- 📢 **Customer Complaints**: Complaint form, logbook, and trend analysis
-- 🏭 **Vendor Management**: Service Provider Questionnaire, Provider List, Contact List
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server |
+| `npm run build` | Build for production |
+| `npm run preview` | Preview production build |
+| `npm run lint` | Run ESLint |
 
-**Risk Management:**
-- ⚠️ **QRM Forms**: Risk Assessment, Follow-up, Notification, Risk Plan
-- 📝 **QRM Meetings**: Meeting Minutes, Team Approval Forms
+## Browser Support
 
-**Recall Management:**
-- 🔄 **Recall Workflow**: Checklist, Notification Letter, Logbook, Request Report
+- Chrome (recommended)
+- Firefox
+- Edge
+- Safari
 
-### 📁 Document Control
-![Document Control](https://via.placeholder.com/600x200?text=Document+Control+Module)
+## License
 
-- ☁️ **Secure uploads**: Integration with AWS S3 storage
-- 📤 **Distribution tracking**: Track document distribution to departments
-- 📨 **File requests**: Formal request and approval workflow
-- ❌ **Cancel forms**: Document cancellation tracking
-
-### 👥 User & Role Management
-![User Management](https://via.placeholder.com/600x200?text=User+Management+Module)
-
-- 🔐 **RBAC**: Admin, QA Associate, QA Document Officer, QA Manager, QA Supervisor roles
-- 🏢 **Department assignment**: Users can belong to multiple departments
-- 📜 **Activity tracking**: Complete user action history
-- 🛡️ **Permission guards**: Route-level access control with CASL
-
-### 🧭 Module Hubs
-
-The application organizes forms into dedicated module hubs for easy navigation:
-
-| Module Hub | Description |
-|------------|-------------|
-| 📁 **Documentation Forms** | SOP creation, revision, distribution, and document requests |
-| ⚠️ **Deviation & CAPA** | Non-conformity reports, deviation tracking, CAPA workflows |
-| 🔄 **Change Control** | Change requests, approvals, and change logbooks |
-| 📚 **Training** | Training matrix, plans, attendance, and evaluations |
-| 🔍 **Auditing** | Audit checklists (GDP, ISO, HSE, GVP), reports, and logbooks |
-| 🏭 **Vendor Management** | Supplier questionnaires, vendor registry, recalls |
-| ⚠️ **Risk Management** | Risk assessments, QRM workflows, meeting documentation |
-| ✅ **Validation** | IQ/OQ/PQ protocols and validation master plans |
-| 📖 **Guidelines** | Regulatory guidelines reference library |
-
----
-
-## 📜 Project Scripts
-
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | 🔥 Start development server with HMR |
-| `npm run build` | 🏗️ Build for production |
-| `npm run preview` | 👁️ Preview production build |
-| `npm run lint` | 🔍 Run ESLint |
-
----
-
-## 🌐 Browser Support
-
-- 🌐 Chrome (latest)
-- 🦊 Firefox (latest)
-- 🧭 Safari (latest)
-- 📐 Edge (latest)
-
----
-
-## 🤝 Contributing
-
-1. 🍴 Fork the repository
-2. 🌿 Create your feature branch (`git checkout -b feat/new-feature`)
-3. 💾 Commit your changes (`git commit -m 'Add new feature'`)
-4. 📤 Push to the branch (`git push origin feat/new-feature`)
-5. 🔃 Open a Pull Request
-
----
-
-## 🔗 Related Projects
-
-- 🔙 [Qms-BackEnd](../Qms-BackEnd) - Backend API for QMS
-
----
-
-## 📄 License
-
-Distributed under the **MIT License** — see `LICENSE` for details.
-
----
-
-## 💬 Feedback & Support
-
-Have questions or suggestions? Open an issue or reach out! 🚀
+Proprietary - All rights reserved

@@ -28,6 +28,7 @@
     "@mui/x-data-grid-premium": "^7.27.2",
     "@mui/x-date-pickers": "^5.0.20",
     "@mui/x-tree-view": "6.17.0",
+    "@onlyoffice/document-editor-react": "^2.1.1",
     "@react-pdf/renderer": "^4.3.0",
     "@reduxjs/toolkit": "1.8.3",
     "@svgr/rollup": "8.1.0",

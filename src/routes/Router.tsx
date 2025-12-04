@@ -14,6 +14,7 @@ const BlankLayout = Loadable(lazy(() => import('../layouts/blank/BlankLayout')))
 /* *** Guards (الحارس) *** */
 import AuthGuard from '../guards/AuthGuard';
 import SOPFullDocument from 'src/views/sopPurpose&Definition/Pages/SOPFullDocument';
+import SopFullDocument2 from 'src/views/sopPurpose&Definition/Pages/SopFullDocument2';
 import AllNotifications from 'src/layouts/full/vertical/header/AllNotifications';
 import NewDocumentRequestForm from 'src/views/documentation/pages/NewDocumentRequestForm';
 import ChangeControlRequest from 'src/views/forms/ChangeControlRequest';
@@ -140,6 +141,7 @@ const Router = [
       },
       { path: '/ITManagementPage', element: <ITManagementPage /> },
       { path: '/SOPFullDocument', element: <SOPFullDocument /> },
+      { path: '/SopFullDocument2/:id', element: <SopFullDocument2 /> },
 
       // مسارات الصفحات الجديدة لكل قسم
       { path: '/documentation-forms', element: <DocumentationForms /> },

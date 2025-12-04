@@ -12,7 +12,8 @@ import ScopeSection from '../components/ScopeSection';
 import ProceduresSection from '../components/ProceduresSection';
 import ResponsibilitiesSection from '../components/ResponsibilitiesSection';
 import SafetyConcernsSection from '../components/SafetyConcernsSection';
-import { Button, Box, Stack, Paper } from '@mui/material';
+import { Button, Box, Stack, Paper, Tooltip } from '@mui/material';
+import { IconFileText } from '@tabler/icons-react';
 import Swal from 'sweetalert2';
 import ReferenceDocumentsSection from '../components/ReferenceDocumentsSection';
 import AttachmentsSection from '../components/AttachmentsSection';
@@ -439,6 +440,22 @@ const SOPFullDocument: React.FC = () => {
 
   return (
     <>
+      {/* Open in ONLYOFFICE Button */}
+      {headerId && (
+        <Box className="no-print" sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
+          <Tooltip title={t('buttons.openInOnlyOffice') || 'Open in ONLYOFFICE Editor'}>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<IconFileText />}
+              onClick={() => navigate(`/SopFullDocument2/${headerId}`)}
+            >
+              {t('buttons.openInOnlyOffice') || 'Open in ONLYOFFICE'}
+            </Button>
+          </Tooltip>
+        </Box>
+      )}
+
       <SOPTemplate headerData={sopDetail?.Sop_header || null}>
         <PurposeSection initialData={sopDetail?.sop_purpose || null} isReadOnly={isReadOnly} />
         {/* ⭐ NEW – قسم Definitions */}

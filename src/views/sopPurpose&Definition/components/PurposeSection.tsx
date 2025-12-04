@@ -48,7 +48,7 @@ const PurposeSection: React.FC<PurposeSectionProps> = ({ initialData, isReadOnly
       setPurpose(initialData);
       // Fetch creator name if Crt_by exists
       if (initialData.Crt_by) {
-        axiosServices.get(`/api/user/getUserById/${initialData.Crt_by}`)
+        axiosServices.get(`/api/users/getUserById/${initialData.Crt_by}`)
           .then((res) => {
             const userData = res.data;
             if (userData) {

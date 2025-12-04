@@ -48,7 +48,7 @@ const ScopeSection: React.FC<ScopeSectionProps> = ({ initialData, isReadOnly = f
     if (initialData) {
       setScope(initialData);
       if (initialData.Crt_by) {
-        axiosServices.get(`/api/user/getUserById/${initialData.Crt_by}`)
+        axiosServices.get(`/api/users/getUserById/${initialData.Crt_by}`)
           .then((res) => {
             const userData = res.data;
             if (userData) {
