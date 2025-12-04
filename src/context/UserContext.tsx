@@ -42,13 +42,9 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    // تحميل بيانات المستخدم عند التشغيل
+    // Load user data once on startup
     loadUserFromCookie();
-    // عمل poll لتحديث بيانات المستخدم تلقائيًا كل 2 ثانية
-    const intervalId = setInterval(() => {
-      loadUserFromCookie();
-    }, 2000);
-    return () => clearInterval(intervalId);
+    // Removed polling - user must refresh page if data changes
   }, []);
 
   return <UserContext.Provider value={user}>{children}</UserContext.Provider>;

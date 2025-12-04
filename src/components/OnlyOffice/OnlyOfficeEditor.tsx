@@ -36,8 +36,10 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
     ref
   ) => {
     const editorRef = useRef<any>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
     const isInitializedRef = useRef(false);
     const configKeyRef = useRef<string | null>(null);
+    const configRef = useRef(config);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [editorUrl, setEditorUrl] = useState<string | null>(null);
@@ -52,6 +54,11 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
       onErrorRef.current = onError;
       onDocumentStateChangeRef.current = onDocumentStateChange;
     }, [onDocumentReady, onError, onDocumentStateChange]);
+
+    // Keep config ref updated
+    useEffect(() => {
+      configRef.current = config;
+    }, [config]);
 
     // Store editor URL for reference (without triggering re-renders or calling callbacks)
     useEffect(() => {
@@ -81,13 +88,20 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
 
     // Script-based initialization
     const initWithScript = useCallback(async () => {
-      if (!config) {
+      const currentConfig = configRef.current;
+
+      if (!currentConfig) {
         console.log('[OnlyOffice] No config provided, skipping initialization');
         return;
       }
 
+      if (!containerRef.current) {
+        console.error('[OnlyOffice] Container ref not available');
+        return;
+      }
+
       // Get document key to track if we need to reinitialize
-      const docKey = config.document?.key;
+      const docKey = currentConfig.document?.key;
 
       // Prevent multiple initializations for the same document
       if (isInitializedRef.current && configKeyRef.current === docKey && editorRef.current) {
@@ -95,7 +109,7 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
         return;
       }
 
-      console.log('[OnlyOffice] Starting initialization with config:', config);
+      console.log('[OnlyOffice] Starting initialization with config:', currentConfig);
 
       try {
         setLoading(true);
@@ -137,7 +151,7 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
 
         // Create editor config with events (use refs for callbacks)
         const editorConfig = {
-          ...config,
+          ...currentConfig,
           type: 'desktop',
           height: '100%',
           width: '100%',
@@ -166,9 +180,8 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
 
         console.log('[OnlyOffice] Creating DocEditor with config:', editorConfig);
 
-        // Create editor
-        const containerId = 'onlyoffice-editor-container';
-        editorRef.current = new window.DocsAPI.DocEditor(containerId, editorConfig);
+        // Create editor using DOM element reference (not string ID)
+        editorRef.current = new window.DocsAPI.DocEditor(containerRef.current, editorConfig);
         isInitializedRef.current = true;
         configKeyRef.current = docKey;
         console.log('[OnlyOffice] DocEditor created successfully');
@@ -179,11 +192,14 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
         setError(err.message || 'Failed to initialize editor');
         onErrorRef.current?.(err);
       }
-    }, [config]); // Only depend on config now
+    }, []); // Empty dependency - uses refs for all values
 
-    // Initialize editor on mount
+    // Initialize editor on mount only
     useEffect(() => {
-      initWithScript();
+      // Wait for container to be mounted before initializing
+      if (containerRef.current) {
+        initWithScript();
+      }
 
       return () => {
         if (editorRef.current) {
@@ -196,7 +212,8 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
         }
         isInitializedRef.current = false;
       };
-    }, [initWithScript]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Empty dependency - only run on mount/unmount
 
     // Expose methods via ref
     useImperativeHandle(ref, () => ({
@@ -287,6 +304,7 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
           </Box>
         )}
         <div
+          ref={containerRef}
           id="onlyoffice-editor-container"
           style={{
             width: '100%',

@@ -170,12 +170,23 @@ const SopFullDocument2: React.FC = () => {
     [headerId]
   );
 
+  // Memoized callbacks for OnlyOffice editor
+  const handleDocumentReady = useCallback(() => {
+    console.log('Document ready');
+  }, []);
+
+  const handleEditorError = useCallback((err: any) => {
+    console.error('Editor error:', err);
+  }, []);
+
+  const handleDocumentSaved = useCallback(() => {
+    console.log('Document saved');
+  }, []);
+
   // Use ONLYOFFICE events hook
   useOnlyOfficeEvents({
     onSectionClick: handleSectionClick,
-    onDocumentSaved: () => {
-      console.log('Document saved');
-    },
+    onDocumentSaved: handleDocumentSaved,
   });
 
   // Handle dialog save
@@ -367,8 +378,8 @@ const SopFullDocument2: React.FC = () => {
           ref={editorRef}
           config={editorConfig}
           onSectionClick={handleSectionClick}
-          onDocumentReady={() => console.log('Document ready')}
-          onError={(err) => console.error('Editor error:', err)}
+          onDocumentReady={handleDocumentReady}
+          onError={handleEditorError}
         />
       </Box>
 
