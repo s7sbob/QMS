@@ -115,20 +115,21 @@ axiosServices.interceptors.response.use(
     }
     return response;
   },
-  (error: AxiosError) => {
+  (error) => {
+    const axiosError = error as AxiosError;
     // Remove from pending requests on error
-    const requestId = (error.config as any)?.__requestId;
+    const requestId = (axiosError.config as any)?.__requestId;
     if (requestId) {
       pendingRequests.delete(requestId);
     }
 
     // If request was cancelled (aborted), silently reject
-    if (axios.isCancel(error) || error.name === 'CanceledError') {
+    if (axios.isCancel(error) || (error as Error).name === 'CanceledError') {
       return Promise.reject(error);
     }
 
-    const status = error.response?.status;
-    const requestUrl = error.config?.url || '';
+    const status = axiosError.response?.status;
+    const requestUrl = axiosError.config?.url || '';
 
     // Skip interceptor for login endpoint (let login page handle its own errors)
     const isAuthEndpoint = requestUrl.includes('/api/auth/login');

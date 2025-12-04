@@ -119,7 +119,7 @@ const SopFullDocument2: React.FC = () => {
       setIsLoading(false);
       Swal.fire({
         icon: 'error',
-        title: t('messages.error'),
+        title: t('messages.error') as string,
         text: error.message || 'Failed to load document editor',
       });
     }
@@ -217,8 +217,8 @@ const SopFullDocument2: React.FC = () => {
 
       Swal.fire({
         icon: 'success',
-        title: t('messages.success'),
-        text: t('messages.sectionUpdated'),
+        title: t('messages.success') as string,
+        text: t('messages.sectionUpdated') as string,
         timer: 2000,
         showConfirmButton: false,
       });
@@ -227,7 +227,7 @@ const SopFullDocument2: React.FC = () => {
       console.error('Error saving section:', error);
       Swal.fire({
         icon: 'error',
-        title: t('messages.error'),
+        title: t('messages.error') as string,
         text: error.message || 'Failed to save section',
       });
     }
@@ -245,8 +245,8 @@ const SopFullDocument2: React.FC = () => {
       setIsSaving(false);
       Swal.fire({
         icon: 'success',
-        title: t('messages.success'),
-        text: t('messages.draftSaved'),
+        title: t('messages.success') as string,
+        text: t('messages.draftSaved') as string,
         timer: 2000,
         showConfirmButton: false,
       });
@@ -254,7 +254,7 @@ const SopFullDocument2: React.FC = () => {
       setIsSaving(false);
       Swal.fire({
         icon: 'error',
-        title: t('messages.error'),
+        title: t('messages.error') as string,
         text: error.message || 'Failed to save draft',
       });
     }
@@ -282,8 +282,8 @@ const SopFullDocument2: React.FC = () => {
 
       Swal.fire({
         icon: 'success',
-        title: t('messages.success'),
-        text: t('messages.submittedForReview'),
+        title: t('messages.success') as string,
+        text: t('messages.submittedForReview') as string,
       }).then(() => {
         navigate('/documentation-control');
       });
@@ -291,7 +291,7 @@ const SopFullDocument2: React.FC = () => {
       setIsSaving(false);
       Swal.fire({
         icon: 'error',
-        title: t('messages.error'),
+        title: t('messages.error') as string,
         text: error.message || 'Failed to submit for review',
       });
     }

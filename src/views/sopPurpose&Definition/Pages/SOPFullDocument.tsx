@@ -185,8 +185,8 @@ const SOPFullDocument: React.FC = () => {
             await sendNotificationToCreatorAndManager(sopDetail.Sop_header.Id, '3');
             Swal.fire({
               icon: 'info',
-              title: t('messages.sentForFixing'),
-              text: t('messages.documentSentForFixing'),
+              title: t('messages.sentForFixing') as string,
+              text: t('messages.documentSentForFixing') as string,
             }).then(() => {
               navigate('/documentation-control');
             });
@@ -194,8 +194,8 @@ const SOPFullDocument: React.FC = () => {
             console.error('Error updating status:', error);
             Swal.fire({
               icon: 'error',
-              title: t('messages.error'),
-              text: t('messages.failedUpdateStatus'),
+              title: t('messages.error') as string,
+              text: t('messages.failedUpdateStatus') as string,
             });
           }
         };
@@ -217,8 +217,8 @@ const SOPFullDocument: React.FC = () => {
             await sendNotificationToCreatorAndManager(sopDetail.Sop_header.Id, '4');
             Swal.fire({
               icon: 'success',
-              title: t('messages.reviewCompleted'),
-              text: t('messages.documentReviewedSuccess'),
+              title: t('messages.reviewCompleted') as string,
+              text: t('messages.documentReviewedSuccess') as string,
             }).then(() => {
               navigate('/documentation-control');
             });
@@ -226,8 +226,8 @@ const SOPFullDocument: React.FC = () => {
             console.error('Error updating status:', error);
             Swal.fire({
               icon: 'error',
-              title: t('messages.error'),
-              text: t('messages.failedUpdateStatus'),
+              title: t('messages.error') as string,
+              text: t('messages.failedUpdateStatus') as string,
             });
           }
         };

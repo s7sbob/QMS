@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback, forwardRef, useImperativeHandle } from 'react';
+import { useEffect, useRef, useState, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { Box, CircularProgress, Typography } from '@mui/material';
 
 declare global {
@@ -27,7 +27,7 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
     {
       config,
       // Connect directly to OnlyOffice server (proxy has connectivity issues)
-      documentServerUrl = import.meta.env.VITE_ONLYOFFICE_SERVER_URL || 'https://qualitylead-qms.duckdns.org/onlyoffice/',
+      documentServerUrl: _documentServerUrl = import.meta.env.VITE_ONLYOFFICE_SERVER_URL || 'https://qualitylead-qms.duckdns.org/onlyoffice/',
       onDocumentReady,
       onError,
       onDocumentStateChange,
@@ -35,7 +35,6 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
     },
     ref
   ) => {
-    const iframeRef = useRef<HTMLIFrameElement>(null);
     const editorRef = useRef<any>(null);
     const isInitializedRef = useRef(false);
     const configKeyRef = useRef<string | null>(null);

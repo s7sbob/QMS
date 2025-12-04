@@ -139,7 +139,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
   // Caption dialog state
   const [captionDialogOpen, setCaptionDialogOpen] = useState(false);
-  const [pendingImageUrl, setPendingImageUrl] = useState('');
+  const [_pendingImageUrl, setPendingImageUrl] = useState('');
   const [pendingImageName, setPendingImageName] = useState('');
   const [imageCaption, setImageCaption] = useState('');
   const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);

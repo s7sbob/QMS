@@ -77,7 +77,7 @@ function splitSingleHtml(html: string): string[] {
         // For lists, split into individual list items
         const listItems = element.querySelectorAll('li');
         if (listItems.length > 0) {
-          listItems.forEach((li, index) => {
+          listItems.forEach((li) => {
             // Wrap each li in its parent list type for proper rendering
             const wrapper = document.createElement(tagName);
             wrapper.appendChild(li.cloneNode(true));
