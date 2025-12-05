@@ -30,14 +30,6 @@ export interface OnlyOfficeEditorRef {
   reload: (newConfig?: any) => void;
 }
 
-type OnlyOfficeEvents = {
-  onAppReady?: () => void;
-  onDocumentReady?: () => void;
-  onError?: (event: any) => void;
-  onDocumentStateChange?: (event: any) => void;
-  onRequestSaveAs?: string | ((event: any) => void);
-};
-
 const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
   (
     {
@@ -103,46 +95,26 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
 
     // Main init function
     const initWithScript = useCallback(async () => {
-      // نقرأ الكونفيج الأصلي (لو حبيت تستخدمه بعدين)
-      const rawConfig = configRef.current || {};
+      const finalConfig = configRef.current;
 
       if (!containerRef.current) {
         console.error("[OnlyOffice] Container ref not available");
         return;
       }
 
-      // Prefer the provided config; if missing, fall back to a minimal, known-good config used for manual testing
-      const backendBase = (import.meta.env.VITE_BACKEND_PUBLIC_URL || "https://qualitylead-qms.duckdns.org").replace(/\/$/, "");
-      const fallbackConfig = {
-        documentType: "word",
-        document: {
-          fileType: "docx",
-          title: "testonlyoffice.docx",
-          url: "https://qualitylead-qms.duckdns.org/uploads/onlyoffice-docs/testonlyoffice.docx",
-          key: "testonlyoffice-plain-config",
-        },
-        editorConfig: {
-          lang: "en",
-          mode: "edit",
-          callbackUrl: `${backendBase}/api/onlyoffice/callback`,
-          user: {
-            id: "test-user",
-            name: "Test User",
-          },
-        },
-        height: "100%",
-        width: "100%",
-        type: "desktop",
-      };
+      if (!finalConfig || !finalConfig.document?.url) {
+        const message = "Missing ONLYOFFICE config from backend";
+        console.error("[OnlyOffice]", message);
+        setError(message);
+        setLoading(false);
+        return;
+      }
 
-      // Clone config (or fallback) before sending it to ONLYOFFICE
-      const sanitizedConfig: any = JSON.parse(
-        JSON.stringify(
-          rawConfig && rawConfig.document && rawConfig.document.url ? rawConfig : fallbackConfig
-        )
-      );
+      if (!finalConfig.token) {
+        console.warn("[OnlyOffice] Config received without token; JWT-required server may reject it.");
+      }
 
-      const docKey = sanitizedConfig.document?.key;
+      const docKey = finalConfig.document?.key;
 
       if (
         isInitializedRef.current &&
@@ -155,34 +127,26 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
         return;
       }
 
-      console.log(
-        "[OnlyOffice] Starting initialization with CLEAN config (no token):",
-        sanitizedConfig
-      );
+      console.log("[OnlyOffice] Starting initialization with backend-signed config", {
+        key: docKey,
+        hasToken: !!finalConfig.token,
+      });
 
       try {
         setLoading(true);
         setError(null);
 
-        // Wait for ONLYOFFICE API to be available (loaded from index.html)
         await new Promise<void>((resolve, reject) => {
           if (window.DocsAPI) {
-            console.log("[OnlyOffice] DocsAPI already available");
             resolve();
             return;
           }
 
-          console.log("[OnlyOffice] Waiting for DocsAPI to load...");
           let attempts = 0;
           const maxAttempts = 50;
           const checkInterval = setInterval(() => {
             attempts++;
             if (window.DocsAPI) {
-              console.log(
-                "[OnlyOffice] DocsAPI loaded after",
-                attempts * 100,
-                "ms"
-              );
               clearInterval(checkInterval);
               resolve();
             } else if (attempts >= maxAttempts) {
@@ -196,7 +160,6 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
           }, 100);
         });
 
-        // Destroy existing editor if exists
         if (editorRef.current) {
           try {
             editorRef.current.destroyEditor();
@@ -206,63 +169,16 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
           editorRef.current = null;
         }
 
-        const baseEvents: OnlyOfficeEvents = (sanitizedConfig.events || {}) as OnlyOfficeEvents;
-        const onlyOfficeEvents: OnlyOfficeEvents = {
-          onAppReady: () => {
-            console.log("[OnlyOffice] App ready");
-            setLoading(false);
-            if (typeof baseEvents.onAppReady === "function") {
-              baseEvents.onAppReady();
-            }
-          },
-          onDocumentReady: () => {
-            console.log("[OnlyOffice] Document ready (DocsAPI event)");
-            setLoading(false);
-            onDocumentReadyRef.current?.();
-            if (typeof baseEvents.onDocumentReady === "function") {
-              baseEvents.onDocumentReady();
-            }
-          },
-          onError: (event: any) => {
-            console.error("[OnlyOffice] Editor error:", event);
-            setLoading(false);
-            setError(event?.data?.message || "Editor error occurred (check logs)");
-            onErrorRef.current?.(event);
-            if (typeof baseEvents.onError === "function") {
-              baseEvents.onError(event);
-            }
-          },
-          onDocumentStateChange: (event: any) => {
-            onDocumentStateChangeRef.current?.(event);
-            if (typeof baseEvents.onDocumentStateChange === "function") {
-              baseEvents.onDocumentStateChange(event);
-            }
-          },
-          onRequestSaveAs: baseEvents.onRequestSaveAs ?? "onRequestSaveAs",
-        };
-        const editorConfig: any = {
-          ...sanitizedConfig,
-          type: sanitizedConfig.type || "desktop",
-          height: sanitizedConfig.height || "100%",
-          width: sanitizedConfig.width || "100%",
-          events: onlyOfficeEvents,
-        };
-
-        console.log(
-          "[OnlyOffice] Creating DocEditor with config:",
-          editorConfig
-        );
-        console.log(
-          "[OnlyOffice] ONLYOFFICE CONFIG (final sent to DocEditor):",
-          JSON.stringify(editorConfig, null, 2)
-        );
+        const { token: _omittedToken, ...configWithoutToken } = finalConfig as any;
+        console.log("[OnlyOffice] Creating DocEditor with config (token omitted in log)", configWithoutToken);
 
         editorRef.current = new window.DocsAPI.DocEditor(
-            "onlyoffice-editor-container",
-          editorConfig
+          "onlyoffice-editor-container",
+          finalConfig
         );
         isInitializedRef.current = true;
         configKeyRef.current = docKey;
+        setLoading(false);
         console.log("[OnlyOffice] DocEditor created successfully");
       } catch (err: any) {
         console.error("[OnlyOffice] Error initializing:", err);
