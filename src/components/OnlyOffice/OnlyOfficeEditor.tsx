@@ -111,9 +111,34 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
         return;
       }
 
-      // ⚠️ حالياً نستخدم config نظيف وبسيط (بدون token) لفتح testonlyoffice.docx
+      // Prefer the provided config; if missing, fall back to a minimal, known-good config used for manual testing
+      const fallbackConfig = {
+        documentType: "word",
+        document: {
+          fileType: "docx",
+          title: "testonlyoffice.docx",
+          url: "https://qualitylead-qms.duckdns.org/uploads/onlyoffice-docs/testonlyoffice.docx",
+          key: "testonlyoffice-plain-config",
+        },
+        editorConfig: {
+          lang: "en",
+          mode: "edit",
+          user: {
+            id: "test-user",
+            name: "Test User",
+          },
+        },
+        height: "100%",
+        width: "100%",
+        type: "desktop",
+      };
+
       // Clone and strip any token fields before sending config to ONLYOFFICE
-      const sanitizedConfig: any = JSON.parse(JSON.stringify(rawConfig || {}));
+      const sanitizedConfig: any = JSON.parse(
+        JSON.stringify(
+          rawConfig && rawConfig.document && rawConfig.document.url ? rawConfig : fallbackConfig
+        )
+      );
       delete sanitizedConfig.token;
       if (sanitizedConfig.document) {
         delete sanitizedConfig.document.token;
