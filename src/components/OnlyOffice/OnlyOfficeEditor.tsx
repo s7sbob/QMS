@@ -34,7 +34,6 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
   (
     {
       config,
-      // Connect directly to OnlyOffice server (proxy has connectivity issues)
       documentServerUrl: _documentServerUrl =
         import.meta.env.VITE_ONLYOFFICE_SERVER_URL ||
         "https://qualitylead-qms.duckdns.org/onlyoffice/",
@@ -54,7 +53,7 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
     const [error, setError] = useState<string | null>(null);
     const [editorUrl, setEditorUrl] = useState<string | null>(null);
 
-    // Store callbacks in refs to avoid re-renders
+    // Store callbacks in refs
     const onDocumentReadyRef = useRef(onDocumentReady);
     const onErrorRef = useRef(onError);
     const onDocumentStateChangeRef = useRef(onDocumentStateChange);
@@ -65,12 +64,12 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
       onDocumentStateChangeRef.current = onDocumentStateChange;
     }, [onDocumentReady, onError, onDocumentStateChange]);
 
-    // Keep config ref updated
+    // Keep incoming config in a ref
     useEffect(() => {
       configRef.current = config;
     }, [config]);
 
-    // Store editor URL for reference
+    // Just for debugging: store URL sent from backend
     useEffect(() => {
       if (!config) return;
       const docUrl = config.document?.url;
@@ -82,11 +81,9 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
     // Listen for messages from ONLYOFFICE
     useEffect(() => {
       const handleMessage = (event: MessageEvent) => {
-        // Handle section click messages
         if (event.data?.type === "SECTION_HEADER_CLICKED" && onSectionClick) {
           onSectionClick(event.data.section);
         }
-        // Handle document state changes
         if (event.data?.type === "DOCUMENT_STATE_CHANGE") {
           onDocumentStateChange?.(event.data);
         }
@@ -96,37 +93,29 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
       return () => window.removeEventListener("message", handleMessage);
     }, [onSectionClick, onDocumentStateChange]);
 
-    // Script-based initialization
+    // Main init function
     const initWithScript = useCallback(async () => {
-      let currentConfig = configRef.current;
-
-      if (!currentConfig) {
-        console.log("[OnlyOffice] No config provided, skipping initialization");
-        return;
-      }
+      // نقرأ الكونفيج الأصلي (لو حبيت تستخدمه بعدين)
+      const rawConfig = configRef.current || {};
 
       if (!containerRef.current) {
         console.error("[OnlyOffice] Container ref not available");
         return;
       }
 
-      // ✅ مؤقتًا: نجبر الـ config إنه يفتح ملف testonlyoffice.docx
-      // الهدف: نتأكد إن التكامل مع OnlyOffice + Nginx + /uploads شغال
-      currentConfig = {
-        ...currentConfig,
-        documentType: "text",
-        document: {
-          fileType: "docx",
-          title: "testonlyoffice.docx",
-          url: "https://qualitylead-qms.duckdns.org/uploads/onlyoffice-docs/testonlyoffice.docx",
-          key: "testonlyoffice-" + Date.now(),
-        },
-      };
+      // ⚠️ حالياً نستخدم config نظيف وبسيط (بدون token) لفتح testonlyoffice.docx
+      // Clone and strip any token fields before sending config to ONLYOFFICE
+      const sanitizedConfig: any = JSON.parse(JSON.stringify(rawConfig || {}));
+      delete sanitizedConfig.token;
+      if (sanitizedConfig.document) {
+        delete sanitizedConfig.document.token;
+      }
+      if (sanitizedConfig.editorConfig) {
+        delete sanitizedConfig.editorConfig.token;
+      }
 
-      // Get document key to track if we need to reinitialize
-      const docKey = currentConfig.document?.key;
+      const docKey = sanitizedConfig.document?.key;
 
-      // Prevent multiple initializations for the same document
       if (
         isInitializedRef.current &&
         configKeyRef.current === docKey &&
@@ -139,8 +128,8 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
       }
 
       console.log(
-        "[OnlyOffice] Starting initialization with config:",
-        currentConfig
+        "[OnlyOffice] Starting initialization with CLEAN config (no token):",
+        sanitizedConfig
       );
 
       try {
@@ -189,13 +178,14 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
           editorRef.current = null;
         }
 
-        // Create editor config with events (use refs for callbacks)
-        const editorConfig = {
-          ...currentConfig,
-          type: "desktop",
-          height: "100%",
-          width: "100%",
+        const baseEvents = sanitizedConfig.events || {};
+        const editorConfig: any = {
+          ...sanitizedConfig,
+          type: sanitizedConfig.type || "desktop",
+          height: sanitizedConfig.height || "100%",
+          width: sanitizedConfig.width || "100%",
           events: {
+            ...baseEvents,
             onDocumentReady: () => {
               console.log("[OnlyOffice] Document ready!");
               setLoading(false);
@@ -204,7 +194,9 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
             onError: (event: any) => {
               console.error("[OnlyOffice] Error:", event);
               setLoading(false);
-              setError(event?.data?.message || "Editor error occurred");
+              setError(
+                event?.data?.message || "Editor error occurred (check logs)"
+              );
               onErrorRef.current?.(event);
             },
             onDocumentStateChange: (event: any) => {
@@ -222,11 +214,10 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
           editorConfig
         );
         console.log(
-          "[OnlyOffice] ONLYOFFICE CONFIG:",
-          JSON.stringify(currentConfig, null, 2)
+          "[OnlyOffice] ONLYOFFICE CONFIG (final sent to DocEditor):",
+          JSON.stringify(editorConfig, null, 2)
         );
 
-        // Create editor using DOM element reference (not string ID)
         editorRef.current = new window.DocsAPI.DocEditor(
           containerRef.current,
           editorConfig
@@ -240,9 +231,9 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
         setError(err.message || "Failed to initialize editor");
         onErrorRef.current?.(err);
       }
-    }, []); // Empty dependency - uses refs for all values
+    }, []); // uses refs
 
-    // Initialize editor on mount only
+    // Initialize editor on mount
     useEffect(() => {
       if (containerRef.current) {
         initWithScript();
@@ -260,16 +251,16 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
         isInitializedRef.current = false;
       };
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []); // run on mount/unmount only
+    }, []);
 
-    // Reinitialize when document key changes while staying mounted
+    // Reinitialize when document key changes (لو حبيت تستخدمه بعدين)
     useEffect(() => {
       if (config?.document?.key && containerRef.current) {
         initWithScript();
       }
     }, [config?.document?.key, initWithScript, config]);
 
-    // Expose methods via ref
+    // Expose methods
     useImperativeHandle(ref, () => ({
       save: () => {
         try {
@@ -325,7 +316,7 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
               Loading Document Editor...
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Please wait while ONLYOFFICE initializes
+              Please wait while ONLYOFFICE initializes test ui
             </Typography>
           </Box>
         )}
