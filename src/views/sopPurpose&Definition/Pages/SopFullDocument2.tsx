@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState, useContext, useRef, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   Box,
@@ -65,14 +65,20 @@ const SopFullDocument2: React.FC = () => {
   const { t } = useTranslation();
   const { id: headerId } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const user = useContext(UserContext);
   const editorRef = useRef<OnlyOfficeEditorRef>(null);
+
+  // Check if we're in temp mode (from URL query param)
+  const isTempMode = searchParams.get('mode') === 'temp';
 
   // State
   const [isLoading, setIsLoading] = useState(true);
   const [editorConfig, setEditorConfig] = useState<any>(null);
   const [sopHeader, setSopHeader] = useState<any>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [tempDocumentKey, setTempDocumentKey] = useState<string | null>(null);
+  const [isPromoting, setIsPromoting] = useState(false);
 
   // Edit dialog state
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -102,12 +108,26 @@ const SopFullDocument2: React.FC = () => {
     try {
       setIsLoading(true);
 
-      // First generate the document if needed
-      await axiosServices.post(`/api/onlyoffice/generate/${headerId}`);
+      if (isTempMode) {
+        // TEMP MODE: Generate a temp document (not tracked in database)
+        const generateResponse = await axiosServices.post(`/api/onlyoffice/generate-temp/${headerId}`);
+        const { documentKey, documentUrl } = generateResponse.data;
+        setTempDocumentKey(documentKey);
 
-      // Then get the editor config
-      const configResponse = await axiosServices.get(`/api/onlyoffice/config/${headerId}`);
-      setEditorConfig(configResponse.data);
+        // Get editor config for temp document
+        const configResponse = await axiosServices.get(`/api/onlyoffice/config-temp/${headerId}`, {
+          params: {
+            tempDocKey: documentKey,
+            tempDocUrl: documentUrl,
+          },
+        });
+        setEditorConfig(configResponse.data);
+      } else {
+        // PERMANENT MODE: Existing flow
+        await axiosServices.post(`/api/onlyoffice/generate/${headerId}`);
+        const configResponse = await axiosServices.get(`/api/onlyoffice/config/${headerId}`);
+        setEditorConfig(configResponse.data);
+      }
 
       // Fetch SOP header info
       const headerResponse = await axiosServices.get(`/api/sopheader/getSopHeaderById/${headerId}`);
@@ -123,7 +143,7 @@ const SopFullDocument2: React.FC = () => {
         text: error.message || 'Failed to load document editor',
       });
     }
-  }, [headerId, t]);
+  }, [headerId, t, isTempMode]);
 
   useEffect(() => {
     fetchEditorConfig();
@@ -339,6 +359,65 @@ const SopFullDocument2: React.FC = () => {
     editorRef.current?.print();
   };
 
+  // ============================================
+  // TEMP MODE HANDLERS
+  // ============================================
+
+  // Handle Save as Final (promote temp document to permanent)
+  const handleSaveAsFinal = async () => {
+    if (!headerId || !tempDocumentKey) return;
+
+    try {
+      setIsPromoting(true);
+
+      // Force save the current document first
+      editorRef.current?.save();
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      // Promote temp document to permanent
+      const response = await axiosServices.post(`/api/onlyoffice/promote/${headerId}`, {
+        tempDocumentKey,
+      });
+
+      setIsPromoting(false);
+
+      Swal.fire({
+        icon: 'success',
+        title: t('messages.success') as string,
+        text: t('messages.documentSavedAsFinal') || 'Document has been saved and is now tracked in the system',
+      }).then(() => {
+        // Reload the page without temp mode (permanent document)
+        navigate(`/SopFullDocument2/${headerId}`, { replace: true });
+      });
+    } catch (error: any) {
+      setIsPromoting(false);
+      console.error('Error promoting temp document:', error);
+      Swal.fire({
+        icon: 'error',
+        title: t('messages.error') as string,
+        text: error.response?.data?.error || error.message || 'Failed to save document as final',
+      });
+    }
+  };
+
+  // Handle Discard Changes (close without saving)
+  const handleDiscardChanges = async () => {
+    const result = await Swal.fire({
+      icon: 'warning',
+      title: t('messages.confirmDiscard') || 'Discard Changes?',
+      text: t('messages.discardChangesText') || 'All changes in this draft will be lost. This action cannot be undone.',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      confirmButtonText: t('buttons.discard') || 'Discard',
+      cancelButtonText: t('buttons.cancel') || 'Cancel',
+    });
+
+    if (result.isConfirmed) {
+      // Navigate back to SOPFullDocument
+      navigate(`/SOPFullDocument?headerId=${headerId}`);
+    }
+  };
+
   // Check if document is read-only
   const isReadOnly = parseInt(sopHeader?.status || '0', 10) >= 4;
 
@@ -362,10 +441,25 @@ const SopFullDocument2: React.FC = () => {
       {/* Header */}
       <Paper sx={{ p: 2, mb: 1 }} className="no-print">
         <Stack direction="row" justifyContent="space-between" alignItems="center">
-          <Typography variant="h5">
-            {sopHeader?.Doc_Title_en || 'SOP Document'}
-            {sopHeader?.Doc_Code && ` (${sopHeader.Doc_Code})`}
-          </Typography>
+          <Box>
+            <Typography variant="h5">
+              {sopHeader?.Doc_Title_en || 'SOP Document'}
+              {sopHeader?.Doc_Code && ` (${sopHeader.Doc_Code})`}
+            </Typography>
+            {isTempMode && (
+              <Typography
+                variant="caption"
+                sx={{
+                  color: 'warning.main',
+                  fontWeight: 'bold',
+                  display: 'block',
+                  mt: 0.5,
+                }}
+              >
+                DRAFT MODE - Changes are not saved to database until you click "Save as Final"
+              </Typography>
+            )}
+          </Box>
           <Typography variant="body2" color="text.secondary">
             Version: {sopHeader?.version || '00'}
           </Typography>
@@ -387,28 +481,59 @@ const SopFullDocument2: React.FC = () => {
       {!isReadOnly && (
         <Paper className="no-print" sx={{ p: 2, mt: 1 }}>
           <Stack direction="row" spacing={2} justifyContent="center">
-            <Button
-              variant="outlined"
-              startIcon={<IconDeviceFloppy />}
-              onClick={handleSaveDraft}
-              disabled={isSaving}
-            >
-              {isSaving ? <CircularProgress size={20} /> : t('buttons.saveDraft')}
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<IconSend />}
-              onClick={handleSubmitForReview}
-              disabled={isSaving}
-            >
-              {t('buttons.submitForReview')}
-            </Button>
+            {isTempMode ? (
+              <>
+                {/* TEMP MODE BUTTONS */}
+                <Button
+                  variant="contained"
+                  color="success"
+                  startIcon={<IconDeviceFloppy />}
+                  onClick={handleSaveAsFinal}
+                  disabled={isPromoting || isSaving}
+                >
+                  {isPromoting ? (
+                    <CircularProgress size={20} sx={{ color: 'white' }} />
+                  ) : (
+                    t('buttons.saveAsFinal') || 'Save as Final'
+                  )}
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="warning"
+                  onClick={handleDiscardChanges}
+                  disabled={isPromoting || isSaving}
+                >
+                  {t('buttons.discardChanges') || 'Discard Changes'}
+                </Button>
+              </>
+            ) : (
+              <>
+                {/* PERMANENT MODE BUTTONS (existing) */}
+                <Button
+                  variant="outlined"
+                  startIcon={<IconDeviceFloppy />}
+                  onClick={handleSaveDraft}
+                  disabled={isSaving}
+                >
+                  {isSaving ? <CircularProgress size={20} /> : t('buttons.saveDraft')}
+                </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  startIcon={<IconSend />}
+                  onClick={handleSubmitForReview}
+                  disabled={isSaving}
+                >
+                  {t('buttons.submitForReview')}
+                </Button>
+              </>
+            )}
+            {/* Common buttons for both modes */}
             <Button
               variant="outlined"
               startIcon={<IconFileTypePdf />}
               onClick={handleExportPdf}
-              disabled={isSaving}
+              disabled={isSaving || isPromoting}
             >
               {t('buttons.exportPdf')}
             </Button>
@@ -416,7 +541,7 @@ const SopFullDocument2: React.FC = () => {
               variant="outlined"
               startIcon={<IconPrinter />}
               onClick={handlePrint}
-              disabled={isSaving}
+              disabled={isSaving || isPromoting}
             >
               {t('buttons.print')}
             </Button>

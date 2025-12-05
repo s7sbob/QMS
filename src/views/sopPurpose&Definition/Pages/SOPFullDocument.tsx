@@ -440,7 +440,7 @@ const SOPFullDocument: React.FC = () => {
 
   return (
     <>
-      {/* Open in ONLYOFFICE Button */}
+      {/* Open in ONLYOFFICE Button - Opens in temp/draft mode */}
       {headerId && (
         <Box className="no-print" sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
           <Tooltip title={t('buttons.openInOnlyOffice') || 'Open in ONLYOFFICE Editor'}>
@@ -448,7 +448,7 @@ const SOPFullDocument: React.FC = () => {
               variant="contained"
               color="primary"
               startIcon={<IconFileText />}
-              onClick={() => navigate(`/SopFullDocument2/${headerId}`)}
+              onClick={() => navigate(`/SopFullDocument2/${headerId}?mode=temp`)}
             >
               {t('buttons.openInOnlyOffice') || 'Open in ONLYOFFICE'}
             </Button>
