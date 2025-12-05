@@ -135,19 +135,12 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
         type: "desktop",
       };
 
-      // Clone and strip any token fields before sending config to ONLYOFFICE
+      // Clone config (or fallback) before sending it to ONLYOFFICE
       const sanitizedConfig: any = JSON.parse(
         JSON.stringify(
           rawConfig && rawConfig.document && rawConfig.document.url ? rawConfig : fallbackConfig
         )
       );
-      delete sanitizedConfig.token;
-      if (sanitizedConfig.document) {
-        delete sanitizedConfig.document.token;
-      }
-      if (sanitizedConfig.editorConfig) {
-        delete sanitizedConfig.editorConfig.token;
-      }
 
       const docKey = sanitizedConfig.document?.key;
 
@@ -265,7 +258,7 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
         );
 
         editorRef.current = new window.DocsAPI.DocEditor(
-          containerRef.current,
+            "onlyoffice-editor-container",
           editorConfig
         );
         isInitializedRef.current = true;
