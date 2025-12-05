@@ -1,3 +1,4 @@
+// QMS\src\components\OnlyOffice\OnlyOfficeEditor.tsx
 import { useEffect, useRef, useState, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { Box, CircularProgress, Typography } from '@mui/material';
 
@@ -214,6 +215,13 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
       };
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // Empty dependency - only run on mount/unmount
+
+    // Reinitialize when document key changes while staying mounted (avoids unmount/remount churn)
+    useEffect(() => {
+      if (config?.document?.key && containerRef.current) {
+        initWithScript();
+      }
+    }, [config?.document?.key, initWithScript, config]);
 
     // Expose methods via ref
     useImperativeHandle(ref, () => ({
