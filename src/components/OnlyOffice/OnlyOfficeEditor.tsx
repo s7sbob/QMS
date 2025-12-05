@@ -112,6 +112,7 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
       }
 
       // Prefer the provided config; if missing, fall back to a minimal, known-good config used for manual testing
+      const backendBase = (import.meta.env.VITE_BACKEND_PUBLIC_URL || "https://qualitylead-qms.duckdns.org").replace(/\/$/, "");
       const fallbackConfig = {
         documentType: "word",
         document: {
@@ -123,6 +124,7 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
         editorConfig: {
           lang: "en",
           mode: "edit",
+          callbackUrl: `${backendBase}/api/onlyoffice/callback`,
           user: {
             id: "test-user",
             name: "Test User",
