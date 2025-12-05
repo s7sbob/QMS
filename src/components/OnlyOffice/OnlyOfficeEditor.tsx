@@ -30,6 +30,14 @@ export interface OnlyOfficeEditorRef {
   reload: (newConfig?: any) => void;
 }
 
+type OnlyOfficeEvents = {
+  onAppReady?: () => void;
+  onDocumentReady?: () => void;
+  onError?: (event: any) => void;
+  onDocumentStateChange?: (event: any) => void;
+  onRequestSaveAs?: string | ((event: any) => void);
+};
+
 const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
   (
     {
@@ -178,35 +186,46 @@ const OnlyOfficeEditor = forwardRef<OnlyOfficeEditorRef, OnlyOfficeEditorProps>(
           editorRef.current = null;
         }
 
-        const baseEvents = sanitizedConfig.events || {};
+        const baseEvents: OnlyOfficeEvents = (sanitizedConfig.events || {}) as OnlyOfficeEvents;
+        const onlyOfficeEvents: OnlyOfficeEvents = {
+          onAppReady: () => {
+            console.log("[OnlyOffice] App ready");
+            setLoading(false);
+            if (typeof baseEvents.onAppReady === "function") {
+              baseEvents.onAppReady();
+            }
+          },
+          onDocumentReady: () => {
+            console.log("[OnlyOffice] Document ready (DocsAPI event)");
+            setLoading(false);
+            onDocumentReadyRef.current?.();
+            if (typeof baseEvents.onDocumentReady === "function") {
+              baseEvents.onDocumentReady();
+            }
+          },
+          onError: (event: any) => {
+            console.error("[OnlyOffice] Editor error:", event);
+            setLoading(false);
+            setError(event?.data?.message || "Editor error occurred (check logs)");
+            onErrorRef.current?.(event);
+            if (typeof baseEvents.onError === "function") {
+              baseEvents.onError(event);
+            }
+          },
+          onDocumentStateChange: (event: any) => {
+            onDocumentStateChangeRef.current?.(event);
+            if (typeof baseEvents.onDocumentStateChange === "function") {
+              baseEvents.onDocumentStateChange(event);
+            }
+          },
+          onRequestSaveAs: baseEvents.onRequestSaveAs ?? "onRequestSaveAs",
+        };
         const editorConfig: any = {
           ...sanitizedConfig,
           type: sanitizedConfig.type || "desktop",
           height: sanitizedConfig.height || "100%",
           width: sanitizedConfig.width || "100%",
-          events: {
-            ...baseEvents,
-            onDocumentReady: () => {
-              console.log("[OnlyOffice] Document ready!");
-              setLoading(false);
-              onDocumentReadyRef.current?.();
-            },
-            onError: (event: any) => {
-              console.error("[OnlyOffice] Error:", event);
-              setLoading(false);
-              setError(
-                event?.data?.message || "Editor error occurred (check logs)"
-              );
-              onErrorRef.current?.(event);
-            },
-            onDocumentStateChange: (event: any) => {
-              onDocumentStateChangeRef.current?.(event);
-            },
-            onAppReady: () => {
-              console.log("[OnlyOffice] App ready (editor UI loaded)");
-              setLoading(false);
-            },
-          },
+          events: onlyOfficeEvents,
         };
 
         console.log(
