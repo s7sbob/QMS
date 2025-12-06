@@ -18,12 +18,15 @@ import {
   MenuItem,
   InputLabel,
   FormControl,
+  CircularProgress,
 } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
 import { IconPencil, IconDeviceFloppy, IconTrash } from '@tabler/icons-react';
 import Tooltip from '@mui/material/Tooltip';
 import { IUser, addEditUserApi, deleteUser } from 'src/services/userService';
 import axiosServices from 'src/utils/axiosServices';
+import { useStorage, StorageType } from 'src/context/StorageContext';
+import StorageToggle from 'src/components/shared/StorageToggle';
 
 // Additional interfaces for extra data
 interface Company {
@@ -60,12 +63,15 @@ type UserDetailsProps = {
 };
 
 const UserDetails: React.FC<UserDetailsProps> = ({ user }) => {
+  const { defaultStorage } = useStorage();
   const [editMode, setEditMode] = useState(false);
   const [editedUser, setEditedUser] = useState<ExtendedUser | null>(null);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [departments, setDepartments] = useState<DepartmentOption[]>([]);
   const [departmentAssignments, setDepartmentAssignments] = useState<DepartmentAssignment[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [storageType, setStorageType] = useState<StorageType>(defaultStorage);
 
   // When a user is selected, prefill the editedUser state
   useEffect(() => {
@@ -105,24 +111,22 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user }) => {
 
   // Load companies and roles on component mount
   useEffect(() => {
-    const loadCompanies = async () => {
+    const loadData = async () => {
+      setLoading(true);
       try {
-        const { data } = await axiosServices.get('/api/companies/getAllCompanies');
-        setCompanies(data);
+        const [companiesRes, rolesRes] = await Promise.all([
+          axiosServices.get('/api/companies/getAllCompanies'),
+          axiosServices.get('/api/userroles/getAll'),
+        ]);
+        setCompanies(companiesRes.data);
+        setRoles(rolesRes.data);
       } catch (error) {
-        console.error('Error fetching companies:', error);
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
       }
     };
-    const loadRoles = async () => {
-      try {
-        const { data } = await axiosServices.get('/api/userroles/getAll');
-        setRoles(data);
-      } catch (error) {
-        console.error('Error fetching roles:', error);
-      }
-    };
-    loadCompanies();
-    loadRoles();
+    loadData();
   }, []);
 
   // When the company changes, load the corresponding departments
@@ -157,6 +161,7 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user }) => {
         formData.append('dateOfBirth', editedUser.dateOfBirth || '');
         formData.append('companyId', editedUser.companyId || '');
         formData.append('signUrl', editedUser.signUrl || '');
+        formData.append('storageType', storageType);
         formData.append('departmentAssignments', JSON.stringify(departmentAssignments));
         await addEditUserApi(formData);
         console.log('User updated successfully!');
@@ -240,6 +245,17 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user }) => {
     const newAssignments = departmentAssignments.filter((_, i) => i !== index);
     setDepartmentAssignments(newAssignments);
   };
+
+  if (loading) {
+    return (
+      <Box sx={{ width: '100%', height: '50vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+        <CircularProgress size={50} />
+        <Typography variant="h6" mt={2} color="primary">
+          Loading user details...
+        </Typography>
+      </Box>
+    );
+  }
 
   if (!user || !editedUser) {
     return (
@@ -423,6 +439,13 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user }) => {
               )
             )}
           </Grid>
+
+          {/* Storage Type Selector */}
+          {editMode && (
+            <Grid item xs={12} sm={6}>
+              <StorageToggle value={storageType} onChange={setStorageType} />
+            </Grid>
+          )}
 
           {/* Company Dropdown */}
           <Grid item xs={12} sm={6}>

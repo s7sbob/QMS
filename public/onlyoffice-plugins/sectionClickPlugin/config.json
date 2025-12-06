@@ -1,0 +1,30 @@
+{
+  "name": "Section Click Plugin",
+  "nameLocale": {
+    "en": "Section Click Plugin",
+    "ar": "مكون النقر على القسم"
+  },
+  "guid": "asc.{B509D5D4-A7CF-4E2D-8E4A-6C3F42B8E7A1}",
+  "version": "1.0.0",
+  "baseUrl": "",
+  "variations": [
+    {
+      "description": "Detects double-clicks on section headers in SOP documents",
+      "descriptionLocale": {
+        "en": "Detects double-clicks on section headers in SOP documents",
+        "ar": "يكتشف النقر المزدوج على عناوين الأقسام في وثائق SOP"
+      },
+      "url": "index.html",
+      "icons": [],
+      "isViewer": true,
+      "EditorsSupport": ["word"],
+      "isVisual": false,
+      "isModal": false,
+      "isInsideMode": true,
+      "initDataType": "none",
+      "initData": "",
+      "buttons": [],
+      "events": ["onDocumentContentReady", "onClick"]
+    }
+  ]
+}

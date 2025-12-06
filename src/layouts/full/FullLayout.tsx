@@ -9,6 +9,7 @@ import Sidebar from './vertical/sidebar/Sidebar';
 import Customizer from './shared/customizer/Customizer';
 import Navigation from '../full/horizontal/navbar/Navigation';
 import HorizontalHeader from '../full/horizontal/header/Header';
+import AppFooter from './shared/footer/AppFooter';
 
 const MainWrapper = styled('div')(() => ({
   display: 'flex',
@@ -61,6 +62,7 @@ const FullLayout: FC = () => {
           </Box>
         </Container>
         <Box className="no-print"><Customizer /></Box>
+        <AppFooter />
       </PageWrapper>
     </MainWrapper>
   );

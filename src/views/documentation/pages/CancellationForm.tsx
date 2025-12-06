@@ -16,6 +16,7 @@ import {
   Select,
   MenuItem,
   SelectChangeEvent,
+  CircularProgress,
 } from '@mui/material';
 
 import axiosServices from 'src/utils/axiosServices';
@@ -98,15 +99,23 @@ interface ISopHeader {
   Doc_Title_en: string;
 }
 
+// Default font settings - Calibri 12 bold for English
+const DEFAULT_FONT_EN = 'Calibri';
+const DEFAULT_FONT_SIZE = '12';
+
 // إعدادات الـToolbar للـSummernote (نفس ما في NewCreation أو قريبة منه)
 const summernoteOptions = {
   height: 200,
   toolbar: [
     ['style', ['style']],
-    ['font', ['bold', 'italic', 'underline', 'clear']],
+    ['font', ['fontname', 'fontsize', 'bold', 'italic', 'underline', 'clear']],
     ['para', ['ul', 'ol', 'paragraph']],
     ['table', ['table']],
   ],
+  fontNames: ['Calibri', 'Arial', 'Times New Roman', 'Tahoma', 'Helvetica', 'Courier New'],
+  fontSizes: ['8', '10', '12', '14', '16', '18', '20', '24', '28', '32', '36', '48'],
+  fontName: DEFAULT_FONT_EN,
+  fontSize: DEFAULT_FONT_SIZE,
 };
 
 const CancellationForm: React.FC = () => {
@@ -117,6 +126,7 @@ const CancellationForm: React.FC = () => {
   const [departments, setDepartments] = useState<IDepartment[]>([]);
   const [allSopHeaders, setAllSopHeaders] = useState<ISopHeader[]>([]);
   const [filteredSopHeaders, setFilteredSopHeaders] = useState<ISopHeader[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   // عند التحميل أو تغيّر user
   useEffect(() => {
@@ -147,11 +157,14 @@ const CancellationForm: React.FC = () => {
   // جلب جميع الـSOPs
   useEffect(() => {
     const fetchAllSopHeaders = async () => {
+      setLoading(true);
       try {
         const response = await axiosServices.get('/api/sopheader/getAllSopHeaders');
         setAllSopHeaders(response.data);
       } catch (error) {
         console.error('خطأ في جلب الـSOPs:', error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchAllSopHeaders();
@@ -217,6 +230,17 @@ const CancellationForm: React.FC = () => {
 
   // هل المستخدم الحالي QA Manager؟
   const isQaManager = user?.Users_Departments_Users_Departments_User_IdToUser_Data?.[0]?.User_Roles?.Name === 'QA Manager';
+
+  if (loading) {
+    return (
+      <Box sx={{ width: '100%', height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+        <CircularProgress size={50} />
+        <Typography variant="h6" mt={2} color="primary">
+          Loading data...
+        </Typography>
+      </Box>
+    );
+  }
 
   // إرسال البيانات
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {

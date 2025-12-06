@@ -32,16 +32,27 @@
   color: white;
 }
 
+/* Default font: Calibri 12pt bold for English text */
 .ql-editor,
 .ql-snow * {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 16px;
+  font-family: 'Calibri', 'Arial', sans-serif;
+  font-size: 12pt;
+  font-weight: bold;
+}
+
+/* Arabic text styling: Arial 12pt bold */
+.ql-editor[dir="rtl"],
+.ql-editor[lang="ar"] {
+  font-family: 'Arial', sans-serif;
+  font-size: 12pt;
+  font-weight: bold;
 }
 
 .ql-editor.ql-blank::before {
   font-style: normal;
-  font-weight: 400;
-  font-size: 16px;
+  font-weight: bold;
+  font-size: 12pt;
+  font-family: 'Calibri', 'Arial', sans-serif;
   color: #777e89;
 }
 

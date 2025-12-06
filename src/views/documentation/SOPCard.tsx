@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, Typography, Box, Chip, Stack, CardActionArea } from '@mui/material';
 import { IconFileText } from '@tabler/icons-react';
-import { useNavigate } from 'react-router-dom';
+import { useSopNavigation } from 'src/hooks/useSopNavigation';
 
 export interface SopStatus {
   Id: string;
@@ -38,7 +38,7 @@ interface SOPCardProps {
 }
 
 const SOPCard: React.FC<SOPCardProps> = ({ sop }) => {
-  const navigate = useNavigate();
+  const { navigateToSop } = useSopNavigation();
 
   // Color mapping for statuses (adjust as needed)
   const statusColorMapping: Record<string, "default" | "primary" | "secondary" | "error" | "warning" | "info" | "success"> = {
@@ -48,11 +48,18 @@ const SOPCard: React.FC<SOPCardProps> = ({ sop }) => {
     "4": "success",   // Reviewed
     "5": "secondary", // Under Final Audit
     "6": "primary",   // Released
+    "8": "info",      // New Request
+    "12": "success",  // Approved by Dept Manager
+    "13": "error",    // Rejected by Dept Manager
+    "14": "error",    // Rejected by QA Manager
+    "15": "success",  // Approved by QA Manager
+    "16": "success",  // Approved by QA Officer
+    "17": "error",    // Rejected by QA Officer
   };
 
-  const handleClick = () => {
-    // Navigate to the details page with the headerId in the query string
-    navigate(`/sopFullDocument?headerId=${sop.Id}`);
+  const handleClick = async () => {
+    console.log('SOPCard handleClick - SOP ID:', sop.Id);
+    await navigateToSop(sop.Id);
   };
 
   return (

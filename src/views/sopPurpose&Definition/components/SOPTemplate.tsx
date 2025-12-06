@@ -1,101 +1,76 @@
 // src/components/SOPTemplate.tsx
-import React, { ReactNode, useMemo } from 'react';
-import Header from './Header';
-import PreparedBySection from './PreparedBySection';
-import Footer from './Footer';
+import React, { ReactNode, useState, useEffect, useCallback } from 'react';
+import SOPPaginatedDocument from './SOPPaginatedDocument';
 import { SopHeader } from '../types/SopHeader';
-import './sopDocument.css'; // هنا ملف الستايل
+import './sopDocument.css';
 
 interface SOPTemplateProps {
-  children: ReactNode; // أقسام الـSOP
+  children: ReactNode;
   headerData?: SopHeader | null;
 }
 
 const SOPTemplate: React.FC<SOPTemplateProps> = ({ children, headerData }) => {
-  // تحضير بيانات الهيدر
-  const headerComponent = useMemo(() => {
-    if (!headerData) return <div>No Header Data</div>;
-    return (
-      <Header
-        issueDate={headerData.Issued_Date || ''}
-        effectiveDate={headerData.Effective_Date || ''}
-        revisionDate={headerData.Revision_Date || ''}
-        codeNumber={headerData.Doc_Code || ''}
-        versionNumber={headerData.Version || ''}
-        pageNumber={headerData.Page_Number || '1'} 
-      />
-    );
-  }, [headerData]);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
-  // تحضير الفوتر (يشمل PreparedBySection إن وجد)
-  const footerComponent = useMemo(() => {
-    if (!headerData) return null;
-    const preparedSignatureUrl = headerData?.prepared_by_sign || '';
-    const reviewedSignatureUrl = headerData?.reviewed_by_sign || '';
-    const approvedSignatureUrl = headerData?.approved_by_sign || '';
+  // Handle image click to show preview
+  const handleImageClick = useCallback((e: MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'IMG') {
+      // Check if it's within our SOP document content
+      const isInSopContent = target.closest('.sop-document-wrapper') ||
+                             target.closest('.MuiTableCell-root');
+      if (isInSopContent) {
+        e.preventDefault();
+        e.stopPropagation();
+        const imgSrc = (target as HTMLImageElement).src;
+        setPreviewImage(imgSrc);
+      }
+    }
+  }, []);
 
-    const preparedName = headerData?.User_Data_Sop_header_Prepared_ByToUser_Data
-      ? `${headerData.User_Data_Sop_header_Prepared_ByToUser_Data.FName} ${headerData.User_Data_Sop_header_Prepared_ByToUser_Data.LName}`
-      : '';
-    const reviewedName = headerData?.User_Data_Sop_header_reviewed_byToUser_Data
-      ? `${headerData.User_Data_Sop_header_reviewed_byToUser_Data.FName} ${headerData.User_Data_Sop_header_reviewed_byToUser_Data.LName}`
-      : '';
-    const approvedName = headerData?.User_Data_Sop_header_Approved_byToUser_Data
-      ? `${headerData.User_Data_Sop_header_Approved_byToUser_Data.FName} ${headerData.User_Data_Sop_header_Approved_byToUser_Data.LName}`
-      : '';
+  // Handle closing the preview
+  const handleClosePreview = useCallback(() => {
+    setPreviewImage(null);
+  }, []);
 
-    return (
-      <>
-        <PreparedBySection
-          preparedJobTitle="QA Associate"
-          reviewedJobTitle="QA Supervisor"
-          approvedJobTitle="QA Manager"
-          preparedName={preparedName}
-          reviewedName={reviewedName}
-          approvedName={approvedName}
-          stampImageUrl={headerData?.sop_stamp_url || './public/Stamps/QaApproval.svg'}
-          preparedSignatureUrl={preparedSignatureUrl}
-          reviewedSignatureUrl={reviewedSignatureUrl}
-          approvedSignatureUrl={approvedSignatureUrl}
-          prepared_date={headerData?.prepared_date}
-          reviewed_date={headerData?.reviewed_date}
-          approved_date={headerData?.approved_date}
-        />
-        <Footer />
-      </>
-    );
-  }, [headerData]);
+  // Handle keyboard escape to close preview
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape' && previewImage) {
+      setPreviewImage(null);
+    }
+  }, [previewImage]);
+
+  // Add event listeners
+  useEffect(() => {
+    document.addEventListener('click', handleImageClick);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('click', handleImageClick);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleImageClick, handleKeyDown]);
 
   return (
-    <div className="sop-wrapper">
-      <table className="sop-table">
-        <thead>
-          <tr>
-            <th>
-              {headerComponent}
-            </th>
-          </tr>
-        </thead>
-        <tfoot>
-          <tr>
-            <td>
-              {footerComponent}
-            </td>
-          </tr>
-        </tfoot>
-        <tbody>
-          <tr>
-            <td>
-              {/* هنا سيوضع كل المحتوى (الأقسام) في نفس الـtbody 
-                  وأي محتوى أطول من صفحة A4 سيتم تلقائياً قطعه إلى صفحة جديدة 
-                  مع تكرار الهيدر والفوتر (في الطباعة أو عند استخدام معاينة الطباعة).
-              */}
-              {children}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <>
+      <SOPPaginatedDocument headerData={headerData}>
+        {children}
+      </SOPPaginatedDocument>
+
+      {/* Image Preview Overlay */}
+      {previewImage && (
+        <div className="image-preview-overlay" onClick={handleClosePreview}>
+          <span className="image-preview-close" onClick={handleClosePreview}>
+            &times;
+          </span>
+          <img
+            src={previewImage}
+            alt="Preview"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
+    </>
   );
 };
 

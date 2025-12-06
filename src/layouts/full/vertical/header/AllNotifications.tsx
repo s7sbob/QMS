@@ -4,6 +4,7 @@ import { Container, Paper, Typography, List, ListItem, ListItemText, ListItemSec
 import { IconTrash } from '@tabler/icons-react';
 import axiosServices from 'src/utils/axiosServices';
 import { Link } from 'react-router-dom';
+import { useSopNavigation } from 'src/hooks/useSopNavigation';
 
 interface NotificationItem {
   id: string;
@@ -18,6 +19,7 @@ interface NotificationItem {
 const AllNotifications: React.FC = () => {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const { navigateToSop } = useSopNavigation();
 
   const fetchNotifications = async () => {
     try {
@@ -28,6 +30,32 @@ const AllNotifications: React.FC = () => {
       console.error("Error fetching notifications:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleNotificationClick = async (notification: NotificationItem) => {
+    // Mark notification as read if it's unread
+    if (!notification.isRead) {
+      try {
+        await axiosServices.patch(`/api/notifications/${notification.id}/markAsRead`);
+        // Update local state to reflect the read status immediately
+        setNotifications((prev) =>
+          prev.map((n) =>
+            n.id === notification.id ? { ...n, isRead: true } : n
+          )
+        );
+      } catch (error) {
+        console.error("Error marking notification as read:", error);
+      }
+    }
+
+    const sopHeaderId = notification.data?.sopHeaderId;
+
+    console.log('Notification click - sopHeaderId:', sopHeaderId);
+
+    // Use the navigation hook to determine where to open based on current SOP status
+    if (sopHeaderId) {
+      await navigateToSop(sopHeaderId);
     }
   };
 
@@ -50,10 +78,24 @@ const AllNotifications: React.FC = () => {
         ) : (
           <List>
             {notifications.map((notification) => (
-              <ListItem key={notification.id} divider>
+              <ListItem
+                key={notification.id}
+                divider
+                onClick={() => handleNotificationClick(notification)}
+                sx={{
+                  cursor: 'pointer',
+                  backgroundColor: !notification.isRead ? "rgba(0, 0, 0, 0.08)" : "inherit",
+                  '&:hover': {
+                    backgroundColor: !notification.isRead ? "rgba(0, 0, 0, 0.12)" : "rgba(0, 0, 0, 0.04)",
+                  }
+                }}
+              >
                 <ListItemText
                   primary={notification.message}
                   secondary={new Date(notification.createdAt).toLocaleString()}
+                  primaryTypographyProps={{
+                    fontWeight: !notification.isRead ? 600 : 400
+                  }}
                 />
                 <ListItemSecondaryAction>
                   <IconButton edge="end" color="error">

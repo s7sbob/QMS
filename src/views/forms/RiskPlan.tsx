@@ -1,14 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import {
-  Box,
   Grid,
   Stack,
   Typography,
-  TextField,
   Button,
-  Card,
-  CardContent,
   Table,
   TableBody,
   TableCell,
@@ -17,7 +13,6 @@ import {
   TableRow,
   Paper,
   Checkbox,
-  FormControlLabel,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -144,14 +139,9 @@ const RiskPlan: React.FC = () => {
             <CustomFormLabel htmlFor="preparationDate">Preparation date</CustomFormLabel>
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <DatePicker
-                format="dd/MM/yyyy"
                 value={preparationDate}
-                onChange={(newValue) => setPreparationDate(newValue)}
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                  },
-                }}
+                onChange={(newValue: Date | null) => setPreparationDate(newValue)}
+                renderInput={(params) => <CustomTextField {...params} fullWidth />}
               />
             </LocalizationProvider>
           </Grid>
@@ -255,48 +245,33 @@ const RiskPlan: React.FC = () => {
                     <TableCell>
                       <LocalizationProvider dateAdapter={AdapterDateFns}>
                         <DatePicker
-                          format="dd/MM/yyyy"
                           value={newEntry.reassessmentDate}
-                          onChange={(newValue) =>
+                          onChange={(newValue: Date | null) =>
                             setNewEntry({ ...newEntry, reassessmentDate: newValue })
                           }
-                          slotProps={{
-                            textField: {
-                              fullWidth: true,
-                            },
-                          }}
+                          renderInput={(params) => <CustomTextField {...params} fullWidth />}
                         />
                       </LocalizationProvider>
                     </TableCell>
                     <TableCell>
                       <LocalizationProvider dateAdapter={AdapterDateFns}>
                         <DatePicker
-                          format="dd/MM/yyyy"
                           value={newEntry.actualDate}
-                          onChange={(newValue) =>
+                          onChange={(newValue: Date | null) =>
                             setNewEntry({ ...newEntry, actualDate: newValue })
                           }
-                          slotProps={{
-                            textField: {
-                              fullWidth: true,
-                            },
-                          }}
+                          renderInput={(params) => <CustomTextField {...params} fullWidth />}
                         />
                       </LocalizationProvider>
                     </TableCell>
                     <TableCell>
                       <LocalizationProvider dateAdapter={AdapterDateFns}>
                         <DatePicker
-                          format="dd/MM/yyyy"
                           value={newEntry.followUpDate}
-                          onChange={(newValue) =>
+                          onChange={(newValue: Date | null) =>
                             setNewEntry({ ...newEntry, followUpDate: newValue })
                           }
-                          slotProps={{
-                            textField: {
-                              fullWidth: true,
-                            },
-                          }}
+                          renderInput={(params) => <CustomTextField {...params} fullWidth />}
                         />
                       </LocalizationProvider>
                     </TableCell>
@@ -368,27 +343,17 @@ const RiskPlan: React.FC = () => {
               <CustomFormLabel htmlFor="preparedBySignDate">Sign/Date:</CustomFormLabel>
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <DatePicker
-                  format="dd/MM/yyyy"
                   value={preparedBySignDate}
-                  onChange={(newValue) => setPreparedBySignDate(newValue)}
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                    },
-                  }}
+                  onChange={(newValue: Date | null) => setPreparedBySignDate(newValue)}
+                  renderInput={(params) => <CustomTextField {...params} fullWidth />}
                 />
               </LocalizationProvider>
               <CustomFormLabel htmlFor="approvedBySignDate">Sign/Date:</CustomFormLabel>
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <DatePicker
-                  format="dd/MM/yyyy"
                   value={approvedBySignDate}
-                  onChange={(newValue) => setApprovedBySignDate(newValue)}
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                    },
-                  }}
+                  onChange={(newValue: Date | null) => setApprovedBySignDate(newValue)}
+                  renderInput={(params) => <CustomTextField {...params} fullWidth />}
                 />
               </LocalizationProvider>
             </Stack>
@@ -405,5 +370,3 @@ const RiskPlan: React.FC = () => {
 };
 
 export default RiskPlan;
-
-

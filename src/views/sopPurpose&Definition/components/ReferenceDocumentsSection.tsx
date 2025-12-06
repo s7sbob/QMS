@@ -1,17 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import axiosServices from 'src/utils/axiosServices';
 import {
   Box,
-  Typography,
   TableContainer,
-  Paper,
   Table,
-  TableHead,
   TableRow,
   TableCell,
   TableBody,
 } from '@mui/material';
 import EditDialog from './EditDialog';
+import { UserContext } from 'src/context/UserContext';
 
 export interface ReferenceDoc {
   Id: string;
@@ -28,9 +26,13 @@ export interface ReferenceDoc {
   reviewer_Comment?: string | null;
 }
 
-const ReferenceDocumentsSection: React.FC<{ initialData: ReferenceDoc | null }> = ({
+const ReferenceDocumentsSection: React.FC<{ initialData: ReferenceDoc | null; isReadOnly?: boolean }> = ({
   initialData,
+  isReadOnly = false,
 }) => {
+  const user = useContext(UserContext);
+  const userRole = user?.Users_Departments_Users_Departments_User_IdToUser_Data?.[0]?.User_Roles?.Name || '';
+
   const [refDoc, setRefDoc] = useState<ReferenceDoc | null>(null);
   const [openDlg, setOpenDlg] = useState(false);
   const [history, setHistory] = useState<ReferenceDoc[]>([]);
@@ -42,7 +44,7 @@ const ReferenceDocumentsSection: React.FC<{ initialData: ReferenceDoc | null }> 
 
   /*  ❱❱❱  جلب السجلّ التاريخي عند ضغط مزدوج  */
   const handleDoubleClick = () => {
-    if (!refDoc) return;
+    if (!refDoc || isReadOnly) return;
     axiosServices
       .get(`/api/sopRefrences/history/${refDoc.Sop_HeaderId}`)
       .then((r) => {
@@ -53,9 +55,29 @@ const ReferenceDocumentsSection: React.FC<{ initialData: ReferenceDoc | null }> 
       .catch((err) => console.error(err));
   };
 
+  // Send notification to QA Associates when a comment is added
+  const sendNotificationToQAAssociates = async (headerId: string, sectionName: string) => {
+    try {
+      const response = await axiosServices.get(`/api/users/getUsersByRole/QA Associate`);
+      const qaAssociates = response.data || [];
+      for (const qaUser of qaAssociates) {
+        await axiosServices.post('/api/notification/pushNotification', {
+          targetUserId: qaUser.Id,
+          message: `A reviewer has added a comment on the "${sectionName}" section. Please review and update.`,
+          data: { headerId, sectionName, type: 'reviewer_comment' }
+        });
+      }
+    } catch (error) {
+      console.error('Error sending notifications:', error);
+    }
+  };
+
   /*  ❱❱❱  حفظ التعديلات أو إنشاء إصدار جديد  */
-  const onSave = (en: string, ar: string, comment: string) => {
+  const onSave = async (en: string, ar: string, comment: string) => {
     if (!refDoc) return;
+
+    const isReviewer = userRole === 'QA Supervisor' || userRole === 'QA Manager';
+    const hasNewComment = comment && comment !== refDoc.reviewer_Comment;
 
     const payload = {
       Content_en: en,
@@ -66,60 +88,96 @@ const ReferenceDocumentsSection: React.FC<{ initialData: ReferenceDoc | null }> 
 
     const isNew = en !== refDoc.Content_en || ar !== refDoc.Content_ar;
 
-    /*  ⬇︎  المسارات الجديدة في الـ backend  */
-    const request = isNew
-      ? axiosServices.post('/api/sopRefrences/Create', payload)
-      : axiosServices.put(`/api/sopRefrences/update/${refDoc.Id}`, payload);
+    try {
+      /*  ⬇︎  المسارات الجديدة في الـ backend  */
+      const res = isNew
+        ? await axiosServices.post('/api/sopRefrences/Create', payload)
+        : await axiosServices.put(`/api/sopRefrences/update/${refDoc.Id}`, payload);
 
-    request
-      .then((res) => {
-        setRefDoc(res.data);
-        setOpenDlg(false);
-      })
-      .catch((err) => console.error(err));
+      setRefDoc(res.data);
+      setOpenDlg(false);
+
+      if (isReviewer && hasNewComment) {
+        await sendNotificationToQAAssociates(refDoc.Sop_HeaderId, 'Reference Documents');
+
+        // Update SOP header status to 3 when QA Supervisor adds a comment
+        if (userRole === 'QA Supervisor') {
+          await axiosServices.patch(
+            `/api/sopheader/updateSopStatusByReviewer/${refDoc.Sop_HeaderId}`,
+            { status: { newStatus: '3' } }
+          );
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
-    <Box sx={{ mt: 2 }}>
-      <Typography
-        variant="h6"
-        gutterBottom
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          color: refDoc?.reviewer_Comment ? 'red' : 'inherit',
-        }}
-      >
-        <span>8. Reference Documents:</span>
-        <span dir="rtl">8. الوثائق المرجعية</span>
-      </Typography>
-
-      <TableContainer component={Paper} sx={{ mt: 1 }}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ fontWeight: 'bold', width: '50%' }}>
-                English Content
+    <Box sx={{ mt: 0 }}>
+      <TableContainer sx={{ border: 'none', boxShadow: 'none' }}>
+        <Table sx={{ tableLayout: 'fixed', backgroundColor: '#fff' }}>
+          <TableBody>
+            {/* Section Title Row - Gray Background */}
+            <TableRow
+              onDoubleClick={handleDoubleClick}
+              sx={{
+                cursor: isReadOnly ? 'default' : 'pointer',
+                '&:hover': { '& td': { backgroundColor: isReadOnly ? '#fff' : '#f5f5f5' } },
+              }}
+            >
+              <TableCell
+                sx={{
+                  fontWeight: 'bold',
+                  fontSize: '14px',
+                  width: '50%',
+                  borderRight: '2px solid #000',
+                  borderBottom: 'none',
+                  backgroundColor: '#fff',
+                  color: refDoc?.reviewer_Comment ? 'red' : 'inherit',
+                  padding: '8px 12px',
+                }}
+              >
+                8. Reference Documents:
               </TableCell>
               <TableCell
-                sx={{ fontWeight: 'bold', width: '50%' }}
                 align="right"
+                sx={{
+                  fontWeight: 'bold',
+                  fontSize: '14px',
+                  width: '50%',
+                  direction: 'rtl',
+                  borderBottom: 'none',
+                  backgroundColor: '#fff',
+                  color: refDoc?.reviewer_Comment ? 'red' : 'inherit',
+                  padding: '8px 12px',
+                }}
               >
-                المحتوى العربي
+                ٨- الوثائق المرجعية:
               </TableCell>
             </TableRow>
-          </TableHead>
-          <TableBody>
+            {/* Content Row */}
             {refDoc && (
-              <TableRow
-                onDoubleClick={handleDoubleClick}
-                hover
-                sx={{ cursor: 'pointer' }}
-              >
-                <TableCell>
+              <TableRow>
+                <TableCell
+                  sx={{
+                    borderRight: '2px solid #000',
+                    verticalAlign: 'top',
+                    backgroundColor: '#fff',
+                    padding: '12px',
+                  }}
+                >
                   <div dangerouslySetInnerHTML={{ __html: refDoc.Content_en }} />
                 </TableCell>
-                <TableCell align="right" style={{ direction: 'rtl' }}>
+                <TableCell
+                  align="right"
+                  sx={{
+                    direction: 'rtl',
+                    verticalAlign: 'top',
+                    backgroundColor: '#fff',
+                    padding: '12px',
+                  }}
+                >
                   <div dangerouslySetInnerHTML={{ __html: refDoc.Content_ar }} />
                 </TableCell>
               </TableRow>
@@ -143,6 +201,7 @@ const ReferenceDocumentsSection: React.FC<{ initialData: ReferenceDoc | null }> 
             modifiedBy: refDoc.Modified_by,
           }}
           historyData={history}
+          userRole={userRole}
           onSave={onSave}
           onClose={() => setOpenDlg(false)}
         />

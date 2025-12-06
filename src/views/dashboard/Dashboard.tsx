@@ -1,17 +1,12 @@
-import { Grid, Card, CardContent, Typography, Box, styled, useTheme } from '@mui/material';
+// src/pages/Dashboard.tsx
+import React from 'react';
+import { Grid, Card, CardContent, Typography, Box, styled, useTheme, Theme } from '@mui/material';
 import { Link } from 'react-router-dom';
-import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
-import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
-import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
-import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
-import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
-import SystemUpdateAltOutlinedIcon from '@mui/icons-material/SystemUpdateAltOutlined';
-import BusinessOutlinedIcon from '@mui/icons-material/BusinessOutlined';
-import LibraryBooksOutlinedIcon from '@mui/icons-material/LibraryBooksOutlined';
-import FindInPageOutlinedIcon from '@mui/icons-material/FindInPageOutlined';
-import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
+import { getAllModules } from 'src/config/dashboardConfig';
+import { getIconComponent } from 'src/utils/iconUtils';
+import { DashboardModule } from 'src/types/dashboard.types';
 
-const DashboardCard = styled(Card)(({ theme }) => ({
+const DashboardCard = styled(Card)(({ theme }: { theme: Theme }) => ({
   cursor: 'pointer',
   transition: 'transform 0.3s ease, box-shadow 0.3s ease',
   '&:hover': {
@@ -21,68 +16,21 @@ const DashboardCard = styled(Card)(({ theme }) => ({
   backgroundColor: theme.palette.primary.main,
   color: theme.palette.primary.contrastText,
   borderRadius: theme.shape.borderRadius,
+  height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
 }));
 
-const IconWrapper = styled(Box)(({ theme }) => ({
+const IconWrapper = styled(Box)(({ theme }: { theme: Theme }) => ({
   fontSize: '3rem',
   marginBottom: theme.spacing(2),
+  color: theme.palette.primary.contrastText,
 }));
 
-const Dashboard = () => {
+const Dashboard: React.FC = () => {
   const theme = useTheme();
+  const modules: DashboardModule[] = getAllModules();
   
-  const modules = [
-    {
-      title: 'DOCUMENTATION CONTROL',
-      icon: ArticleOutlinedIcon,
-      path: '/documentation-control'
-    },
-    {
-      title: 'DEVIATION, NON-CONFORMITY AND CAPA SYSTEM',
-      icon: ErrorOutlineOutlinedIcon,
-      path: '/deviation-system'
-    },
-    {
-      title: 'RISK ASSESSMENT MANAGEMENT',
-      icon: AssessmentOutlinedIcon,
-      path: '/risk-management'
-    },
-    {
-      title: 'TRAINING EMPLOYEES',
-      icon: SchoolOutlinedIcon,
-      path: '/training'
-    },
-    {
-      title: 'VALIDATION & QUALIFICATION',
-      icon: VerifiedUserOutlinedIcon,
-      path: '/validation'
-    },
-    {
-      title: 'CHANGE CONTROL',
-      icon: SystemUpdateAltOutlinedIcon,
-      path: '/change-control'
-    },
-    {
-      title: 'VENDOR QUALIFICATION',
-      icon: BusinessOutlinedIcon,
-      path: '/vendor'
-    },
-    {
-      title: "GUIDELINE'S LIBRARIES",
-      icon: LibraryBooksOutlinedIcon,
-      path: '/guidelines'
-    },
-    {
-      title: 'AUDITING INTERNAL/EXTERNAL',
-      icon: FindInPageOutlinedIcon,
-      path: '/audit'
-    },
-    {
-      title: 'AI SUPPORT',
-      icon: SmartToyOutlinedIcon,
-      path: 'https://chatgpt.com'
-    },
-  ];
   return (
     <Box sx={{ p: theme.spacing(3) }}>
       <Typography 
@@ -97,22 +45,39 @@ const Dashboard = () => {
       </Typography>
       
       <Grid container spacing={3}>
-        {modules.map((module, index) => {
-          const Icon = module.icon;
+        {modules.map((module: DashboardModule) => {
+          const IconComponent = getIconComponent(module.icon);
+          
           return (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+            <Grid item xs={12} sm={6} md={4} lg={3} key={module.id}>
               <Link 
                 to={module.path} 
-                style={{ textDecoration: 'none' }}
-                target={module.path.startsWith('http') ? '_blank' : undefined}
+                style={{ textDecoration: 'none', height: '100%' }}
+                target={module.external ? '_blank' : undefined}
               >
                 <DashboardCard>
-                  <CardContent sx={{ textAlign: 'center' }}>
+                  <CardContent sx={{ 
+                    textAlign: 'center', 
+                    flexGrow: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center'
+                  }}>
                     <IconWrapper>
-                      <Icon sx={{ fontSize: 'inherit' }} />
+                      <IconComponent sx={{ fontSize: 'inherit' }} />
                     </IconWrapper>
-                    <Typography variant="h6" component="div">
+                    <Typography variant="h6" component="div" sx={{ mb: 1 }}>
                       {module.title}
+                    </Typography>
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        opacity: 0.8,
+                        fontSize: '0.85rem',
+                        lineHeight: 1.3
+                      }}
+                    >
+                      {module.description}
                     </Typography>
                   </CardContent>
                 </DashboardCard>

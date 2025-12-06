@@ -1,14 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import {
-  Box,
   Grid,
   Stack,
   Typography,
-  TextField,
-  Button,
-  Card,
-  CardContent,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -66,14 +61,9 @@ const RecallNotificationLetter: React.FC = () => {
             <CustomFormLabel htmlFor="recallDate">Date</CustomFormLabel>
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <DatePicker
-                format="dd/MM/yyyy"
                 value={recallDate}
-                onChange={(newValue) => setRecallDate(newValue)}
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                  },
-                }}
+                onChange={(newValue: Date | null) => setRecallDate(newValue)}
+                renderInput={(params) => <CustomTextField {...params} fullWidth />}
               />
             </LocalizationProvider>
           </Grid>
@@ -211,27 +201,17 @@ const RecallNotificationLetter: React.FC = () => {
               <CustomFormLabel htmlFor="signDatePrepared">Sign/ Date:</CustomFormLabel>
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <DatePicker
-                  format="dd/MM/yyyy"
                   value={preparedSignDate}
-                  onChange={(newValue) => setPreparedSignDate(newValue)}
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                    },
-                  }}
+                  onChange={(newValue: Date | null) => setPreparedSignDate(newValue)}
+                  renderInput={(params) => <CustomTextField {...params} fullWidth />}
                 />
               </LocalizationProvider>
               <CustomFormLabel htmlFor="signDateApproved">Sign/ Date:</CustomFormLabel>
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <DatePicker
-                  format="dd/MM/yyyy"
                   value={approvedSignDate}
-                  onChange={(newValue) => setApprovedSignDate(newValue)}
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                    },
-                  }}
+                  onChange={(newValue: Date | null) => setApprovedSignDate(newValue)}
+                  renderInput={(params) => <CustomTextField {...params} fullWidth />}
                 />
               </LocalizationProvider>
             </Stack>
@@ -248,5 +228,3 @@ const RecallNotificationLetter: React.FC = () => {
 };
 
 export default RecallNotificationLetter;
-
-

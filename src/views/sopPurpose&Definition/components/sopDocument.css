@@ -1,48 +1,644 @@
-/* يمكنك تسميته كما تشاء مثلاً sopDocument.css */
+/* SOP Document A4 Pagination Styles */
 
-/* حاوية عامة للجدول */
+/* ===== A4 Page Dimensions ===== */
+:root {
+  --a4-width: 210mm;
+  --a4-height: 297mm;
+  --page-margin: 10mm;
+  --page-padding: 15px;
+  --page-gap: 20px;
+  --content-height: calc(var(--a4-height) - 40mm); /* Account for header/footer */
+}
+
+/* ===== Main Wrapper ===== */
+.sop-document-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--page-gap);
+  padding: 20px;
+  background-color: #e0e0e0;
+  min-height: 100vh;
+}
+
+/* ===== Individual A4 Page ===== */
+.sop-page {
+  width: var(--a4-width);
+  height: var(--a4-height);  /* Strict A4 height - no overflow */
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: var(--page-padding);
+  box-sizing: border-box;
+  position: relative;
+  page-break-after: always;
+  page-break-inside: avoid;
+  break-inside: avoid;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;  /* Prevent content overflow beyond A4 */
+}
+
+/* ===== COVER PAGE STYLES ===== */
+.sop-cover-page {
+  justify-content: space-between;
+}
+
+/* Cover Header Table Layout */
+.cover-header {
+  width: 100%;
+  border: 1px solid #000;
+  margin-bottom: 20px;
+}
+
+.cover-header-table {
+  display: flex;
+  width: 100%;
+}
+
+.cover-header-left,
+.cover-header-right {
+  width: 25%;
+  border-right: 1px solid #000;
+}
+
+.cover-header-right {
+  border-right: none;
+}
+
+.cover-header-center {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  border-right: 1px solid #000;
+}
+
+.cover-header-left table,
+.cover-header-right table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.cover-header-left td,
+.cover-header-right td {
+  border: 1px solid #000;
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
+.cover-header-left .label-en,
+.cover-header-right .label-en {
+  text-align: left;
+  font-weight: bold;
+}
+
+.cover-header-left .label-ar,
+.cover-header-right .label-ar {
+  text-align: right;
+  font-weight: bold;
+  direction: rtl;
+}
+
+.cover-header-left .value,
+.cover-header-right .value {
+  text-align: center;
+  background-color: #f5f5f5;
+}
+
+.cover-logo {
+  max-width: 180px;
+  height: auto;
+}
+
+.division-name {
+  font-size: 14px;
+  font-weight: bold;
+  margin-top: 5px;
+  color: #2e7d32;
+}
+
+/* Cover Title Section */
+.cover-title-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 30px 0;
+}
+
+.cover-title-box {
+  background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+  color: white;
+  padding: 30px 50px;
+  text-align: center;
+  border-radius: 4px;
+  width: 80%;
+}
+
+.cover-title-label {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-align: center;
+}
+
+.cover-title-en {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.cover-title-ar {
+  font-size: 22px;
+  font-weight: bold;
+  direction: rtl;
+}
+
+/* Cover Company Section */
+.cover-company-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 30px 0;
+}
+
+.cover-company-logo {
+  max-width: 250px;
+  height: auto;
+  margin-bottom: 15px;
+}
+
+.cover-company-division {
+  font-size: 28px;
+  font-weight: bold;
+  color: #1565c0;
+}
+
+/* Cover Footer Section */
+.cover-footer-section {
+  margin-top: auto;
+}
+
+/* ===== CONTENT PAGE STYLES ===== */
+.sop-content-page {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Content Page Header */
+.content-page-header {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid #000;
+  margin-bottom: 15px;
+  min-height: 60px;
+}
+
+.content-header-logo {
+  width: 15%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid #000;
+  padding: 5px;
+}
+
+.content-header-logo img {
+  max-width: 80px;
+  height: auto;
+}
+
+.content-header-title {
+  width: 60%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 8px 15px;
+  border-right: 1px solid #000;
+}
+
+.content-header-title-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 5px;
+  text-align: center;
+}
+
+.content-header-title-row-ar {
+  display: flex;
+  gap: 10px;
+  direction: rtl;
+  justify-content: flex-start;
+  text-align: right;
+}
+
+.title-label-en,
+.title-label-ar {
+  font-weight: bold;
+  font-size: 18px;
+  text-align: center;
+}
+
+.title-value-en,
+.title-value-ar {
+  font-size: 18px;
+}
+
+.content-header-info {
+  width: 25%;
+  padding: 5px;
+}
+
+.content-header-info table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.content-header-info td {
+  padding: 2px 5px;
+}
+
+.content-header-info .info-label {
+  font-weight: bold;
+  text-align: left;
+}
+
+.content-header-info .info-value {
+  text-align: left;
+}
+
+/* Content Area */
+.sop-content-area {
+  flex: 1;
+  overflow: hidden;  /* Clip overflow content - pagination handles distribution */
+  padding: 0;
+  min-height: 0; /* Allow flex shrinking */
+  border: 2px solid #000; /* Single outer border around all content */
+  position: relative;
+}
+
+/* Vertical divider that extends full height */
+.sop-content-area::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  background-color: #000;
+  transform: translateX(-50%);
+}
+
+/* Ensure content wraps properly */
+.sop-content-area > * {
+  max-width: 100%;
+  overflow-wrap: break-word;
+  page-break-inside: auto;
+  break-inside: auto;
+}
+
+/* Allow table content to split across pages */
+.sop-content-area table {
+  page-break-inside: auto;
+  break-inside: auto;
+}
+
+.sop-content-area tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+.sop-content-area td,
+.sop-content-area th {
+  page-break-inside: auto;
+  break-inside: auto;
+}
+
+/* Content Footer Section */
+.content-footer-section {
+  margin-top: 20px;
+  padding-top: 10px;
+}
+
+/* ===== SECTION STYLES ===== */
+.sop-section {
+  margin-bottom: 15px;
+  page-break-inside: auto;
+  break-inside: auto;
+}
+
+.sop-section-header {
+  display: flex;
+  border: none;
+  background-color: #fff;
+  margin-bottom: 0;
+}
+
+.sop-section-number {
+  width: 30px;
+  padding: 8px;
+  font-weight: bold;
+  border-right: none;
+  text-align: center;
+}
+
+.sop-section-title-en {
+  flex: 1;
+  padding: 8px 15px;
+  font-weight: bold;
+  border-right: 2px solid #000;  /* Keep vertical divider between columns */
+}
+
+.sop-section-title-ar {
+  flex: 1;
+  padding: 8px 15px;
+  font-weight: bold;
+  text-align: right;
+  direction: rtl;
+}
+
+.sop-section-content {
+  display: flex;
+  border: none;
+}
+
+.sop-section-content-en {
+  flex: 1;
+  padding: 10px 15px;
+  border-right: 2px solid #000;  /* Keep vertical divider between columns */
+}
+
+.sop-section-content-ar {
+  flex: 1;
+  padding: 10px 15px;
+  text-align: right;
+  direction: rtl;
+}
+
+/* ===== PRINT STYLES ===== */
+@media print {
+  body, html {
+    margin: 0;
+    padding: 0;
+    background: white;
+  }
+
+  .sop-document-wrapper {
+    padding: 0;
+    gap: 0;
+    background: white;
+    width: 100%;
+  }
+
+  .sop-page {
+    width: var(--a4-width);
+    min-height: var(--a4-height);
+    height: var(--a4-height);
+    margin: 0;
+    padding: var(--page-padding);
+    box-shadow: none;
+    page-break-after: always;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+
+  .sop-page:last-child {
+    page-break-after: auto;
+  }
+
+  /* Hide non-printable elements */
+  .no-print {
+    display: none !important;
+  }
+
+  /* Hide image preview overlay when printing */
+  .image-preview-overlay {
+    display: none !important;
+  }
+
+  /* Print-specific image styles */
+  .sop-content-area img,
+  .sop-document-wrapper .MuiTableCell-root img {
+    width: 450px;
+    height: 200px;
+    object-fit: contain;
+    box-shadow: none;
+    transform: none;
+  }
+
+  /* Allow sections to split across pages when printing */
+  .sop-section {
+    page-break-inside: auto;
+    break-inside: auto;
+  }
+
+  /* Content area in print - clip overflow, pagination handles distribution */
+  .sop-content-area {
+    flex: 1;
+    overflow: hidden;
+    border: 2px solid #000;
+    position: relative;
+  }
+
+  /* Keep vertical divider in print */
+  .sop-content-area::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 2px;
+    background-color: #000;
+    transform: translateX(-50%);
+  }
+
+  .sop-content-area > * {
+    page-break-inside: auto;
+    break-inside: auto;
+  }
+
+  /* Tables should split across pages */
+  .sop-content-area table,
+  .sop-document-wrapper table {
+    page-break-inside: auto;
+    break-inside: auto;
+  }
+
+  /* Keep individual rows together but allow table to split */
+  .sop-content-area tr,
+  .sop-document-wrapper tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Allow table cells content to split if needed */
+  .sop-content-area td,
+  .sop-content-area th,
+  .sop-document-wrapper td,
+  .sop-document-wrapper th {
+    page-break-inside: auto;
+    break-inside: auto;
+  }
+
+  /* Footer section in print - match screen view */
+  .content-footer-section {
+    margin-top: auto;
+    padding-top: 10px;
+  }
+}
+
+@page {
+  size: A4;
+  margin: 0;
+}
+
+/* ===== SOP CONTENT IMAGES ===== */
+.sop-content-area img,
+.sop-document-wrapper .MuiTableCell-root img {
+  width: 450px;
+  height: 200px;
+  object-fit: contain;
+  display: block;
+  margin: 10px auto;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-radius: 4px;
+}
+
+.sop-content-area img:hover,
+.sop-document-wrapper .MuiTableCell-root img:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Image Preview Overlay */
+.image-preview-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  cursor: pointer;
+}
+
+.image-preview-overlay img {
+  max-width: 90vw;
+  max-height: 90vh;
+  width: auto !important;
+  height: auto !important;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.image-preview-close {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  color: white;
+  font-size: 40px;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 10000;
+  transition: color 0.2s ease;
+}
+
+.image-preview-close:hover {
+  color: #ff5252;
+}
+
+/* ===== LEGACY TABLE SUPPORT ===== */
 .sop-wrapper {
   width: 210mm;
   margin: 0 auto;
 }
 
-/* الجدول نفسه */
 .sop-table {
   width: 100%;
   border-collapse: collapse;
-
-  /* لتعطيل أي هوامش في الطباعة */
   page-break-after: always;
 }
 
-/* تأكد من تكرار الهيدر في كل صفحة مطبوعة */
 .sop-table thead {
   display: table-header-group;
 }
 
-/* تأكد من تكرار الفوتر في كل صفحة مطبوعة */
 .sop-table tfoot {
   display: table-footer-group;
 }
 
-/* تصغير المسافات الفارغة */
 .sop-table th, .sop-table td {
   vertical-align: top;
 }
 
-/* إعدادات للـ A4 في وضع الطباعة */
+/* ===== PAGEABLE CONTENT ROW STYLES ===== */
+/* These styles support row-level pagination for sections like Procedures */
+
+.pageable-section-header,
+.pageable-content-row {
+  /* Ensure rows can be measured and paginated individually */
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+.pageable-section-header .MuiTableContainer-root,
+.pageable-content-row .MuiTableContainer-root {
+  /* Remove default MUI container styling for seamless appearance */
+  border: none;
+  box-shadow: none;
+}
+
+.pageable-section-header table,
+.pageable-content-row table {
+  width: 100%;
+  table-layout: fixed;
+  background-color: #fff;
+  border-collapse: collapse;
+}
+
+/* Ensure the vertical divider appears between columns */
+.pageable-section-header td:first-child,
+.pageable-content-row td:first-child {
+  border-right: 2px solid #000;
+}
+
+/* Remove gaps between consecutive pageable rows */
+.pageable-content-row {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.pageable-content-row + .pageable-content-row {
+  /* No gap between content rows of the same section */
+  margin-top: 0;
+}
+
+/* Print styles for pageable rows */
 @media print {
-  body, html {
-    width: 210mm;
-    height: 297mm;
-    margin: 0;
-    padding: 0;
+  .pageable-section-header,
+  .pageable-content-row {
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
-  .sop-wrapper {
-    width: 210mm;
-    margin: 0 auto;
-  }
-  .sop-table {
-    page-break-after: always;
+
+  /* Ensure proper border rendering in print */
+  .pageable-section-header td:first-child,
+  .pageable-content-row td:first-child {
+    border-right: 2px solid #000 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 }

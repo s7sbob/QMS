@@ -12,9 +12,18 @@ const FullLayout = Loadable(lazy(() => import('../layouts/full/FullLayout')));
 const BlankLayout = Loadable(lazy(() => import('../layouts/blank/BlankLayout')));
 
 /* *** Guards (الحارس) *** */
+import AuthGuard from '../guards/AuthGuard';
 import SOPFullDocument from 'src/views/sopPurpose&Definition/Pages/SOPFullDocument';
+import SopFullDocument2 from 'src/views/sopPurpose&Definition/Pages/SopFullDocument2';
 import AllNotifications from 'src/layouts/full/vertical/header/AllNotifications';
 import NewDocumentRequestForm from 'src/views/documentation/pages/NewDocumentRequestForm';
+import ChangeControlRequest from 'src/views/forms/ChangeControlRequest';
+import NonConformityReport from 'src/views/forms/NonConformityReport';
+import TrainingForms from 'src/views/formsCategories/TrainingForms';
+import TrainingMatrix from 'src/views/forms/TrainingMatrix';
+import VendorManagement from 'src/views/formsCategories/VendorManagement';
+import RiskManagement from 'src/views/formsCategories/RiskManagement';
+import Validation from 'src/views/formsCategories/Validation';
 
 /* ****Pages***** */
 const Documentation_Control = Loadable(
@@ -30,6 +39,12 @@ const CancellationForm = Loadable(
 );
 const Distribution_form = Loadable(
   lazy(() => import('../views/documentation/pages/DistributionForm')),
+);
+const DistributionFormPrintView = Loadable(
+  lazy(() => import('../views/documentation/pages/DistributionFormPrintView')),
+);
+const DocumentRequestFormPrintView = Loadable(
+  lazy(() => import('../views/documentation/pages/DocumentRequestFormPrintView')),
 );
 
 const Users_Page = Loadable(lazy(() => import('../views/Users-Page/Users')));
@@ -59,6 +74,35 @@ const RecallChecklist = Loadable(lazy(() => import('../views/forms/RecallCheckli
 const RiskPlan = Loadable(lazy(() => import('../views/forms/RiskPlan')));
 const RiskTemplate = Loadable(lazy(() => import('../views/forms/RiskTemplate')));
 
+// Newly added forms by Agent
+const InternalAuditChecklistGDP = Loadable(lazy(() => import('../views/forms/InternalAuditChecklistGDP')));
+const InternalAuditReport = Loadable(lazy(() => import('../views/forms/InternalAuditReport')));
+const AuditLogbook = Loadable(lazy(() => import('../views/forms/AuditLogbook')));
+const InternalAuditChecklistISO = Loadable(lazy(() => import('../views/forms/InternalAuditChecklistISO')));
+const InternalAuditChecklistHSE = Loadable(lazy(() => import('../views/forms/InternalAuditChecklistHSE')));
+const InternalAuditChecklistGVP = Loadable(lazy(() => import('../views/forms/InternalAuditChecklistGVP')));
+const ChangeControlLogbook = Loadable(lazy(() => import('../views/forms/ChangeControlLogbook')));
+const MasterDocumentList = Loadable(lazy(() => import('../views/forms/MasterDocumentList')));
+const ApprovedSignaturesList = Loadable(lazy(() => import('../views/forms/ApprovedSignaturesList')));
+const CAPAReport = Loadable(lazy(() => import('../views/forms/CAPAReport')));
+const CAPAEffectivenessCheck = Loadable(lazy(() => import('../views/forms/CAPAEffectivenessCheck')));
+const RootCausesTrendAnalysis = Loadable(lazy(() => import('../views/forms/RootCausesTrendAnalysis')));
+const DeviationReport = Loadable(lazy(() => import('../views/forms/DeviationReport')));
+const ActionPlanForCAPA = Loadable(lazy(() => import('../views/forms/ActionPlanForCAPA')));
+const NCRDeviationLogbook = Loadable(lazy(() => import('../views/forms/NCRDeviationLogbook')));
+const CAPALogbook = Loadable(lazy(() => import('../views/forms/CAPALogbook')));
+const AnnualTrainingPlan = Loadable(lazy(() => import('../views/forms/AnnualTrainingPlan')));
+const TrainingNeedsForm = Loadable(lazy(() => import('../views/forms/TrainingNeedsForm')));
+const TrainingAttendanceSheet = Loadable(lazy(() => import('../views/forms/TrainingAttendanceSheet')));
+const TrainingEvaluationForm = Loadable(lazy(() => import('../views/forms/TrainingEvaluationForm')));
+
+
+// **** New module pages ****
+const DocumentationForms = Loadable(lazy(() => import('../views/formsCategories/DocumentationForms')));
+const DeviationCAPAForms = Loadable(lazy(() => import('../views/formsCategories/DeviationCAPAForms')));
+const ChangeControlForms = Loadable(lazy(() => import('../views/formsCategories/ChangeControlForms')));
+// const TrainingForms = Loadable(lazy(() => import('../views/formsCategories/TrainingForms')));
+const AuditingForms = Loadable(lazy(() => import('../views/formsCategories/AuditingForms')));
 // authentication
 const Login = Loadable(lazy(() => import('../views/authentication/auth/Login')));
 const Register2 = Loadable(lazy(() => import('../views/authentication/auth/Register')));
@@ -81,26 +125,103 @@ const BlogPost = Loadable(lazy(() => import('../views/pages/frontend-pages/BlogP
 
 const Router = [
   {
-    // جميع هذه المسارات نريد حمايتها بالتوكن
     path: '/',
-    // نغلف الـ FullLayout بـ AuthGuard
-    element: <FullLayout />,
+    element: (
+      <AuthGuard>
+        <FullLayout />
+      </AuthGuard>
+    ),
     children: [
       { path: '/', element: <Dashboard /> },
       { path: '/Users-Page', element: <Users_Page /> },
-      { path: '/documentation-control', element: <Documentation_Control /> },
 
       { path: '/documentation-control/:id', element: <SOPDetail /> },
       { path: '/documentation-control/New_Creation_SOP', element: <New_Creation_SOP /> },
       {
-        path: '/documentation-control/Document_Revision_Checklist',
-        element: <Document_Revision_Checklist />,
       },
-      { path: '/documentation-control/CancellationForm', element: <CancellationForm /> },
-      { path: '/documentation-control/distribution_form', element: <Distribution_form /> },
       { path: '/ITManagementPage', element: <ITManagementPage /> },
       { path: '/SOPFullDocument', element: <SOPFullDocument /> },
+      { path: '/SopFullDocument2/:id', element: <SopFullDocument2 /> },
+
+      // مسارات الصفحات الجديدة لكل قسم
+      { path: '/documentation-forms', element: <DocumentationForms /> },
+
+
+
+
+
+      // Documentation Control Forms
+      { path: '/documentation-control', element: <Documentation_Control /> },
+      { path: '/documentation-control/distribution_form', element: <Distribution_form /> },
+      { path: '/documentation-control/distribution-form-print', element: <DistributionFormPrintView /> },
+      { path: '/documentation-control/Document_Revision_Checklist', element: <Document_Revision_Checklist /> },
+      { path: '/documentation-control/CancellationForm', element: <CancellationForm /> },
+      // { path: '/documentation-control/extra_copy_request', element: <Extra_Copy_Request /> },
+      { path: '/documentation-control/master_document_list', element: <MasterDocumentList /> },
       { path: '/documentation-control/Request_Form', element: <NewDocumentRequestForm /> },
+      { path: '/documentation-control/Request_Form/:id', element: <NewDocumentRequestForm /> },
+      { path: '/documentation-control/Request_Form_Print/:id', element: <DocumentRequestFormPrintView /> },
+      { path: '/documentation-control/Request_Form_Print', element: <DocumentRequestFormPrintView /> },
+      { path: '/documentation-control/signature_list', element: <ApprovedSignaturesList /> },
+
+      // DEVIATION, NON-CONFORMITY AND CAPA SYSTEM
+      { path: '/deviation-capa-forms', element: <DeviationCAPAForms /> },
+      { path: '/forms/ncr', element: <NonConformityReport /> },
+      { path: '/forms/deviation', element: <DeviationReport /> },
+      { path: '/forms/capa', element: <CAPAReport /> },
+      { path: '/forms/capa-effectiveness', element: <CAPAEffectivenessCheck /> },
+      { path: '/forms/root-cause-analysis', element: <RootCausesTrendAnalysis /> },
+      { path: '/forms/ncr-logbook', element: <NCRDeviationLogbook /> },
+      { path: '/forms/capa-logbook', element: <CAPALogbook /> },
+
+      // CHANGE CONTROL MANAGEMENT
+      { path: '/change-control-forms', element: <ChangeControlForms /> },
+      { path: '/forms/change-request', element: <ChangeControlRequest /> },
+      { path: '/forms/change-logbook', element: <ChangeControlLogbook /> },
+
+      // TRAINING EMPLOYEES
+      { path: '/training-forms', element: <TrainingForms /> },
+      { path: '/forms/training-matrix', element: <TrainingMatrix /> },
+      { path: '/forms/annual-training-plan', element: <AnnualTrainingPlan /> },
+      { path: '/forms/training-needs-form', element: <TrainingNeedsForm /> },
+      { path: '/forms/training-attendance-sheet', element: <TrainingAttendanceSheet /> },
+      { path: '/forms/training-evaluation-form', element: <TrainingEvaluationForm /> },
+
+      // AUDITING MANAGEMENT
+      { path: '/auditing-forms', element: <AuditingForms /> },
+      { path: '/forms/audit-gdp', element: <InternalAuditChecklistGDP /> },
+      { path: '/forms/audit-report', element: <InternalAuditReport /> },
+      { path: '/forms/audit-capa', element: <ActionPlanForCAPA /> },
+      { path: '/forms/audit-logbook', element: <AuditLogbook /> },
+      { path: '/forms/audit-iso', element: <InternalAuditChecklistISO /> },
+      { path: '/forms/audit-hse', element: <InternalAuditChecklistHSE /> },
+      { path: '/forms/audit-gvp', element: <InternalAuditChecklistGVP /> },
+
+      // VENDOR/CUSTOMER MANAGEMENT
+      { path: '/vendor-management-forms', element: <VendorManagement /> },
+      { path: '/forms/service-providers-questionnaire', element: <ServiceProvidersQuestionnaire /> },
+      { path: '/forms/service-providers-list', element: <ServiceProvidersList /> },
+
+      { path: '/forms/customer-complaint', element: <CustomerComplaintForm /> },
+      { path: '/forms/contact-list', element: <ContactList /> },
+
+      { path: '/forms/customer-complaint-logbook', element: <CustomerComplaintLogbook /> },
+      { path: '/forms/customer-complaint-trend-analysis', element: <CustomerComplaintTrendAnalysis /> },
+      { path: '/forms/recall-notification-letter', element: <RecallNotificationLetter /> },
+      { path: '/forms/report-of-recall-request', element: <ReportOfRecallRequest /> },
+      { path: '/forms/recall-checklist', element: <RecallChecklist /> },
+
+      // Risk Assesment MANAGMENT
+      { path: '/risk-management', element: <RiskManagement/>},
+      { path: '/forms/risk-assessment', element: <RiskAssessmentForm /> },
+      { path: '/forms/risk-assessment-follow-up', element: <RiskAssessmentFollowUp /> },
+      { path: '/forms/risk-notification', element: <RiskNotificationForm /> },
+      { path: '/forms/risk-plan', element: <RiskPlan /> },
+      { path: '/forms/risk-template', element: <RiskTemplate /> },
+
+
+      // Validation MANAGMENT
+      { path: '/validation', element: <Validation/>},
 
       {
         path: '/all-notifications',
@@ -109,32 +230,32 @@ const Router = [
 
       // QMS Forms Routes
       { path: '/forms/simple-test', element: <SimpleTestForm /> },
-      { path: '/forms/customer-complaint', element: <CustomerComplaintForm /> },
-      { path: '/forms/customer-complaint-logbook', element: <CustomerComplaintLogbook /> },
-      { path: '/forms/customer-complaint-trend-analysis', element: <CustomerComplaintTrendAnalysis /> },
-      { path: '/forms/risk-assessment', element: <RiskAssessmentForm /> },
-      { path: '/forms/risk-assessment-follow-up', element: <RiskAssessmentFollowUp /> },
+
+
       { path: '/forms/qrm-minutes-of-meeting', element: <QRMMinutesOfMeeting /> },
-      { path: '/forms/risk-notification', element: <RiskNotificationForm /> },
-      { path: '/forms/service-providers-questionnaire', element: <ServiceProvidersQuestionnaire /> },
       { path: '/forms/recall-logbook', element: <RecallLogbook /> },
-      { path: '/forms/contact-list', element: <ContactList /> },
       { path: '/forms/qrm-team-approval', element: <QRMTeamApprovalForm /> },
 
       // New forms routes
-      { path: '/forms/service-providers-list', element: <ServiceProvidersList /> },
-      { path: '/forms/recall-notification-letter', element: <RecallNotificationLetter /> },
-      { path: '/forms/report-of-recall-request', element: <ReportOfRecallRequest /> },
-      { path: '/forms/recall-checklist', element: <RecallChecklist /> },
-      { path: '/forms/risk-plan', element: <RiskPlan /> },
-      { path: '/forms/risk-template', element: <RiskTemplate /> },
 
-      // لو كتب أي شيء مش معروف نوجهه لصفحة 404
+
+      // Newly added forms routes by Agent
+      { path: '/forms/audit-logbook', element: <AuditLogbook /> },
+      { path: '/forms/internal-audit-checklist-iso', element: <InternalAuditChecklistISO /> },
+      { path: '/forms/internal-audit-checklist-hse', element: <InternalAuditChecklistHSE /> },
+      { path: '/forms/internal-audit-checklist-gvp', element: <InternalAuditChecklistGVP /> },
+      { path: '/forms/capa-report', element: <CAPAReport /> },
+      { path: '/forms/capa-effectiveness-check', element: <CAPAEffectivenessCheck /> },
+      { path: '/forms/root-causes-trend-analysis', element: <RootCausesTrendAnalysis /> },
+      { path: '/forms/deviation-report', element: <DeviationReport /> },
+      { path: '/forms/ncr-deviation-logbook', element: <NCRDeviationLogbook /> },
+      { path: '/forms/capa-logbook', element: <CAPALogbook /> },
+
+
       { path: '*', element: <Navigate to="/auth/404" /> },
     ],
   },
   {
-    // هذه المسارات لا نريد حمايتها (صفحات لوجن و ريجستر وغيرها)
     path: '/',
     element: <BlankLayout />,
     children: [

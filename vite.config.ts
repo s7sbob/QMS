@@ -42,4 +42,8 @@ export default defineConfig({
     // })],
 
     plugins: [svgr(), react()],
+
+    // Development server configuration
+    // Note: OnlyOffice proxy removed - connecting directly to avoid ETIMEDOUT issues
+    server: {},
 });
