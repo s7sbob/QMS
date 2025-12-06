@@ -19,6 +19,7 @@ import ReferenceDocumentsSection from '../components/ReferenceDocumentsSection';
 import AttachmentsSection from '../components/AttachmentsSection';
 import CriticalControlPointsSection from '../components/CriticalControlPointsSection';
 import Spinner from 'src/views/spinner/Spinner';
+import SopWorkflowStepper from '../components/SopWorkflowStepper';
 
 export interface SopDetailTracking {
   Id: string;
@@ -454,6 +455,14 @@ const SOPFullDocument: React.FC = () => {
             </Button>
           </Tooltip>
         </Box>
+      )}
+
+      {/* Workflow Status Stepper */}
+      {sopDetail && (
+        <SopWorkflowStepper
+          currentStatus={sopDetail.Sop_header.status}
+          allowedStatuses={['1', '2', '3', '4', '5', '6']}
+        />
       )}
 
       <SOPTemplate headerData={sopDetail?.Sop_header || null}>
