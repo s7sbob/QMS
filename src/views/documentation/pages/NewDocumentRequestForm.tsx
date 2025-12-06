@@ -22,9 +22,6 @@ import {
   CircularProgress,
   Chip,
   Alert,
-  Stepper,
-  Step,
-  StepLabel,
   RadioGroup,
   FormControlLabel,
   Radio,
@@ -36,6 +33,7 @@ import RichTextEditor from './components/RichTextEditor';
 import { UserContext, IUser } from 'src/context/UserContext';
 import Swal from 'sweetalert2';
 import { IconPrinter } from '@tabler/icons-react';
+import SopWorkflowStepper from 'src/views/sopPurpose&Definition/components/SopWorkflowStepper';
 
 interface RequestedBy {
   name: string;
@@ -215,22 +213,6 @@ const DocumentRequestManagement: React.FC = () => {
         status: 17
       },
     ];
-  };
-
-  const getCurrentStepIndex = (status: number) => {
-    // Filter out rejected statuses to match the displayed stepper
-    const filteredSteps = getStatusSteps().filter(step => ![13, 14, 17].includes(step.status));
-
-    // For rejected by Dept Manager (13), show at step 1 (after Request For New Creation)
-    if (status === 13) return 1;
-    // For rejected by QA Manager (14), show at step 2 (after Approved by Dept Manager)
-    if (status === 14) return 2;
-    // For rejected by QA Officer (17), show at step 3 (after Accepted by QA Manager)
-    if (status === 17) return 3;
-
-    // Find index in the filtered array (matches what's displayed in stepper)
-    const index = filteredSteps.findIndex(step => step.status === status);
-    return index >= 0 ? index : 0;
   };
 
   const getStatusColor = (status: number): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
@@ -1279,65 +1261,35 @@ const DocumentRequestManagement: React.FC = () => {
       </Backdrop>
 
       <Container sx={{ py: 4 }}>
-        {/* Progress Bar */}
+        {/* Workflow Status Stepper */}
         {docRequestForm && (
-          <Paper sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h6" sx={{ mb: 2, textAlign: 'center' }}>
-              {t('documentRequest.requestStatus')}: {docRequestForm.RequestFrm_code}
-            </Typography>
-            
-            <Box sx={{ mb: 2 }}>
-              <Chip 
-                label={getStatusText(docRequestForm.Request_status)} 
-                color={getStatusColor(docRequestForm.Request_status)}
-                size="medium"
-                sx={{ display: 'block', mx: 'auto', mb: 2 }}
-              />
-            </Box>
+          <>
+            <Paper sx={{ p: 2, mb: 2 }}>
+              <Typography variant="h6" sx={{ mb: 1, textAlign: 'center' }}>
+                {t('documentRequest.requestStatus')}: {docRequestForm.RequestFrm_code}
+              </Typography>
 
-            <Stepper activeStep={getCurrentStepIndex(docRequestForm.Request_status)} alternativeLabel>
-              {getStatusSteps().filter(step => ![13, 14, 17].includes(step.status)).map((step, index) => {
-                // Determine if this step should show error styling
-                const isRejectedByDeptManager = docRequestForm.Request_status === 13 && index <= 1;
-                const isRejectedByQAManager = docRequestForm.Request_status === 14 && index <= 2;
-                const isRejectedByQAOfficer = docRequestForm.Request_status === 17 && index <= 3;
-                const showErrorStyle = isRejectedByDeptManager || isRejectedByQAManager || isRejectedByQAOfficer;
-                const showErrorLabel = (docRequestForm.Request_status === 13 && index === 1) ||
-                                       (docRequestForm.Request_status === 14 && index === 2) ||
-                                       (docRequestForm.Request_status === 17 && index === 3);
+              <Box sx={{ mb: 1 }}>
+                <Chip
+                  label={getStatusText(docRequestForm.Request_status)}
+                  color={getStatusColor(docRequestForm.Request_status)}
+                  size="medium"
+                  sx={{ display: 'block', mx: 'auto' }}
+                />
+              </Box>
+            </Paper>
 
-                return (
-                  <Step
-                    key={step.status}
-                    sx={showErrorStyle ? {
-                      '& .MuiStepLabel-root .Mui-completed': {
-                        color: 'error.main',
-                      },
-                      '& .MuiStepLabel-root .Mui-active': {
-                        color: 'error.main',
-                      },
-                      '& .MuiStepIcon-root.Mui-completed': {
-                        color: 'error.main',
-                      },
-                      '& .MuiStepIcon-root.Mui-active': {
-                        color: 'error.main',
-                      },
-                    } : {}}
-                  >
-                    <StepLabel error={showErrorLabel}>
-                      {step.label}
-                    </StepLabel>
-                  </Step>
-                );
-              })}
-            </Stepper>
+            <SopWorkflowStepper
+              currentStatus={String(docRequestForm.Request_status)}
+              allowedStatuses={['8', '11', '12', '15', '16']}
+            />
 
             {[13, 14, 17].includes(docRequestForm.Request_status) && (
-              <Alert severity="error" sx={{ mt: 2 }}>
+              <Alert severity="error" sx={{ mb: 2 }}>
                 {t('documentRequest.requestRejected')}
               </Alert>
             )}
-          </Paper>
+          </>
         )}
 
         <form onSubmit={handleSubmit}>
