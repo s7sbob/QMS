@@ -148,7 +148,7 @@ const SopWorkflowStepper: React.FC<SopWorkflowStepperProps> = ({
   currentStatus,
   allowedStatuses = defaultSopDocumentStatuses,
 }) => {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const [statusList, setStatusList] = useState<SopStatus[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
