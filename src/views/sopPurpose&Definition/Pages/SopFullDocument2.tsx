@@ -378,7 +378,7 @@ const SopFullDocument2: React.FC = () => {
       const response = await axiosServices.post(`/api/onlyoffice/promote/${headerId}`, {
         tempDocumentKey,
       });
-
+console.log('Promote response:', response.data);
       setIsPromoting(false);
 
       Swal.fire({
